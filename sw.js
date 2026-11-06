@@ -1,7 +1,7 @@
 // 7metro - service worker probisionala
 // Aldaketak argitaratzean, aldatu CACHE bertsioa.
-const CACHE = "7metro-v77";
-const SHELL = ["./", "./index.html", "./manifest.webmanifest",
+const CACHE = "7metro-v78";
+const SHELL = ["./", "./index.html", "./manifest.json",
   "./app.js", "./irudiak/Zelaia.png", "./irudiak/Zelai-erdia.png",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];
 
