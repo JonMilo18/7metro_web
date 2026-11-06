@@ -494,11 +494,12 @@ textarea{min-height:84px;resize:vertical}
           </div>
           <div class="board-wrap"><canvas id="exercise-board" width="800" height="500" aria-label="Ariketa marrazteko arbela"></canvas></div>
           <p class="muted">Aukeratu jokalari edo tresna eta ukitu arbela. Mugitu tresnarekin arrastatu; testua gehitzeko idatzi testua eskatzen denean.</p>
-          <details><summary><strong>Xehetasun gehiago</strong></summary><div class="stack" style="margin-top:12px"><div class="grid2"><label>Kategoria<input name="kategoria" maxlength="80"></label><label>Jokalari kopurua<input name="jokalari_kopurua" type="number" min="1" max="100"></label></div><label>Deskribapena<textarea name="deskribapena"></textarea></label><label>Bideoaren esteka<input name="bideo_url" type="url"></label></div></details>
+          <details><summary><strong>Xehetasun gehiago</strong></summary><div class="stack" style="margin-top:12px"><div class="grid2"><label>Kategoria<select name="kategoria" id="exercise-category"><option value="">Kategoririk gabe</option></select></label><label>Jokalari kopurua<input name="jokalari_kopurua" type="number" min="1" max="100"></label></div><label>Deskribapena<textarea name="deskribapena"></textarea></label><label>Bideoaren esteka<input name="bideo_url" type="url"></label></div></details>
           <button class="btn" type="submit">Gehitu ariketa</button>
         </form>
       </div>
       <div class="toolbar"><h2>Gordetako ariketak</h2><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
+      <details class="card" id="exercise-category-manager"><summary><strong>Kudeatu kategoriak</strong></summary><div class="stack" style="margin-top:12px"><form id="exercise-category-form" class="toolbar"><label for="new-exercise-category">Kategoria berria<input id="new-exercise-category" maxlength="80" required placeholder="Adib. Defentsa"></label><button class="btn" type="submit">Sortu kategoria</button></form><ul id="exercise-category-list" class="list"></ul><p class="muted">Kategoriak liburutegi partekatuan daude. Kategoria bat ezabatzean ariketa guztietatik kenduko da.</p></div></details>
       <ul id="exercises-list" class="list"></ul>
     </section>
     <section id="v-sessions" class="on">

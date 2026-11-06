@@ -1098,6 +1098,7 @@ function setSessionMinutes(id, value) {
 
 function renderExercises() {
   stopExerciseAnimation();
+  renderExerciseCategories();
   renderSessionPicker();
   $("exercises-list").innerHTML = exercises.length ? exercises.map(function (exercise) {
     var board = parseBoardData(exercise.arbela_datuak);
@@ -1120,6 +1121,30 @@ function renderExercises() {
     var data = exercise && parseBoardData(exercise.arbela_datuak);
     if (data) drawBoard(canvas, data, null);
   });
+}
+
+function renderExerciseCategories() {
+  var categories = records("kategoriak").slice().filter(function (item) { return item && item.izena; })
+    .sort(function (a, b) { return String(a.izena).localeCompare(String(b.izena)); });
+  var names = categories.map(function (item) { return String(item.izena).trim(); }).filter(Boolean);
+  exercises.forEach(function (exercise) {
+    var name = String(exercise.kategoria || "").trim();
+    if (name && names.indexOf(name) === -1) names.push(name);
+  });
+  names.sort(function (a, b) { return a.localeCompare(b); });
+  var select = $("exercise-category");
+  if (select) {
+    var selected = select.value;
+    select.innerHTML = '<option value="">Kategoririk gabe</option>' + names.map(function (name) {
+      return '<option value="' + esc(name) + '">' + esc(name) + '</option>';
+    }).join("");
+    if (names.indexOf(selected) !== -1) select.value = selected;
+  }
+  var list = $("exercise-category-list");
+  if (list) list.innerHTML = categories.length ? categories.map(function (category) {
+    return '<li class="item"><div class="item-main"><strong>' + esc(category.izena) + '</strong></div>' +
+      '<button class="btn danger" type="button" data-delete-exercise-category="' + Number(category.id_kategoria) + '">Ezabatu</button></li>';
+  }).join("") : '<li class="empty">Oraindik ez dago kategoriarik. Sortu kategoria liburutegian erabiltzeko.</li>';
 }
 
 function renderSavedSession(sessionId) {
@@ -2226,6 +2251,22 @@ $("exercise-form").addEventListener("submit", async function (event) {
   finally { button.disabled = false; }
 });
 
+$("exercise-category-form").addEventListener("submit", async function (event) {
+  event.preventDefault();
+  var form = this, button = form.querySelector('button[type="submit"]');
+  var name = $("new-exercise-category").value.trim();
+  if (!name) return;
+  button.disabled = true;
+  try {
+    await request({ action: "pwa_create_category", team_id: teamId, izena: name });
+    form.reset();
+    await refreshAll();
+    $("exercise-category").value = name;
+    notify('"' + name + '" kategoria sortu da', "success");
+  } catch (error) { notify(error.message, "error"); }
+  finally { button.disabled = false; }
+});
+
 document.querySelectorAll("[data-board-tool]").forEach(function (button) {
   button.addEventListener("click", function () {
     boardTool = button.dataset.boardTool;
@@ -2641,13 +2682,17 @@ document.addEventListener("click", async function (event) {
     catch (error) { notify(error.message, "error"); }
     finally { target.disabled = false; }
   }
-  var deletion = null, message = "";
+  var deletion = null, message = "", successMessage = "Erregistroa ezabatu da";
   if (target.hasAttribute("data-delete-player")) {
     deletion = { action: "pwa_delete_player", id: Number(target.dataset.deletePlayer) };
     message = "Jokalari hau ezabatu nahi duzu?";
   } else if (target.hasAttribute("data-delete-exercise")) {
     deletion = { action: "pwa_delete_exercise", id: Number(target.dataset.deleteExercise) };
     message = "Ariketa hau ezabatu nahi duzu?";
+  } else if (target.hasAttribute("data-delete-exercise-category")) {
+    deletion = { action: "pwa_delete_category", id: Number(target.dataset.deleteExerciseCategory) };
+    message = "Kategoria ezabatu? Zure ariketetatik esleipena kenduko da eta kategoria hori erabiltzen duten ariketak kategoriarik gabe geratuko dira.";
+    successMessage = "Kategoria ezabatu da";
   } else if (target.hasAttribute("data-delete-match")) {
     deletion = { action: "pwa_delete_match", id: Number(target.dataset.deleteMatch) };
     message = "Partida hau eta haren estatistikak ezabatu nahi dituzu?";
@@ -2656,7 +2701,7 @@ document.addEventListener("click", async function (event) {
     try {
       await request(Object.assign(deletion, { team_id: teamId }));
       $("match-detail").classList.add("hidden");
-      await refreshAll(); notify("Erregistroa ezabatu da", "success");
+      await refreshAll(); notify(successMessage, "success");
     } catch (error) { notify(error.message, "error"); }
   }
   if (target.hasAttribute("data-match-stats")) {
