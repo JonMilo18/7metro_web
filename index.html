@@ -311,12 +311,24 @@ textarea{min-height:84px;resize:vertical}
   </div>
 </dialog>
 
+<dialog id="team-rename-dialog" class="attendance-dialog" aria-labelledby="team-rename-title">
+  <div class="attendance-dialog-inner">
+    <div class="attendance-dialog-head"><h2 id="team-rename-title">Taldearen izena aldatu</h2><button class="btn secondary" id="team-rename-close" type="button">Itxi</button></div>
+    <form id="team-rename-form" class="stack">
+      <label>Izen berria<input id="team-rename-name" minlength="2" maxlength="100" required></label>
+      <button class="btn" type="submit">Izena gorde</button>
+    </form>
+  </div>
+</dialog>
+
 <div id="workspace" class="hidden">
   <div id="team-picker" class="hidden">
     <h1>Aukeratu taldea</h1><p class="sub">Talde bereko jokalariak eta jarduerak kudeatuko dituzu.</p>
     <div class="card stack">
       <label>Zure taldeak<select id="team-select"></select></label>
       <button class="btn" id="open-team" type="button">Taldea ireki</button>
+      <div class="grid2"><button class="btn secondary" id="rename-team" type="button">Izena aldatu</button><button class="btn danger" id="delete-team" type="button">Taldea ezabatu</button></div>
+      <p id="team-management-note" class="muted" hidden>Taldearen jabeak bakarrik alda edo ezaba dezake taldea.</p>
     </div>
     <div class="card"><h2>Taldeko gonbidapenak</h2><ul id="team-invitations" class="list"></ul></div>
     <form id="team-form" class="card stack">

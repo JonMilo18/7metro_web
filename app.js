@@ -162,13 +162,25 @@ function showTeamPicker() {
   $("v-login").classList.remove("on");
   $("account").textContent = user ? user.izena : "";
   $("team-select").innerHTML = teams.map(function (item) {
-    return '<option value="' + Number(item.id_taldea) + '">' + esc(item.izena) + "</option>";
+    return '<option value="' + Number(item.id_taldea) + '">' + esc(item.izena) + (item._role === "owner" ? " · Jabea" : " · Kidea") + "</option>";
   }).join("");
   loadTeamInvitations();
   if (teams.some(function (item) { return Number(item.id_taldea) === teamId; })) {
     $("team-select").value = String(teamId);
   }
   $("open-team").disabled = teams.length === 0;
+  updateTeamManagementControls();
+}
+
+function selectedTeamForManagement() {
+  return teams.find(function (item) { return Number(item.id_taldea) === Number($("team-select").value); }) || null;
+}
+
+function updateTeamManagementControls() {
+  var selected = selectedTeamForManagement(), isOwner = Boolean(selected && selected._role === "owner");
+  $("rename-team").disabled = !isOwner;
+  $("delete-team").disabled = !isOwner;
+  $("team-management-note").hidden = !selected || isOwner;
 }
 
 async function loadTeamInvitations() {
@@ -206,7 +218,7 @@ async function ensureActiveTeam() {
 async function loadTeams(autoOpen) {
   var result = await request({ action: "teams_list" });
   teams = (result.teams || []).map(function (membership) {
-    return membership.taldeak;
+    return Object.assign({}, membership.taldeak, { _role: membership.role });
   }).filter(function (item) { return item && item.id_taldea; });
   if (!teams.some(function (item) { return Number(item.id_taldea) === teamId; })) teamId = 0;
   if (autoOpen === false) { showTeamPicker(); return; }
@@ -2090,6 +2102,57 @@ $("open-team").addEventListener("click", async function () {
   button.disabled = true;
   try { await openTeam($("team-select").value); }
   catch (error) { notify(error.message, "error"); }
+  finally { button.disabled = false; }
+});
+
+$("team-select").addEventListener("change", updateTeamManagementControls);
+$("rename-team").addEventListener("click", function () {
+  var selected = selectedTeamForManagement();
+  if (!selected || selected._role !== "owner") return notify("Taldearen jabeak bakarrik alda dezake izena", "error");
+  $("team-rename-name").value = selected.izena || "";
+  $("team-rename-dialog").showModal();
+});
+$("team-rename-close").addEventListener("click", function () { $("team-rename-dialog").close(); });
+$("team-rename-form").addEventListener("submit", async function (event) {
+  event.preventDefault();
+  var selected = selectedTeamForManagement(), name = $("team-rename-name").value.trim();
+  if (!selected || selected._role !== "owner") return notify("Taldearen jabeak bakarrik alda dezake izena", "error");
+  if (name.length < 2 || name.length > 100) return notify("Izenak 2 eta 100 karaktere artean izan behar ditu", "error");
+  var button = this.querySelector('button[type="submit"]');
+  button.disabled = true;
+  try {
+    var result = await request({ action: "team_rename", team_id: Number(selected.id_taldea), name: name });
+    var updated = result.team || Object.assign({}, selected, { izena: name });
+    teams = teams.map(function (item) { return Number(item.id_taldea) === Number(updated.id_taldea) ? Object.assign({}, updated, { _role: "owner" }) : item; });
+    var selectedId = String(updated.id_taldea);
+    $("team-select").innerHTML = teams.map(function (item) {
+      return '<option value="' + Number(item.id_taldea) + '">' + esc(item.izena) + (item._role === "owner" ? " · Jabea" : " · Kidea") + "</option>";
+    }).join("");
+    $("team-select").value = selectedId;
+    if (Number(teamId) === Number(updated.id_taldea)) {
+      team = updated;
+      $("account").textContent = (user ? user.izena + " · " : "") + updated.izena;
+    }
+    $("team-rename-dialog").close();
+    notify("Taldearen izena aldatu da", "success");
+  } catch (error) { notify(error.message, "error"); }
+  finally { button.disabled = false; }
+});
+$("delete-team").addEventListener("click", async function () {
+  var selected = selectedTeamForManagement();
+  if (!selected || selected._role !== "owner") return notify("Taldearen jabeak bakarrik ezaba dezake taldea", "error");
+  var confirmation = "Ziur zaude '" + selected.izena + "' taldea ezabatu nahi duzula? Ekintza honek taldeko jokalariak, entrenamenduak, partidak eta plangintza ere ezabatuko ditu.";
+  if (!window.confirm(confirmation)) return;
+  var button = this;
+  button.disabled = true;
+  try {
+    await request({ action: "team_delete", team_id: Number(selected.id_taldea) });
+    if (Number(teamId) === Number(selected.id_taldea)) {
+      team = null; teamId = 0; localStorage.removeItem("7metro-team-id");
+    }
+    await loadTeams(false);
+    notify("Taldea eta haren datuak ezabatu dira", "success");
+  } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
 });
 
