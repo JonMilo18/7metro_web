@@ -144,6 +144,8 @@ async function requestImpl(payload, anonymous) {
 
 function showLogin() {
   token = "";
+  setMobileMenu(false);
+  $("mobile-menu-toggle").hidden = true;
   $("workspace").classList.add("hidden");
   $("nav").classList.add("hidden");
   $("account").textContent = "";
@@ -151,6 +153,8 @@ function showLogin() {
 }
 
 function showTeamPicker() {
+  setMobileMenu(false);
+  $("mobile-menu-toggle").hidden = true;
   $("workspace").classList.remove("hidden");
   $("team-picker").classList.remove("hidden");
   $("team-app").classList.add("hidden");
@@ -225,6 +229,10 @@ async function openTeam(id) {
   $("team-picker").classList.add("hidden");
   $("team-app").classList.remove("hidden");
   $("nav").classList.remove("hidden");
+  $("mobile-menu-toggle").hidden = false;
+  setMobileMenu(false);
+  $("nav").setAttribute("aria-hidden", "false");
+  $("nav").inert = false;
   $("account").textContent = (user ? user.izena + " · " : "") + selected.izena;
   $("settings-api-url").value = apiBase;
   $("settings-api-key").value = apiKey;
@@ -1637,6 +1645,7 @@ async function refreshAll() {
 }
 
 function selectSection(id) {
+  setMobileMenu(false);
   if (id !== "v-session-view") stopSessionAnimation();
   if (id !== "v-session-detail" && previewAnimation &&
     previewAnimation.canvas.closest("#saved-session-exercises")) stopExerciseAnimation();
@@ -1755,6 +1764,22 @@ function setFriendOptions(id, rows, placeholder) {
   }).join("");
   if (rows.some(function (row) { return String(row.user_id || row.id_ariketa || row.id_saio) === prior; })) select.value = prior;
 }
+function renderShareExerciseOptions() {
+  var list = $("share-exercise-items");
+  if (!list) return;
+  list.innerHTML = friendExercises.length ? friendExercises.map(function (exercise) {
+    return '<label class="checkrow"><input type="checkbox" data-share-exercise="' + Number(exercise.id_ariketa) + '"><span>' + esc(exercise.izena || "Ariketa") + '</span></label>';
+  }).join("") : '<div class="empty">Ez dago partekatzeko ariketarik.</div>';
+  updateShareExerciseCount();
+}
+function selectedShareExerciseIds() {
+  return Array.from(document.querySelectorAll('#share-exercise-items [data-share-exercise]:checked'))
+    .map(function (input) { return Number(input.dataset.shareExercise); });
+}
+function updateShareExerciseCount() {
+  var count = $("share-exercise-count");
+  if (count) count.textContent = selectedShareExerciseIds().length + " hautatuta";
+}
 async function loadFriends() {
   [$("friend-incoming"), $("friends-list"), $("friend-outgoing"), $("friend-shared-exercises"), $("friend-shared-trainings")].forEach(function (el) { el.innerHTML = '<li class="empty">Kargatzen…</li>'; });
   try {
@@ -1785,7 +1810,7 @@ async function loadFriends() {
     setFriendOptions("share-exercise-friend", friendsCache.friends, "Aukeratu laguna");
     setFriendOptions("share-training-friend", friendsCache.friends, "Aukeratu laguna");
     setFriendOptions("team-invite-friend", friendsCache.friends, "Aukeratu gonbidatzeko laguna");
-    setFriendOptions("share-exercise-item", friendExercises, "Aukeratu ariketa");
+    renderShareExerciseOptions();
     setFriendOptions("share-training-item", friendTrainings, "Aukeratu entrenamendua");
   } catch (error) {
     [$("friend-incoming"), $("friends-list")].forEach(function (el) { el.innerHTML = '<li class="notice error">' + esc(error.message) + '</li>'; });
@@ -1802,10 +1827,26 @@ $("friend-form").addEventListener("submit", async function (event) {
 $("friends-refresh").addEventListener("click", function () { loadFriends(); });
 $("friend-share-exercise").addEventListener("submit", async function (event) {
   event.preventDefault();
+  var exerciseIds = selectedShareExerciseIds();
+  if (!exerciseIds.length) return notify("Hautatu gutxienez ariketa bat", "error");
+  if (exerciseIds.length > 100) return notify("Gehienez 100 ariketa parteka ditzakezu aldi bakoitzean", "error");
   try {
-    await request({ action: "exercise_share", friend_id: Number($("share-exercise-friend").value), exercise_id: Number($("share-exercise-item").value) });
-    notify("Ariketa lagunarekin partekatu da", "success"); await loadFriends();
+    var result = await request({ action: "exercise_share_many", friend_id: Number($("share-exercise-friend").value), exercise_ids: exerciseIds });
+    var shared = Number(result.shared_count) || 0, existing = Number(result.already_shared_count) || 0;
+    notify(shared ? shared + " ariketa partekatu dira" + (existing ? "; " + existing + " aurretik partekatuta zeuden" : "") : "Aukeratutako ariketak lagun horrekin partekatuta zeuden jada", "success");
+    await loadFriends();
   } catch (error) { notify(error.message, "error"); }
+});
+$("share-exercise-items").addEventListener("change", updateShareExerciseCount);
+$("share-exercise-select-all").addEventListener("click", function () {
+  var boxes = Array.from(document.querySelectorAll('#share-exercise-items [data-share-exercise]'));
+  boxes.forEach(function (box, index) { box.checked = index < 100; });
+  updateShareExerciseCount();
+  if (boxes.length > 100) notify("Lehenengo 100 ariketak hautatu dira; partekatu gainerakoak beste bidalketa batean", "error");
+});
+$("share-exercise-clear").addEventListener("click", function () {
+  document.querySelectorAll('#share-exercise-items [data-share-exercise]').forEach(function (box) { box.checked = false; });
+  updateShareExerciseCount();
 });
 $("friend-share-training").addEventListener("submit", async function (event) {
   event.preventDefault();
@@ -1904,6 +1945,35 @@ $("score-fullscreen").addEventListener("click", async function () {
   } catch (error) { notify("Pantaila osoa ezin izan da aktibatu gailu honetan", "error"); }
 });
 
+function setMobileMenu(open) {
+  var nav = $("nav"), toggle = $("mobile-menu-toggle"), backdrop = $("mobile-menu-backdrop");
+  if (!nav || !toggle || !backdrop) return;
+  var mobile = window.matchMedia("(max-width: 767px)").matches;
+  var isOpen = Boolean(open && mobile && !nav.classList.contains("hidden"));
+  nav.classList.toggle("menu-open", isOpen);
+  backdrop.classList.toggle("hidden", !isOpen);
+  document.body.classList.toggle("mobile-menu-active", isOpen);
+  toggle.setAttribute("aria-expanded", String(isOpen));
+  toggle.setAttribute("aria-label", isOpen ? "Menua itxi" : "Menua ireki");
+  nav.setAttribute("aria-hidden", String(mobile && !isOpen));
+  nav.inert = mobile && !isOpen;
+}
+$("mobile-menu-toggle").addEventListener("click", function () {
+  setMobileMenu($("mobile-menu-toggle").getAttribute("aria-expanded") !== "true");
+});
+$("mobile-menu-backdrop").addEventListener("click", function () { setMobileMenu(false); });
+document.addEventListener("keydown", function (event) {
+  if (event.key === "Escape" && $("mobile-menu-toggle").getAttribute("aria-expanded") === "true") {
+    setMobileMenu(false); $("mobile-menu-toggle").focus();
+  }
+});
+window.matchMedia("(min-width: 768px)").addEventListener("change", function (event) {
+  setMobileMenu(false);
+  if (!$("nav").classList.contains("hidden")) {
+    $("nav").setAttribute("aria-hidden", String(event.matches ? "false" : "true"));
+    $("nav").inert = !event.matches;
+  }
+});
 document.querySelectorAll("nav [data-v]").forEach(function (button) {
   button.addEventListener("click", function () { selectSection(button.dataset.v); });
 });

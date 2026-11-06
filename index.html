@@ -33,6 +33,8 @@ header{padding:calc(14px + env(safe-area-inset-top,0px)) 20px 14px;display:flex;
 header img{height:40px;width:auto;border-radius:8px;background:#fff;padding:2px 4px}
 header b{font-size:1.15rem;letter-spacing:-.01em}
 #account{margin-left:auto;color:var(--muted);font-size:.86rem}
+.menu-toggle{display:none;place-items:center;flex:none;width:42px;height:42px;padding:0;border:1px solid var(--line);border-radius:11px;background:var(--bg2);color:var(--ink);font-size:1.3rem;cursor:pointer}
+.menu-toggle[hidden]{display:none!important}
 main{flex:1;padding:22px calc(20px + env(safe-area-inset-right,0px)) 100px calc(20px + env(safe-area-inset-left,0px))}
 main>section{max-width:620px;margin:0 auto}
 h1{font-size:1.65rem;letter-spacing:-.02em;line-height:1.15;margin:0 0 6px}
@@ -156,6 +158,7 @@ textarea{min-height:84px;resize:vertical}
 .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .toolbar h2{margin:0}
 .hidden{display:none!important}
+.mobile-menu-backdrop{position:fixed;z-index:10;inset:0;border:0;background:rgba(0,0,0,.58);backdrop-filter:blur(3px)}
 .steps{padding-left:20px;margin:8px 0 20px}.steps li{margin-bottom:8px}
 #toast{position:fixed;z-index:5;left:16px;right:16px;bottom:calc(70px + env(safe-area-inset-bottom,0px));max-width:580px;margin:auto;box-shadow:0 6px 24px #0002}
 @media(min-width:768px){
@@ -171,7 +174,17 @@ textarea{min-height:84px;resize:vertical}
  h1{font-size:2rem}
  #toast{left:260px;right:20px;bottom:20px}
 }
-@media(max-width:420px){nav button{font-size:.72rem;padding-left:1px;padding-right:1px}.grid2,.grid3{grid-template-columns:1fr}}
+@media(max-width:767px){
+ body.mobile-menu-active{overflow:hidden}
+ .menu-toggle{display:grid}
+ main{padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+ nav{position:fixed;z-index:12;top:0;right:auto;bottom:0;left:0;width:min(84vw,320px);overflow-y:auto;overscroll-behavior:contain;padding:calc(16px + env(safe-area-inset-top,0px)) 12px calc(16px + env(safe-area-inset-bottom,0px));border:0;border-right:1px solid var(--line);background:var(--bg);box-shadow:16px 0 44px rgba(0,0,0,.28);transform:translateX(-105%);transition:transform .22s ease}
+ nav.menu-open{transform:translateX(0)}
+ nav div{max-width:none;grid-template-columns:1fr;gap:5px;align-content:start}
+ nav button{text-align:left;padding:12px 16px;border-radius:10px;font-size:1rem;min-height:48px}
+ nav button[aria-selected="true"]{box-shadow:none;background:rgba(0,68,238,.2);color:#fff}
+}
+@media(max-width:420px){.grid2,.grid3{grid-template-columns:1fr}}
 @media(max-width:760px){.home-dashboard-grid{grid-template-columns:1fr}.home-card{min-height:200px}.home-shortcuts{grid-template-columns:1fr}.home-hero{align-items:flex-start;flex-direction:column}.home-hero>.btn{width:auto;margin:0}}
 @media(max-width:520px){#v-friends .item{flex-wrap:wrap;gap:8px}#v-friends .item-main{flex:1 1 100%}}
 @media(max-width:520px){.attendance-row{grid-template-columns:1fr 1fr;gap:6px}.attendance-row .checkrow{grid-column:1/-1;padding-bottom:2px}.attendance-row label{min-width:0}.match-player .player-stats{gap:4px}.match-player .player-stats input{padding:5px 3px}}
@@ -273,7 +286,7 @@ textarea{min-height:84px;resize:vertical}
 </head>
 <body>
 <div id="app">
-<header><img src="icons/icon-192.png" alt="" aria-hidden="true"><b>7metro</b><span id="account"></span></header>
+<header><button class="menu-toggle" id="mobile-menu-toggle" type="button" aria-label="Menua ireki" aria-controls="nav" aria-expanded="false" hidden>☰</button><img src="icons/icon-192.png" alt="" aria-hidden="true"><b>7metro</b><span id="account"></span></header>
 <main>
 <section id="v-login" class="on">
   <h1>Saioa hasi</h1>
@@ -499,7 +512,7 @@ textarea{min-height:84px;resize:vertical}
       <form id="friend-form" class="card stack"><h2>Lagun berria</h2><label>Erabiltzaile-izena<input id="friend-username" minlength="3" maxlength="200" required autocomplete="off"></label><button class="btn" type="submit">Eskaera bidali</button></form>
       <div class="toolbar"><h2>Jasotako eskaerak</h2><button class="btn secondary" type="button" id="friends-refresh">Freskatu</button></div><ul id="friend-incoming" class="list"></ul>
       <div class="card"><h2>Lagunak</h2><ul id="friends-list" class="list"></ul></div>
-      <div class="card"><h2>Bidaltzeko ariketak</h2><p class="muted">Aukeratu laguna eta zure ariketetako bat partekatzeko.</p><form id="friend-share-exercise" class="stack"><label>Lagun<select id="share-exercise-friend" required></select></label><label>Ariketa<select id="share-exercise-item" required></select></label><button class="btn" type="submit">Ariketa partekatu</button></form></div>
+      <div class="card"><h2>Bidaltzeko ariketak</h2><p class="muted">Aukeratu lagun bat eta partekatu nahi dituzun ariketa guztiak.</p><form id="friend-share-exercise" class="stack"><label>Lagun<select id="share-exercise-friend" required></select></label><div><label>Ariketak <span id="share-exercise-count" class="muted">0 hautatuta</span></label><div class="board-tools" aria-label="Ariketak hautatzeko aukerak"><button class="btn secondary" id="share-exercise-select-all" type="button">Denak hautatu</button><button class="btn secondary" id="share-exercise-clear" type="button">Garbitu</button></div><div id="share-exercise-items" class="checklist" aria-label="Partekatzeko ariketak"></div></div><button class="btn" type="submit">Hautatutako ariketak partekatu</button></form></div>
       <div class="card"><h2>Bidaltzeko entrenamenduak</h2><form id="friend-share-training" class="stack"><label>Lagun<select id="share-training-friend" required></select></label><label>Entrenamendua<select id="share-training-item" required></select></label><button class="btn" type="submit">Entrenamendua partekatu</button></form></div>
       <div class="card"><h2>Nirekin partekatutako ariketak</h2><ul id="friend-shared-exercises" class="list"></ul></div>
       <div class="card"><h2>Nirekin partekatutako entrenamenduak</h2><ul id="friend-shared-trainings" class="list"></ul></div>
@@ -562,7 +575,8 @@ textarea{min-height:84px;resize:vertical}
       <div id="attendance-list" class="list"></div><button class="btn" id="save-attendance" type="button">Gorde eta itxi</button>
     </div>
   </dialog>
-<nav id="nav" class="hidden" aria-label="Nagusia"><div role="tablist">
+<button id="mobile-menu-backdrop" class="mobile-menu-backdrop hidden" type="button" aria-label="Menua itxi" tabindex="-1"></button>
+<nav id="nav" class="hidden" aria-label="Nagusia" aria-hidden="true" inert><div role="tablist">
   <button role="tab" data-v="v-home" aria-selected="true">Hasiera</button><button role="tab" data-v="v-sessions" aria-selected="false">Entrenamendua</button><button role="tab" data-v="v-planning" aria-selected="false">Plangintza</button><button role="tab" data-v="v-players" aria-selected="false">Taldea</button><button role="tab" data-v="v-matches" aria-selected="false">Lehiaketa</button><button role="tab" data-v="v-more" aria-selected="false">Gehiago</button>
 </div></nav>
 <div id="plan-modal" class="modal hidden">
