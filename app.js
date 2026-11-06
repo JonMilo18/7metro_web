@@ -1124,12 +1124,24 @@ function renderExercises() {
 }
 
 function renderExerciseCategories() {
-  var categories = records("kategoriak").slice().filter(function (item) { return item && item.izena; })
-    .sort(function (a, b) { return String(a.izena).localeCompare(String(b.izena)); });
-  var names = categories.map(function (item) { return String(item.izena).trim(); }).filter(Boolean);
+  var categoryMap = new Map();
+  records("kategoriak").filter(function (item) { return item && item.izena; }).forEach(function (item) {
+    var key = String(item.izena).trim().toLocaleLowerCase();
+    if (key && !categoryMap.has(key)) categoryMap.set(key, item);
+  });
+  var categories = Array.from(categoryMap.values()).sort(function (a, b) {
+    return String(a.izena).localeCompare(String(b.izena));
+  });
+  var names = [];
+  categories.forEach(function (item) {
+    var categoryName = String(item.izena).trim();
+    if (categoryName && !names.some(function (existing) {
+      return existing.toLocaleLowerCase() === categoryName.toLocaleLowerCase();
+    })) names.push(categoryName);
+  });
   exercises.forEach(function (exercise) {
     var name = String(exercise.kategoria || "").trim();
-    if (name && names.indexOf(name) === -1) names.push(name);
+    if (name && !names.some(function (existing) { return existing.toLocaleLowerCase() === name.toLocaleLowerCase(); })) names.push(name);
   });
   names.sort(function (a, b) { return a.localeCompare(b); });
   var select = $("exercise-category");
@@ -1142,8 +1154,12 @@ function renderExerciseCategories() {
   }
   var list = $("exercise-category-list");
   if (list) list.innerHTML = categories.length ? categories.map(function (category) {
+    var duplicates = records("kategoriak").filter(function (item) {
+      return String(item.izena || "").trim().toLocaleLowerCase() === String(category.izena).trim().toLocaleLowerCase();
+    }).length;
     return '<li class="item"><div class="item-main"><strong>' + esc(category.izena) + '</strong></div>' +
-      '<button class="btn danger" type="button" data-delete-exercise-category="' + Number(category.id_kategoria) + '">Ezabatu</button></li>';
+      (duplicates > 1 ? '<small class="muted">' + duplicates + ' erregistro batu</small>' : '') +
+      '<button class="btn danger" type="button" data-delete-exercise-category="' + esc(category.izena) + '">Ezabatu</button></li>';
   }).join("") : '<li class="empty">Oraindik ez dago kategoriarik. Sortu kategoria liburutegian erabiltzeko.</li>';
 }
 
@@ -2690,8 +2706,8 @@ document.addEventListener("click", async function (event) {
     deletion = { action: "pwa_delete_exercise", id: Number(target.dataset.deleteExercise) };
     message = "Ariketa hau ezabatu nahi duzu?";
   } else if (target.hasAttribute("data-delete-exercise-category")) {
-    deletion = { action: "pwa_delete_category", id: Number(target.dataset.deleteExerciseCategory) };
-    message = "Kategoria ezabatu? Zure ariketetatik esleipena kenduko da eta kategoria hori erabiltzen duten ariketak kategoriarik gabe geratuko dira.";
+    deletion = { action: "pwa_delete_category", izena: target.dataset.deleteExerciseCategory };
+    message = '"' + target.dataset.deleteExerciseCategory + '" izeneko kategoria-erregistro guztiak ezabatu? Kategoria hori erabiltzen duten ariketak kategoriarik gabe geratuko dira.';
     successMessage = "Kategoria ezabatu da";
   } else if (target.hasAttribute("data-delete-match")) {
     deletion = { action: "pwa_delete_match", id: Number(target.dataset.deleteMatch) };
