@@ -1967,13 +1967,16 @@ document.addEventListener("keydown", function (event) {
     setMobileMenu(false); $("mobile-menu-toggle").focus();
   }
 });
-window.matchMedia("(min-width: 768px)").addEventListener("change", function (event) {
+var desktopMenuQuery = window.matchMedia("(min-width: 768px)");
+function handleMenuViewportChange(event) {
   setMobileMenu(false);
   if (!$("nav").classList.contains("hidden")) {
     $("nav").setAttribute("aria-hidden", String(event.matches ? "false" : "true"));
     $("nav").inert = !event.matches;
   }
-});
+}
+if (desktopMenuQuery.addEventListener) desktopMenuQuery.addEventListener("change", handleMenuViewportChange);
+else if (desktopMenuQuery.addListener) desktopMenuQuery.addListener(handleMenuViewportChange);
 document.querySelectorAll("nav [data-v]").forEach(function (button) {
   button.addEventListener("click", function () { selectSection(button.dataset.v); });
 });
