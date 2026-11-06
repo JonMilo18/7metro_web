@@ -7,8 +7,14 @@ var readStore = function (key) {
   try { return localStorage.getItem(key) || ""; }
   catch (error) { console.error("Ezin izan da tokiko biltegia irakurri", error); return ""; }
 };
-var apiBase = readStore("7metro-supabase-url") || DEFAULT_API_URL;
-var apiKey = readStore("7metro-supabase-key") || DEFAULT_API_KEY;
+// Supabase connection details are deployment configuration, not account
+// settings. Keep them internal so users cannot alter the app endpoint.
+var apiBase = DEFAULT_API_URL;
+var apiKey = DEFAULT_API_KEY;
+try {
+  localStorage.removeItem("7metro-supabase-url");
+  localStorage.removeItem("7metro-supabase-key");
+} catch (error) { console.error("Ezin izan da konexio-ezarpen zaharrak garbitu", error); }
 var token = readStore("7metro-supabase-token");
 var userName = readStore("7metro-username");
 var user = userName ? { izena: userName } : null, teamId = Number(readStore("7metro-team-id")) || 0, team = null;
@@ -246,8 +252,6 @@ async function openTeam(id) {
   $("nav").setAttribute("aria-hidden", "false");
   $("nav").inert = false;
   $("account").textContent = (user ? user.izena + " · " : "") + selected.izena;
-  $("settings-api-url").value = apiBase;
-  $("settings-api-key").value = apiKey;
   selectSection("v-home");
 }
 
@@ -1010,6 +1014,7 @@ function renderSessionPicker() {
     return '<li class="session-slot" data-session-drop-exercise="' + id + '"><button class="session-drag-handle" type="button" data-session-drag-handle aria-label="Arrastatu ordena aldatzeko: ' + esc(exercise.izena) + '" title="Arrastatu ordena aldatzeko">&#8942;&#8942;</button><span class="slot-name">' + esc(exercise.izena) +
       '</span><input type="number" min="0" max="999" value="' + Number(entry.iraupena_minutuak) +
       '" data-session-minutes="' + id + '" aria-label="Minutuak: ' + esc(exercise.izena) + '">' +
+      '<textarea class="session-exercise-notes" rows="2" maxlength="3000" data-session-notes="' + id + '" aria-label="Oharrak: ' + esc(exercise.izena) + '" placeholder="Oharrak ariketa honetarako">' + esc(entry.aldaerak || "") + '</textarea>' +
       '<button class="slot-remove" type="button" data-session-remove="' + id +
       '" aria-label="Kendu ariketa">✕</button></li>';
   }).join("") : '<li class="empty">Gehitu ariketak ezkerraldetik.</li>';
@@ -1021,6 +1026,7 @@ function addSessionExercise(id) {
   if (!sessionExerciseById(id)) return;
   if (sessionSelection.some(function (entry) { return Number(entry.id_ariketa) === id; })) return;
   sessionSelection.push({ id_ariketa: id, iraupena_minutuak: 10,
+    aldaerak: "",
     taldea: activeSessionGroup ? activeSessionGroup.name : null,
     group_id: activeSessionGroup ? activeSessionGroup.id : null });
   renderSessionPicker();
@@ -1224,6 +1230,7 @@ function renderSavedSession(sessionId) {
       Number(detail.iraupena_minutuak || 0) + ' min</div></div></div>' +
       (board ? '<canvas class="training-exercise-preview" width="800" height="500" data-training-preview="' + index + '" aria-label="' + esc(title) + ' ariketa-arbela"></canvas>' : "") +
       (exercise && exercise.deskribapena ? '<p class="training-exercise-description">' + esc(exercise.deskribapena) + '</p>' : "") +
+      (detail.aldaerak ? '<p class="training-exercise-notes"><strong>Oharrak:</strong> ' + esc(detail.aldaerak) + '</p>' : "") +
       (board ? '<div class="training-exercise-actions">' +
         (hasAnimation ? '<button class="btn secondary" type="button" data-play-training-animation="' + Number(detail.id_ariketa) + '" aria-label="Ariketa txartelean animazioa ikusi">Animazioa ikusi</button>' : "") +
         '<button class="btn secondary" type="button" data-training-board="' + Number(detail.id_ariketa) + '" data-training-session="' + Number(sessionId) + '">Arbela handitu</button></div>' : "") +
@@ -2124,8 +2131,6 @@ $("login-form").addEventListener("submit", async function (event) {
   var button = this.querySelector('button[type="submit"]');
   button.disabled = true;
   try {
-    saveLocal("7metro-supabase-url", apiBase);
-    saveLocal("7metro-supabase-key", apiKey);
     var result = await request({
       p_usuario: $("username").value.trim().toLowerCase(),
       p_pasahitza: $("password").value
@@ -2161,8 +2166,6 @@ $("account-create-form").addEventListener("submit", async function (event) {
   var button = this.querySelector('button[type="submit"]');
   button.disabled = true;
   try {
-    saveLocal("7metro-supabase-url", apiBase);
-    saveLocal("7metro-supabase-key", apiKey);
     await request({ action: "register", p_usuario: username, p_pasahitza: password }, true);
     var result = await request({ p_usuario: username, p_pasahitza: password }, true);
     if (!result.token || !result.user) throw new Error("Kontua sortu da, baina ezin izan da saioa hasi");
@@ -2393,7 +2396,7 @@ $("session-form").addEventListener("submit", async function (event) {
   var form = this, button = form.querySelector('button[type="submit"]');
   var exerciseList = sessionSelection.map(function (entry) {
     if (entry.is_separator) return { is_separator: true, taldea: entry.taldea };
-    return { id_ariketa: Number(entry.id_ariketa), iraupena_minutuak: Number(entry.iraupena_minutuak), taldea: entry.taldea || null };
+    return { id_ariketa: Number(entry.id_ariketa), iraupena_minutuak: Number(entry.iraupena_minutuak), taldea: entry.taldea || null, aldaerak: entry.aldaerak || null };
   });
   button.disabled = true;
   try {
@@ -2439,6 +2442,15 @@ $("session-selected").addEventListener("click", function (event) {
   if (removeGroup) { removeSessionGroup(removeGroup.dataset.sessionRemoveGroup); return; }
   var remove = event.target.closest("[data-session-remove]");
   if (remove) removeSessionExercise(remove.dataset.sessionRemove);
+});
+
+$("session-selected").addEventListener("input", function (event) {
+  var notes = event.target.closest("[data-session-notes]");
+  if (!notes) return;
+  var entry = sessionSelection.find(function (item) {
+    return !item.is_separator && Number(item.id_ariketa) === Number(notes.dataset.sessionNotes);
+  });
+  if (entry) entry.aldaerak = notes.value;
 });
 
 $("session-selected").addEventListener("pointerdown", function (event) {
@@ -2814,37 +2826,6 @@ document.addEventListener("click", async function (event) {
     $("attendance-session").value = target.dataset.attendanceSession;
     $("attendance-open").disabled = false;
     openAttendanceDialog(target.dataset.attendanceSession);
-  }
-});
-
-$("url-form").addEventListener("submit", async function (event) {
-  event.preventDefault();
-  var priorUrl = apiBase, priorKey = apiKey;
-  apiBase = $("settings-api-url").value.trim().replace(/\/+$/, "");
-  apiKey = $("settings-api-key").value.trim();
-  try {
-    endpoint();
-    var result = await request({ action: "teams_list" });
-    saveLocal("7metro-supabase-url", apiBase);
-    saveLocal("7metro-supabase-key", apiKey);
-    teams = (result.teams || []).map(function (membership) { return membership.taldeak; })
-      .filter(function (item) { return item && item.id_taldea; });
-    var teamError = null;
-    if (!teams.some(function (item) { return Number(item.id_taldea) === teamId; })) {
-      teamId = 0;
-      try { await ensureActiveTeam(); }
-      catch (error) { teamError = error; showTeamPicker(); }
-    } else {
-      team = teams.find(function (item) { return Number(item.id_taldea) === teamId; });
-      $("account").textContent = (user ? user.izena + " · " : "") + team.izena;
-      await refreshAll();
-    }
-    if (teamError) notify(teamError.message, "error");
-    else notify("Supabase konexioa eguneratu da", "success");
-  } catch (error) {
-    apiBase = priorUrl; apiKey = priorKey;
-    $("settings-api-url").value = apiBase; $("settings-api-key").value = apiKey;
-    notify(error.message, "error");
   }
 });
 

@@ -131,6 +131,8 @@ textarea{min-height:84px;resize:vertical}
 .exercise-picker .list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
 .exercise-picker .list .empty{margin:0}
 .session-slot{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:9px;padding:6px 8px}
+.session-slot .session-exercise-notes{order:1;flex:1 0 100%;width:100%;min-height:62px;resize:vertical;font:inherit;font-size:.86rem}
+.training-exercise-notes{margin:10px 0 0;padding:9px 11px;border-radius:9px;background:var(--bg);color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere;font-size:.88rem}.training-exercise-notes strong{color:var(--ink)}
 #session-library{height:fit-content;max-height:min(572px,70vh);overflow-y:auto;overscroll-behavior:contain;padding-right:2px}
 .category-filter{min-height:38px;margin-bottom:8px}
 .session-time{margin-bottom:10px}
@@ -684,9 +686,8 @@ textarea{min-height:84px;resize:vertical}
       </div>
       <form id="team-invite-form" class="card stack"><h2>Taldea partekatu</h2><p class="muted">Gonbidatu onartutako lagun bat talde honetara; gonbidapena onartzean taldeko datuak ikusiko ditu.</p><label>Lagunak<select id="team-invite-friend" required></select></label><button class="btn" type="submit">Taldeko gonbidapena bidali</button></form>
       <div class="card"><h2>Itxura</h2><p class="muted">Aukeratu aplikazioaren kolore-modua.</p><div class="theme-choices" role="group" aria-label="Kolore-modua"><button class="btn secondary theme-choice" id="theme-light" type="button" data-theme-choice="light" aria-pressed="false">☀️ Modu argia</button><button class="btn secondary theme-choice" id="theme-dark" type="button" data-theme-choice="dark" aria-pressed="true">🌙 Modu iluna</button></div></div>
-      <details class="card"><summary><strong>Konexioa eta kontua</strong></summary>
-        <form id="url-form" class="stack" style="margin-top:14px"><label>Supabase proiektuaren URL<input id="settings-api-url" type="url" required></label>
-          <label>Publishable key<input id="settings-api-key" type="password" required autocomplete="off"></label><button class="btn secondary" type="submit">Konexioa eguneratu</button></form>
+      <details class="card"><summary><strong>Kontua</strong></summary>
+        <p class="muted">Taldea eta saioa kudeatu.</p>
         <button class="btn secondary" id="change-team" type="button">Taldea aldatu</button><button class="btn secondary" id="logout" type="button">Saioa itxi</button>
       </details>
       <details class="card"><summary><strong>PWA instalatu</strong></summary><button class="btn" id="install" type="button" hidden>Instalatu aplikazioa</button>
