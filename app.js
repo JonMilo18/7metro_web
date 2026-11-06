@@ -1014,7 +1014,7 @@ function renderSessionPicker() {
     return '<li class="session-slot" data-session-drop-exercise="' + id + '"><button class="session-drag-handle" type="button" data-session-drag-handle aria-label="Arrastatu ordena aldatzeko: ' + esc(exercise.izena) + '" title="Arrastatu ordena aldatzeko">&#8942;&#8942;</button><span class="slot-name">' + esc(exercise.izena) +
       '</span><input type="number" min="0" max="999" value="' + Number(entry.iraupena_minutuak) +
       '" data-session-minutes="' + id + '" aria-label="Minutuak: ' + esc(exercise.izena) + '">' +
-      '<textarea class="session-exercise-notes" rows="2" maxlength="3000" data-session-notes="' + id + '" aria-label="Oharrak: ' + esc(exercise.izena) + '" placeholder="Oharrak ariketa honetarako">' + esc(entry.aldaerak || "") + '</textarea>' +
+      '<label class="session-exercise-notes-field">Oharrak<textarea class="session-exercise-notes" rows="2" maxlength="3000" data-session-notes="' + id + '" aria-label="Oharrak: ' + esc(exercise.izena) + '" placeholder="Idatzi ariketa honetarako oharrak">' + esc(entry.aldaerak || "") + '</textarea></label>' +
       '<button class="slot-remove" type="button" data-session-remove="' + id +
       '" aria-label="Kendu ariketa">✕</button></li>';
   }).join("") : '<li class="empty">Gehitu ariketak ezkerraldetik.</li>';
