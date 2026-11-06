@@ -385,6 +385,33 @@ function drawBoard(canvas, state, selection) {
     else if (tag.indexOf("maniku_") === 0) color = "#777";
     else if (tag.indexOf("disko_") === 0) color = "#2ecc71";
     label = tag.match(/^(?:u|g|h)(\d+)$/)?.[1] || "";
+    if (tag.indexOf("poste_") === 0) {
+      var selectedCone = selection && selection.kind === "token" && selection.tag === tag;
+      var coneScale = selectedCone ? 1.18 : 1;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(coneScale, coneScale);
+      ctx.beginPath();
+      ctx.moveTo(0, -14);
+      ctx.lineTo(8, 8);
+      ctx.lineTo(12, 12);
+      ctx.lineTo(-12, 12);
+      ctx.lineTo(-8, 8);
+      ctx.closePath();
+      ctx.fillStyle = "#ff8c00";
+      ctx.fill();
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-7, 5);
+      ctx.lineTo(7, 5);
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.restore();
+      return;
+    }
     var radius = tag.indexOf("baloia") === 0 ? 8 : 15;
     ctx.beginPath();
     ctx.arc(x, y, radius + (selection && selection.kind === "token" && selection.tag === tag ? 4 : 0), 0, Math.PI * 2);
