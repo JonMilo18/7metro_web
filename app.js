@@ -894,6 +894,38 @@ function sessionExerciseById(id) {
   return exercises.find(function (item) { return Number(item.id_ariketa) === Number(id); });
 }
 
+function normalizeCategoryName(value) {
+  return String(value == null ? "" : value).trim().replace(/\s+/g, " ")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase();
+}
+
+function exerciseCategoryNames(exercise) {
+  if (!exercise) return [];
+  var result = [], categories = records("kategoriak");
+  function add(value) {
+    var name = String(value == null ? "" : value).trim();
+    if (!name) return;
+    // Older records sometimes store the category ID in ariketak.kategoria.
+    if (/^\d+$/.test(name)) {
+      var byId = categories.find(function (item) { return Number(item.id_kategoria) === Number(name); });
+      if (byId) name = String(byId.izena || "").trim();
+    }
+    if (name && !result.some(function (existing) {
+      return normalizeCategoryName(existing) === normalizeCategoryName(name);
+    })) result.push(name);
+  }
+  add(exercise.kategoria);
+  if (exercise.id_kategoria != null) add(exercise.id_kategoria);
+  records("kategoriak_has_ariketak").forEach(function (relation) {
+    if (Number(relation.ariketak_id_ariketa) !== Number(exercise.id_ariketa)) return;
+    var category = categories.find(function (item) {
+      return Number(item.id_kategoria) === Number(relation.kategoriak_id_kategoria);
+    });
+    if (category) add(category.izena);
+  });
+  return result;
+}
+
 var sessionSegmentColors = ["#2a5cff", "#198754", "#e08a00", "#bf3030",
   "#7b4fd0", "#0f9bb3", "#c2410c", "#4d7c0f"];
 
@@ -975,13 +1007,18 @@ function renderSessionPicker() {
   });
   var categories = [];
   exercises.forEach(function (exercise) {
-    var name = (exercise.kategoria || "").trim();
-    if (name && categories.indexOf(name) === -1) categories.push(name);
+    exerciseCategoryNames(exercise).forEach(function (name) {
+      if (name && !categories.some(function (existing) {
+        return normalizeCategoryName(existing) === normalizeCategoryName(name);
+      })) categories.push(name);
+    });
   });
   categories.sort(function (a, b) { return a.localeCompare(b); });
-  if (sessionCategoryFilter && categories.indexOf(sessionCategoryFilter) === -1) {
-    sessionCategoryFilter = "";
-  }
+  sessionCategoryFilter = sessionCategoryFilter
+    ? (categories.find(function (name) {
+        return normalizeCategoryName(name) === normalizeCategoryName(sessionCategoryFilter);
+      }) || "")
+    : "";
   var filter = $("session-category");
   if (filter) {
     filter.innerHTML = '<option value="">Kategoria guztiak</option>';
@@ -991,15 +1028,18 @@ function renderSessionPicker() {
       option.textContent = name;
       filter.appendChild(option);
     });
-    filter.value = categories.indexOf(sessionCategoryFilter) === -1 ? "" : sessionCategoryFilter;
+    filter.value = sessionCategoryFilter;
   }
   var visible = sessionCategoryFilter ? available.filter(function (exercise) {
-    return (exercise.kategoria || "").trim() === sessionCategoryFilter;
+    return exerciseCategoryNames(exercise).some(function (name) {
+      return normalizeCategoryName(name) === normalizeCategoryName(sessionCategoryFilter);
+    });
   }) : available;
   $("session-library").innerHTML = visible.length ? visible.map(function (exercise) {
     var id = Number(exercise.id_ariketa);
+    var categoryNames = exerciseCategoryNames(exercise);
     return '<li class="session-slot"><span class="slot-name">' + esc(exercise.izena) +
-      ' <small class="muted">' + esc(exercise.kategoria || "") + "</small></span>" +
+      ' <small class="muted">' + esc(categoryNames.join(", ")) + "</small></span>" +
       '<button class="btn secondary" type="button" data-session-view="' + id + '">Arbela</button>' +
       '<button class="btn" type="button" data-session-add="' + id + '">Gehitu</button></li>';
   }).join("") : '<li class="empty">' + (sessionCategoryFilter
@@ -1109,13 +1149,15 @@ function renderExercises() {
   var filter = $("exercise-list-category");
   var categoryFilter = filter ? filter.value : "";
   var visibleExercises = categoryFilter ? exercises.filter(function (exercise) {
-    return String(exercise.kategoria || "").trim().toLocaleLowerCase() === categoryFilter.toLocaleLowerCase();
+    return exerciseCategoryNames(exercise).some(function (name) {
+      return normalizeCategoryName(name) === normalizeCategoryName(categoryFilter);
+    });
   }) : exercises;
   $("exercises-list").innerHTML = visibleExercises.length ? visibleExercises.map(function (exercise) {
     var board = parseBoardData(exercise.arbela_datuak);
     var hasAnimation = board && board.animazioa.length > 1;
     return '<li class="item"><div class="item-main"><strong class="exercise-name">' + esc(exercise.izena) +
-      '</strong><small>' + esc(exercise.kategoria || "") +
+      '</strong><small>' + esc(exerciseCategoryNames(exercise).join(", ")) +
       (exercise.deskribapena ? " · " + esc(exercise.deskribapena) : "") +
       '</small></div>' + (board ? '<canvas class="exercise-board-preview" width="336" height="210" data-board-preview="' +
       Number(exercise.id_ariketa) + '" aria-label="Arbelaren aurrebista: ' + esc(exercise.izena) + '"></canvas>' : '<span class="exercise-board-placeholder" aria-hidden="true"></span>') +
@@ -1151,8 +1193,11 @@ function renderExerciseCategories() {
     })) names.push(categoryName);
   });
   exercises.forEach(function (exercise) {
-    var name = String(exercise.kategoria || "").trim();
-    if (name && !names.some(function (existing) { return existing.toLocaleLowerCase() === name.toLocaleLowerCase(); })) names.push(name);
+    exerciseCategoryNames(exercise).forEach(function (name) {
+      if (name && !names.some(function (existing) {
+        return normalizeCategoryName(existing) === normalizeCategoryName(name);
+      })) names.push(name);
+    });
   });
   names.sort(function (a, b) { return a.localeCompare(b); });
   var select = $("exercise-category");
@@ -1169,9 +1214,9 @@ function renderExerciseCategories() {
     listFilter.innerHTML = '<option value="">Kategoria guztiak</option>' + names.map(function (name) {
       return '<option value="' + esc(name) + '">' + esc(name) + '</option>';
     }).join("");
-    listFilter.value = names.some(function (name) {
-      return name.toLocaleLowerCase() === selectedFilter.toLocaleLowerCase();
-    }) ? selectedFilter : "";
+    listFilter.value = names.find(function (name) {
+      return normalizeCategoryName(name) === normalizeCategoryName(selectedFilter);
+    }) || "";
   }
   var list = $("exercise-category-list");
   if (list) list.innerHTML = categories.length ? categories.map(function (category) {
