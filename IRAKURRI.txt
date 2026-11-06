@@ -1,0 +1,66 @@
+7metro PWA
+=========
+
+PWA hau online 7metro kontuari eta Supabase proiektuari konektatzen zaio.
+Ez du 7metro.db lokalera konektatzen: Supabaseko metro-api Edge Function
+erabiltzen du eta online kontuko talde bat aukeratzen du.
+
+SUPABASE KONFIGURAZIOA
+----------------------
+Lehenetsitako proiektuaren URL-a eta publishable key-a pwa/app.js fitxategian
+daude kode barruan; key hori publikoa da eta Supabasek frontendetarako ematen duen
+motakoa da. Saioa hasteko ez da ezer sartu behar erabiltzaileak. Bestela, beste
+Supabase proiektu bat erabiliz gero, aldatu bi balio horiek edo sartu
+konexio-pantailan. Ez sartu service-role edo secret key-rik PWA honetan.
+
+APIAREN DEPLOY-A
+----------------
+Supabase Edge Function-a aldatu ondoren, argitaratu proiektuko erroko karpetatik:
+  supabase functions deploy metro-api
+
+PWAk erabiltzailearen saio-tokena x-7metro-session goiburuan bidaltzen du.
+Saioa 12 ordutan iraungitzen da. PWAk ez du pasahitza gordetzen; “Saioa itxi”
+botoiak Supabasera bidaltzen du tokena baliogabetzeko.
+
+FUNTZIOAK
+---------
+- Online taldeak kargatu, hautatu eta talde berria sortu.
+- Taldeko jokalariak eta ariketak ikusi, sortu eta ezabatu.
+- Entrenamenduak sortu, ariketak eta mikrozikloak lotu, eta saio-zerrenda ikusi.
+- Saio bat sortzean ariketak bi zerrendatan aukeratzen dira: ezkerreko liburutegitik
+  "Gehitu" botoiarekin eskuinera pasatzen dira, bakoitzak minutuen gelaxka eta "✕"
+  kentzeko ikurra dituela. "Arbela" botoiak ariketaren arbela beste atal batean erakusten du.
+  Ezkerreko liburutegiaren goiko aldean kategoriaren arabera filtratzeko zerrenda bat dago.
+  Goian entrenatzeko denbora (minutuak) jartzeko gelaxka bat dago, eta barra banatu batean
+  ariketa bakoitzaren zatiak agertzen dira denboraren arabera betetzen direlarik
+  (animazioarekin), kolore berberean, denbora gainditzean barra gorri jartzen da eta
+  zenbat minutu gainditu diren abisatzen duen mezua agertzen da (gehitzen utzi egiten du).
+- Makrozikloak eta mikrozikloak sortu eta ikusi.
+- Denboraldiaren plangintza hilabete-egutegi batean ("Plangintza" atala):
+  hilabetea < / > / Gaur nabigatuz, makrozikloak kolore-banda gisa eta mikrozikloak
+  motaren arabera koloretako txip gisa ikusten dira, eta egun berean entrenamenduak,
+  partidak eta txapelketak ere agertzen dira. Goiko "+ Makro" eta "+ Mikro" botoiek
+  pop-up bat irekitzen dute sortzeko; banda edo txip bat sakatuz editatu/ezabatu
+  daiteke. Koloreak ordenagailuko app berak erabiltzen dituenak dira.
+- Partidak sortu, emaitza/golak/jaurtiketak/zigorrak jaso eta partida ezabatu.
+- Jokalarien guztizko estatistikak eta partida bakoitzeko estatistikak ikusi.
+- Asistentzia eta berandutzeak erregistratu.
+- Ariketak eskubaloi-zelai baten gainean marraztu (jokalariak, baloia, lerroak,
+  geziak, formak eta testua) eta arbela ariketarekin batera gorde.
+- Arbelak programako Zelaia.png eta Zelai-erdia.png kantxa-irudi berak erabiltzen ditu.
+- Arbelera nabigazioko "Arbela" botoitik edo "Gehiago" ataleko estekatik sar daiteke.
+- Gordetako ariketa batek bi animazio-frame edo gehiago baditu, haren "Animazioa ikusi"
+  botoiak sekuentzia erreproduzitzen du eta "Gelditu" botoiak eten egiten du.
+- Animazioetan zein arbel estatikoan, ordenagailuko appan gordetako marrazkiak (konoak/poligonoak
+  barne) eta posizioak zuzen erakusten dira.
+
+PWAren interfazea HTTPS bidez zerbitzatu behar da (localhost salbu); HTTPS
+ostatzeak Supabase HTTPS APIa erabil dezake. Datu guztiak online daude, beraz
+fitxategiak/cachea erabilgarri egon arren, datu-baseko eragiketek Internet
+konexioa behar dute.
+
+ARGITARATZEA
+------------
+PWA fitxategiak eguneratzean, aldatu pwa/sw.js fitxategiko CACHE bertsioa.
+Uneko cachea: 7metro-v29.
+Backend-a (metro-api) ere aldatu bada, argitaratu: supabase functions deploy metro-api

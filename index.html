@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="eu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>7metro</title>
+<meta name="theme-color" content="#060E1A">
+<script>try{var savedTheme=localStorage.getItem("7metro-theme");if(savedTheme==="light"||savedTheme==="dark")document.documentElement.setAttribute("data-theme",savedTheme)}catch(e){}</script>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="7metro">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+:root{color-scheme:dark;--bg:#060E1A;--bg2:#0C1728;--ink:#FFFFFF;--muted:#AAB6CA;--line:rgba(255,255,255,.13);--blue:#0044EE;--bt:#0044EE;--good:#36D399;--bad:#FF667A;--f:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+:root[data-theme="light"]{color-scheme:light;--bg:#FFFFFF;--bg2:#F2F5FB;--ink:#060E1A;--muted:#536178;--line:rgba(6,14,26,.14);--good:#147A50;--bad:#B7283E}
+:root[data-theme="light"] body{background:radial-gradient(ellipse at 75% -10%,rgba(0,68,238,.09),transparent 38%),var(--bg)}
+:root[data-theme="light"] header,:root[data-theme="light"] nav{background:rgba(255,255,255,.94)}
+:root[data-theme="light"] .card{background:linear-gradient(145deg,#FFFFFF,#F5F7FC);box-shadow:0 10px 30px rgba(6,14,26,.07)}
+:root[data-theme="light"] input,:root[data-theme="light"] select,:root[data-theme="light"] textarea{background:#FFFFFF}
+:root[data-theme="light"] .btn.secondary{background:rgba(6,14,26,.025)}
+:root[data-theme="light"] .btn.secondary:hover{background:rgba(0,68,238,.08)}
+:root[data-theme="light"] nav button[aria-selected="true"]{background:rgba(0,68,238,.09);color:var(--blue)}
+:root[data-theme="light"] .attendance-dialog-head{background:rgba(255,255,255,.96)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{background:radial-gradient(ellipse at 75% -10%,rgba(0,68,238,.16),transparent 38%),var(--bg);color:var(--ink);font:400 1rem/1.5 var(--f);-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit}
+#app{min-height:100vh;display:flex;flex-direction:column}
+header{padding:calc(14px + env(safe-area-inset-top,0px)) 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);background:rgba(6,14,26,.94);backdrop-filter:blur(16px)}
+header img{height:40px;width:auto;border-radius:8px;background:#fff;padding:2px 4px}
+header b{font-size:1.15rem;letter-spacing:-.01em}
+#account{margin-left:auto;color:var(--muted);font-size:.86rem}
+main{flex:1;padding:22px calc(20px + env(safe-area-inset-right,0px)) 100px calc(20px + env(safe-area-inset-left,0px))}
+main>section{max-width:620px;margin:0 auto}
+h1{font-size:1.65rem;letter-spacing:-.02em;line-height:1.15;margin:0 0 6px}
+h2{font-size:1.1rem;margin:0 0 10px}
+.sub{color:var(--muted);margin:0 0 20px}
+section{display:none}section.on{display:block}
+nav{position:fixed;z-index:3;left:0;right:0;bottom:0;background:rgba(6,14,26,.96);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);backdrop-filter:blur(16px)}
+nav div{max-width:720px;margin:0 auto;display:grid;grid-template-columns:repeat(6,minmax(0,1fr))}
+nav button{background:none;border:0;padding:10px 4px;font:650 .82rem var(--f);color:var(--muted);min-height:56px;cursor:pointer}
+nav button[aria-selected="true"]{color:#fff;background:rgba(0,68,238,.18);box-shadow:inset 0 3px 0 var(--blue)}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.card{background:linear-gradient(145deg,rgba(15,29,49,.96),rgba(10,21,37,.96));border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0;box-shadow:0 12px 34px rgba(0,0,0,.14)}
+.card[id="stats-card"]{scroll-margin-top:18px}
+.stats-map{max-width:440px;border-radius:10px;overflow:hidden;background:#28663a;border:1px solid var(--line)}.stats-map svg{display:block;width:100%;height:auto}.stats-map.goal-map{background:#26324a}
+.loading-indicator{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;gap:18px;padding:20px;background:rgba(12,18,32,.16);backdrop-filter:blur(2px)}
+.loading-indicator[hidden]{display:none}
+.loading-indicator-content{display:flex;align-items:center;gap:24px;padding:24px 30px;border:1px solid var(--line);border-radius:18px;background:var(--bg);box-shadow:0 12px 36px #0002;color:var(--ink);font-weight:650}
+.passes{display:flex;align-items:center;gap:13px;height:38px}
+.passes i{width:17px;height:17px;flex:none;border-radius:50%;background:var(--blue);box-shadow:0 0 12px #1689ff88;animation:pass .9s ease-in-out infinite}
+.passes i:nth-child(2){animation-delay:.2s}.passes i:nth-child(3){animation-delay:.4s}
+@keyframes pass{0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-17px);opacity:1}}
+.player-visual-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px;margin:12px 0}
+.player-visual-card{margin:0;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--bg2);min-width:0}
+.pv-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.pv-name{min-width:0}.pv-name strong{display:block;font-size:1.02rem;overflow-wrap:anywhere}.pv-name small{color:var(--muted)}
+.efficiency-ring{width:76px;height:76px;flex:none;display:grid;place-items:center;border-radius:50%;background:conic-gradient(var(--good) var(--efficiency),var(--line) 0);position:relative}
+.efficiency-ring:before{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--bg2)}.efficiency-ring span{z-index:1;font-size:.95rem;font-weight:750}.efficiency-label{text-align:center;font-size:.65rem;color:var(--muted);margin-top:-4px}
+.pv-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0}.pv-metric{padding:9px 6px;text-align:center;border-radius:10px;background:var(--bg)}.pv-metric strong{display:block;font-size:1.25rem;line-height:1.2}.pv-metric small{font-size:.72rem;color:var(--muted)}
+.pv-section-title{font-size:.77rem;font-weight:700;color:var(--muted);margin:12px 0 5px}.pv-breakdown{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px;align-items:center;margin:8px 0}.pv-breakdown strong{font-size:.84rem}.pv-breakdown span{font-size:.78rem;color:var(--muted)}.pv-bar{grid-column:1/-1;height:7px;border-radius:99px;background:var(--line);overflow:hidden}.pv-bar i{display:block;height:100%;border-radius:inherit;background:var(--blue)}
+.pv-sanctions{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.pv-sanctions span{padding:4px 8px;border-radius:99px;background:var(--bg);font-size:.77rem;font-weight:650}
+.stats-view-toggle{display:flex;flex:none;gap:4px;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--bg2)}.stats-view-toggle button{border:0;border-radius:999px;background:transparent;padding:6px 10px;color:var(--muted);font-size:.8rem;font-weight:650;cursor:pointer}.stats-view-toggle button[aria-pressed="true"]{background:var(--blue);color:#fff}#stats-player-panel>.toolbar{flex-wrap:wrap}
+.card h2{margin-bottom:12px}
+.stack{display:grid;gap:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+label{display:grid;gap:5px;font-size:.9rem;font-weight:600}
+input,select,textarea{width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;background:#081321;color:var(--ink);padding:9px 11px}
+textarea{min-height:84px;resize:vertical}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;border-radius:12px;border:1px solid #2865ff;background:var(--blue);color:#fff;font-weight:700;text-decoration:none;margin:8px 0;cursor:pointer;padding:10px 16px;box-shadow:0 6px 18px rgba(0,68,238,.22);transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}
+.btn:hover{filter:brightness(1.14);transform:translateY(-1px);box-shadow:0 9px 24px rgba(0,68,238,.32)}
+.btn.secondary{background:rgba(255,255,255,.035);border:1px solid var(--line);color:var(--ink);box-shadow:none}
+.btn.secondary:hover{background:rgba(0,68,238,.16);border-color:rgba(0,68,238,.75)}
+.btn.danger{background:none;border:1px solid var(--bad);color:var(--bad);min-height:36px;width:auto;margin:0;padding:5px 12px;font-size:.85rem}
+.btn:disabled{opacity:.55;cursor:wait}
+.notice{padding:12px 14px;border-radius:10px;background:var(--bg2);color:var(--muted);margin:12px 0}
+.notice.error{color:var(--bad);border:1px solid currentColor}
+.notice.success{color:var(--good);border:1px solid currentColor}
+.list{list-style:none;padding:0;margin:10px 0}
+.item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.item .btn{width:auto;min-height:38px;margin:0;padding:6px 10px;flex:none;font-size:.84rem}
+.item .btn.danger{min-height:36px}
+.item-main{min-width:0}.item-main small,.muted{color:var(--muted)}
+.item-main strong{display:block;overflow-wrap:anywhere}
+.empty{color:var(--muted);padding:14px 0}
+.checklist{display:grid;gap:8px;max-height:260px;overflow:auto;padding:4px}
+.checkrow{display:flex;align-items:center;gap:10px;font-weight:500}
+.checkrow input{width:20px;min-height:20px}
+.board-tools{display:flex;flex-wrap:wrap;gap:6px}
+.board-tools button{width:auto;min-height:38px;margin:0;padding:7px 12px}
+.board-tools button[aria-pressed="true"]{outline:2px solid var(--blue);outline-offset:1px}
+.board-wrap{width:100%;overflow:hidden;border-radius:10px;background:#28663a}
+#exercise-board{display:block;width:100%;height:auto;aspect-ratio:8/5;touch-action:none;cursor:crosshair}
+#session-board{display:block;width:100%;height:auto;aspect-ratio:8/5}
+.exercise-board-preview{width:112px;height:70px;flex:none;border-radius:7px;background:#28663a}
+#exercises-list>.item:not(.animation-playing){display:grid;grid-template-columns:minmax(0,230px) 112px minmax(0,1fr);align-items:center;gap:12px}
+#exercises-list .item-main{width:100%;min-width:0;max-width:230px}
+#exercises-list .exercise-name{display:-webkit-box;max-width:230px;overflow:hidden;overflow-wrap:anywhere;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+#exercises-list .exercise-board-preview,#exercises-list .exercise-board-placeholder{grid-column:2;justify-self:start}
+#exercises-list .exercise-board-placeholder{display:block;width:112px;height:70px;border-radius:7px;background:transparent}
+#exercises-list .exercise-actions{grid-column:3;justify-self:end}
+#exercises-list>.item.animation-playing{grid-template-columns:minmax(0,1fr)}
+#exercises-list>.item.animation-playing .exercise-board-preview,#exercises-list>.item.animation-playing .exercise-board-placeholder{grid-column:1}
+#exercises-list>.item.animation-playing .exercise-actions{grid-column:1;justify-self:start}
+.item.animation-playing{display:grid;grid-template-columns:minmax(0,1fr);align-items:start}
+.item.animation-playing .exercise-board-preview{width:100%;height:auto;aspect-ratio:8/5}
+.exercise-actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.exercise-actions .btn{width:auto}
+.exercise-picker{display:grid;grid-template-columns:1fr;gap:10px;align-items:start}
+@media(min-width:680px){.exercise-picker{grid-template-columns:1fr 1fr}}
+.session-actions{display:flex;flex:none;gap:6px}.session-actions .btn{width:auto;min-height:38px;margin:0;padding:6px 11px}
+.match-actions{display:flex;flex:none;flex-direction:row;align-items:center;gap:6px;white-space:nowrap}.match-actions .btn{width:auto;min-height:38px;margin:0;padding:6px 9px}
+.training-session-overview{border-color:rgba(0,68,238,.35);background:linear-gradient(135deg,rgba(0,68,238,.17),var(--bg2))}
+.training-overview-label{color:var(--muted);font-size:.72rem;font-weight:750;letter-spacing:.1em}.training-session-overview p{font-size:1.1rem;font-weight:650;margin:5px 0 8px}
+.training-total{padding:7px 12px;border-radius:999px;color:#fff;background:var(--blue);font-size:.85rem;white-space:nowrap}
+.training-exercise-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px;margin:12px 0}
+.training-exercise-card{min-width:0;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--bg2)}
+.training-exercise-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}.training-step{display:grid;place-items:center;flex:none;width:30px;height:30px;border-radius:10px;background:var(--blue);color:#fff;font-weight:750}
+.training-exercise-head h3{font-size:1rem;line-height:1.3;margin:0;overflow-wrap:anywhere}.training-exercise-meta{color:var(--muted);font-size:.8rem;margin-top:3px}
+.training-exercise-preview{display:block;width:100%;height:auto;aspect-ratio:8/5;border:1px solid var(--line);border-radius:10px;background:#28663a;margin:10px 0}
+.training-exercise-description{color:var(--muted);font-size:.88rem;white-space:pre-line}.training-exercise-actions{display:flex;flex-wrap:wrap;gap:8px}.training-exercise-actions .btn{width:auto;flex:1 1 auto;margin:0}
+.exercise-picker-col{align-self:start;min-width:0;border:1px solid var(--line);border-radius:10px;padding:10px;min-height:70px}
+.exercise-picker-col h3{margin:0 0 8px;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.session-group-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;margin:8px 0 10px}.session-group-tools select{min-height:38px}.session-group-tools .btn{width:auto;min-height:38px;margin:0;padding:6px 10px;font-size:.82rem;white-space:nowrap}.session-group-tools .session-group-clear{grid-column:1/-1;justify-self:start}.session-current-group{grid-column:1/-1;color:var(--muted);font-size:.78rem}.session-group-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;padding:8px 10px;border:1px solid rgba(0,68,238,.38);border-radius:9px;background:rgba(0,68,238,.12);color:var(--ink)}.session-group-row strong{min-width:0;overflow-wrap:anywhere;font-size:.88rem}.session-group-row .slot-remove{width:30px;height:30px}.training-session-group{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin:12px 0 0;padding:10px 13px;border-left:4px solid var(--blue);border-radius:8px;background:rgba(0,68,238,.1);font-weight:750}.training-session-group:first-child{margin-top:0}
+.session-drag-handle{flex:none;width:24px;height:36px;padding:0;border:0;border-radius:6px;background:transparent;color:var(--muted);font-size:1.05rem;letter-spacing:-.42em;cursor:grab;touch-action:none}.session-drag-handle:active{cursor:grabbing;color:var(--blue)}.session-slot.is-dragging{opacity:.35}.session-slot.session-drop-before{box-shadow:inset 0 3px 0 var(--blue)}.session-slot.session-drop-after,.session-group-row.session-drop-after{box-shadow:inset 0 -3px 0 var(--blue)}
+.exercise-picker .list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.exercise-picker .list .empty{margin:0}
+.session-slot{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:9px;padding:6px 8px}
+#session-library{height:fit-content;max-height:min(572px,70vh);overflow-y:auto;overscroll-behavior:contain;padding-right:2px}
+.category-filter{min-height:38px;margin-bottom:8px}
+.session-time{margin-bottom:10px}
+.session-time-head{display:flex;align-items:flex-end;gap:12px}
+.session-time-head label{flex:none;width:180px}
+.session-time-info{margin-left:auto;color:var(--muted);font-size:.9rem;font-variant-numeric:tabular-nums;padding-bottom:11px}
+.session-time-bar{display:flex;height:16px;border-radius:999px;background:var(--bg2);border:1px solid var(--line);overflow:hidden;margin-top:8px}
+.session-time-bar.over{border-color:var(--bad)}
+.session-time-warn{color:var(--bad);font-size:.85rem;font-weight:600;margin-top:4px;display:none}
+.session-time-warn.show{display:block}
+.session-time-seg{height:100%;min-width:2px;transition:width .2s ease;box-shadow:inset -1px 0 0 rgba(0,0,0,.18);background:var(--blue)}
+.session-slot .slot-name{display:-webkit-box;flex:1;min-width:0;max-width:230px;overflow:hidden;overflow-wrap:anywhere;white-space:normal;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:.9rem}
+.exercise-picker #session-library .slot-name{max-width:none}
+.session-slot input{width:70px;flex:none;min-height:38px;padding:6px}
+.exercise-picker .btn{width:auto;min-height:36px;margin:0;padding:6px 10px;font-size:.85rem}
+.slot-remove{flex:none;width:34px;height:34px;border-radius:8px;border:1px solid var(--bad);background:none;color:var(--bad);font-weight:700;cursor:pointer;line-height:1}
+.player-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:center}
+.player-attendance{display:flex;align-items:center;gap:8px;max-width:460px;margin-top:8px}.player-attendance-label{color:var(--muted);font-size:.72rem;font-weight:700}.player-attendance strong{min-width:38px;color:var(--blue);font-size:.86rem;font-variant-numeric:tabular-nums}.player-attendance-bar{flex:1;min-width:54px;height:7px;border-radius:99px;background:var(--line);overflow:hidden}.player-attendance-bar i{display:block;height:100%;border-radius:inherit;background:var(--blue)}.player-attendance small{color:var(--muted);font-size:.72rem;white-space:nowrap}.player-attendance-empty{gap:8px}
+.player-stats label,.attendance-row label{font-size:.75rem;color:var(--muted)}
+.player-stats input{min-height:38px;padding:6px}
+.match-player{border-top:1px solid var(--line);padding:10px 0}
+.match-player-head{font-weight:600;margin-bottom:6px}
+.attendance-row{display:grid;grid-template-columns:minmax(100px,1fr) 85px 110px;gap:8px;align-items:end;padding:8px 0;border-top:1px solid var(--line)}
+.attendance-row .checkrow{padding-bottom:10px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.toolbar h2{margin:0}
+.hidden{display:none!important}
+.steps{padding-left:20px;margin:8px 0 20px}.steps li{margin-bottom:8px}
+#toast{position:fixed;z-index:5;left:16px;right:16px;bottom:calc(70px + env(safe-area-inset-bottom,0px));max-width:580px;margin:auto;box-shadow:0 6px 24px #0002}
+@media(min-width:768px){
+ header{position:fixed;left:0;top:0;width:240px;border:0;padding:calc(22px + env(safe-area-inset-top,0px)) 24px 12px;z-index:4}
+ header img{height:48px}
+ #account{position:fixed;left:24px;top:80px;margin:0}
+ nav{top:120px;bottom:0;left:0;right:auto;width:240px;border:0;border-right:1px solid var(--line);padding:8px 12px calc(16px + env(safe-area-inset-bottom,0px));background:rgba(6,14,26,.92)}
+ nav div{max-width:none;grid-template-columns:1fr;gap:4px;align-content:start}
+ nav button{text-align:left;padding:12px 16px;border-radius:10px;font-size:1rem;min-height:48px}
+ nav button[aria-selected="true"]{box-shadow:none;background:rgba(0,68,238,.2);color:#fff}
+ main{margin-left:240px;padding:42px 40px 56px}
+ main>section{max-width:1000px;margin:0}
+ h1{font-size:2rem}
+ #toast{left:260px;right:20px;bottom:20px}
+}
+@media(max-width:420px){nav button{font-size:.72rem;padding-left:1px;padding-right:1px}.grid2,.grid3{grid-template-columns:1fr}}
+@media(max-width:760px){.home-dashboard-grid{grid-template-columns:1fr}.home-card{min-height:200px}.home-shortcuts{grid-template-columns:1fr}.home-hero{align-items:flex-start;flex-direction:column}.home-hero>.btn{width:auto;margin:0}}
+@media(max-width:520px){#v-friends .item{flex-wrap:wrap;gap:8px}#v-friends .item-main{flex:1 1 100%}}
+@media(max-width:520px){.attendance-row{grid-template-columns:1fr 1fr;gap:6px}.attendance-row .checkrow{grid-column:1/-1;padding-bottom:2px}.attendance-row label{min-width:0}.match-player .player-stats{gap:4px}.match-player .player-stats input{padding:5px 3px}}
+@media print{body{background:#fff;color:#111}header,nav,.btn,#stats-card input,#stats-card select,#stats-card label{display:none!important}main{padding:0}main>section{max-width:none}#stats-card{display:block!important;border:0;padding:0}.card{break-inside:avoid;background:#fff;border:1px solid #ddd}#stats-summary{grid-template-columns:repeat(3,1fr)}.hidden{display:none!important}}
+@media(prefers-reduced-motion:reduce){.passes i{animation:none;opacity:.8}}
+#plan-card{border-color:rgba(0,68,238,.28);background:linear-gradient(145deg,rgba(0,68,238,.09),transparent 42%),var(--bg2)}
+:root[data-theme="light"] #plan-card{background:linear-gradient(145deg,rgba(0,68,238,.055),transparent 42%),#fff;box-shadow:0 12px 34px rgba(6,14,26,.075)}
+.plan-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;padding:2px 0 14px;border-bottom:1px solid var(--line)}
+.plan-nav{display:flex;align-items:center;gap:6px}
+.plan-nav strong{font-size:1.12rem;min-width:132px;text-align:center;letter-spacing:-.02em}
+.plan-nav .btn,.plan-actions .btn{width:auto;min-height:40px;margin:0;padding:6px 12px}
+.plan-actions{display:flex;gap:8px}
+.plan-legend{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 5px}
+.plan-legend span{display:inline-flex;align-items:center;gap:7px;padding:6px 9px;border:1px solid var(--line);border-radius:9px;background:var(--bg);font-size:.77rem;color:var(--muted)}
+.plan-legend i{width:12px;height:12px;border-radius:4px;display:inline-block;flex:none;box-shadow:0 0 0 2px rgba(255,255,255,.08)}
+.plan-legend .plan-legend-type{font-size:.73rem}
+.plan-weekdays,.plan-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.plan-weekdays{gap:6px;margin-top:14px}
+.plan-weekdays span{text-align:center;padding:7px 3px;border:1px solid rgba(0,68,238,.16);border-radius:8px;background:rgba(0,68,238,.07);font-size:.72rem;font-weight:750;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.plan-grid{gap:6px;margin-top:6px;grid-auto-rows:minmax(96px,auto)}
+.plan-day{min-width:0;min-height:96px;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:6px;display:flex;flex-direction:column;gap:4px;background:linear-gradient(155deg,rgba(255,255,255,.025),transparent 70%),var(--bg);overflow:hidden;transition:border-color .16s ease,transform .16s ease,box-shadow .16s ease}
+.plan-day:hover{border-color:rgba(0,68,238,.5);box-shadow:0 5px 16px rgba(0,0,0,.12);transform:translateY(-1px)}
+.plan-day.out{background:var(--bg2);opacity:.48}
+.plan-day.today{border-color:var(--blue);background:linear-gradient(150deg,rgba(0,68,238,.18),transparent 78%),var(--bg);box-shadow:inset 0 0 0 1px rgba(0,68,238,.38)}
+.plan-day-num{font-size:.78rem;font-weight:750;color:var(--muted);padding:0 2px}
+.plan-day.today .plan-day-num{color:var(--blue)}
+.plan-macro{display:block;width:100%;min-width:0;max-width:100%;height:18px;border:1px solid rgba(255,255,255,.16);border-left:3px solid rgba(255,255,255,.72);border-radius:6px;color:#fff;font-family:inherit;font-size:.62rem;font-weight:750;line-height:16px;padding:0 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;cursor:pointer;box-sizing:border-box;box-shadow:0 2px 6px rgba(0,0,0,.12)}
+.plan-macro.empty{opacity:.85}
+.plan-micro{display:-webkit-box;min-width:0;max-width:100%;height:auto;min-height:19px;max-height:2.35em;border-radius:6px;border:1px solid rgba(255,255,255,.16);border-left:3px solid rgba(255,255,255,.72);color:#fff;font-family:inherit;font-size:.64rem;font-weight:700;line-height:1.15;padding:3px 5px;box-sizing:border-box;overflow:hidden;white-space:normal;overflow-wrap:anywhere;-webkit-box-orient:vertical;-webkit-line-clamp:2;cursor:pointer;text-align:left;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+.plan-event{display:-webkit-box;width:100%;min-width:0;max-width:100%;height:auto;min-height:17px;max-height:2.35em;border:0;border-radius:5px;color:#fff;font-family:inherit;font-size:.64rem;line-height:1.15;padding:3px 5px;box-sizing:border-box;overflow:hidden;white-space:normal;overflow-wrap:anywhere;-webkit-box-orient:vertical;-webkit-line-clamp:2;text-align:left;cursor:pointer;transition:filter .15s ease,transform .15s ease}
+.plan-event:hover{filter:brightness(1.14);transform:translateY(-1px)}
+.plan-event.match{background:#c0392b}.plan-event.session{background:#16a085}.plan-event.cup{background:#d35400}
+.plan-more{font-size:.62rem;color:var(--muted);padding-left:4px}
+.settings-card{margin-top:14px}
+.theme-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.theme-choice[aria-pressed="true"]{border-color:var(--blue);background:rgba(0,68,238,.18);color:var(--ink);box-shadow:inset 0 0 0 1px var(--blue)}
+:root[data-theme="light"] .theme-choice[aria-pressed="true"]{background:rgba(0,68,238,.08);color:var(--blue)}
+.modal{position:fixed;inset:0;z-index:6;background:#0006;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .modal-box{width:100%;max-width:440px;max-height:90vh;overflow:auto;background:var(--bg);margin:0}
+.attendance-dialog{width:min(900px,calc(100vw - 28px));max-width:900px;max-height:min(88vh,900px);overflow:auto;margin:auto;padding:0;border:1px solid var(--line);border-radius:20px;background:var(--bg);color:var(--ink);box-shadow:0 28px 90px rgba(0,0,0,.55)}
+.attendance-dialog::backdrop{background:rgba(2,7,16,.58);backdrop-filter:blur(7px)}
+.attendance-dialog-inner{padding:clamp(18px,4vw,30px)}
+.attendance-dialog-head{position:sticky;top:calc(-1 * clamp(18px,4vw,30px));z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:calc(-1 * clamp(18px,4vw,30px)) calc(-1 * clamp(18px,4vw,30px)) 18px;padding:clamp(18px,4vw,30px);border-bottom:1px solid var(--line);background:rgba(6,14,26,.96);backdrop-filter:blur(12px)}
+.attendance-dialog-head h2{margin:0}.attendance-dialog .attendance-row{grid-template-columns:minmax(0,1fr) 110px minmax(140px,180px);gap:12px;padding:12px 0}.attendance-dialog .checkrow{min-width:0}.attendance-dialog .checkrow span{overflow-wrap:anywhere}
+@media(max-width:520px){.attendance-dialog .attendance-row{grid-template-columns:1fr 1fr;gap:6px}.attendance-dialog .attendance-row .checkrow{grid-column:1/-1}}
+.session-preview-dialog{max-width:680px}.session-preview-canvas{display:block;width:100%;height:auto;aspect-ratio:8/5;border:1px solid var(--line);border-radius:12px;background:#28663a}.session-preview-caption{margin:12px 0;color:var(--muted)}.session-preview-actions{display:flex;justify-content:flex-end;gap:8px}.session-preview-actions .btn{width:auto;min-width:140px;margin-bottom:0}
+.modal-actions{display:flex;gap:8px;margin-top:6px}
+.modal-actions .btn{margin:0}
+.scoreboard{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;text-align:center}
+.score-side{min-width:0}.score-side input{text-align:center;font-weight:650}
+.score-number{font-size:clamp(3rem,14vw,5rem);font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.score-controls{display:flex;justify-content:center;gap:8px}.score-controls button{width:48px;height:44px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-size:1.4rem;font-weight:700;cursor:pointer}
+.score-clock{text-align:center;font-size:clamp(2.5rem,11vw,4rem);font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.score-actions{display:flex;gap:8px}.score-actions .btn{flex:1}
+.more-links{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:14px 0}
+.group-links{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.group-links .btn{width:auto;min-height:42px;margin:0}
+.more-link{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:88px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--bg2);color:var(--ink);text-align:left;cursor:pointer}
+.more-link strong{font-size:1rem}.more-link span{font-size:.84rem;color:var(--muted)}
+#v-home{max-width:1040px;margin:0 auto}
+.home-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 0 18px;padding:clamp(18px,4vw,30px);border:1px solid rgba(0,68,238,.28);border-radius:20px;background:radial-gradient(ellipse at 90% 0%,rgba(0,68,238,.28),transparent 48%),linear-gradient(140deg,rgba(0,68,238,.11),var(--bg2) 65%);box-shadow:0 16px 44px rgba(0,0,0,.12)}
+:root[data-theme="light"] .home-hero{background:radial-gradient(ellipse at 90% 0%,rgba(0,68,238,.13),transparent 48%),linear-gradient(140deg,rgba(0,68,238,.06),#fff 65%);box-shadow:0 16px 38px rgba(6,14,26,.07)}
+.home-eyebrow{display:block;margin-bottom:7px;color:var(--blue);font-size:.72rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase}.home-hero h1{font-size:clamp(1.7rem,4vw,2.35rem)}.home-hero p{margin:6px 0 0;color:var(--muted)}.home-dashboard-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:14px 0}.home-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;min-width:0;min-height:244px;margin:0;padding:20px;overflow:hidden;border-color:rgba(0,68,238,.2);background:linear-gradient(145deg,rgba(0,68,238,.09),transparent 60%),var(--bg2)}:root[data-theme="light"] .home-card{background:linear-gradient(145deg,rgba(0,68,238,.045),transparent 65%),#fff}.home-card-kicker{color:var(--muted);font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}.home-card>div{display:flex;flex:1;flex-direction:column;align-items:flex-start;width:100%}.home-card h2{margin:16px 0 6px;font-size:1.18rem;overflow-wrap:anywhere}.home-card p{margin:0 0 8px;color:var(--muted);font-size:.9rem}.home-card .btn{width:auto;margin-top:auto}.home-card-date{display:flex;align-items:center;gap:8px;margin:12px 0 18px;color:var(--ink);font-size:.95rem;font-weight:700}.home-card-date i{width:9px;height:9px;border-radius:50%;background:var(--blue);box-shadow:0 0 12px rgba(0,68,238,.6)}.home-shortcuts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}.home-shortcuts .more-link{min-height:76px;border-color:var(--line);transition:border-color .15s ease,transform .15s ease}.home-shortcuts .more-link:hover{border-color:rgba(0,68,238,.55);transform:translateY(-2px)}
+.plan-view-toggle{display:none;gap:6px;margin-top:12px}.plan-view-toggle button{flex:1;min-height:42px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-weight:650}.plan-view-toggle button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.plan-agenda{display:none}.plan-agenda .item{align-items:flex-start}.agenda-date{min-width:54px;text-align:center;border-radius:9px;padding:8px 4px;background:var(--bg2);font-weight:750}.agenda-detail{flex:1;min-width:0}.agenda-kind{display:inline-block;font-size:.75rem;color:var(--muted);margin-bottom:3px}
+.plan-agenda .item[data-agenda-action]{cursor:pointer;transition:background .15s ease,border-color .15s ease}.plan-agenda .item[data-agenda-action]:hover{background:rgba(0,68,238,.08);border-color:rgba(0,68,238,.35)}.agenda-open{flex:none;color:var(--blue);font-size:1.35rem;font-weight:750;line-height:1;padding:4px}
+.score-side{padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--bg2)}
+.scoreboard{gap:14px}.score-clock{font-variant-numeric:tabular-nums}
+#v-scoreboard:fullscreen{overflow:auto;background:var(--bg);padding:clamp(18px,5vw,52px)}
+#v-scoreboard:fullscreen>.card{max-width:900px;margin-left:auto;margin-right:auto}
+.item-main{flex:1}
+.shot-canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:9px;touch-action:manipulation;cursor:crosshair}
+.shot-canvas-wrap{max-width:400px;margin:0 auto}
+@media(max-width:680px){
+ #exercises-list>.item:not(.animation-playing){grid-template-columns:minmax(0,1fr) 88px;gap:8px}
+ #exercises-list .item-main{max-width:100%}
+ #exercises-list .exercise-name{max-width:100%}
+ #exercises-list .exercise-board-preview,#exercises-list .exercise-board-placeholder{grid-column:2}
+ #exercises-list .exercise-board-preview{width:84px;height:auto;aspect-ratio:8/5}
+ #exercises-list .exercise-board-placeholder{width:84px;height:auto;aspect-ratio:8/5}
+ #exercises-list .exercise-actions{grid-column:1/-1;justify-self:end}
+ .plan-nav strong{min-width:96px;font-size:.95rem}
+ .plan-grid{grid-auto-rows:minmax(74px,auto)}
+ .plan-day{min-height:74px;padding:3px;gap:2px}
+ .plan-weekdays span{font-size:.68rem;letter-spacing:0}
+ .plan-macro{font-size:.54rem;height:13px;line-height:13px;padding:0 2px}
+ .plan-micro{font-size:.56rem;min-height:16px;padding:2px}
+ .plan-event{font-size:.56rem;min-height:16px;padding:2px}
+ .plan-view-toggle{display:flex}
+ #plan-card:not(.plan-view-month) .plan-weekdays,#plan-card:not(.plan-view-month) #plan-grid{display:none}
+ #plan-card:not(.plan-view-month) #plan-agenda{display:block}
+ #plan-card.plan-view-month .plan-weekdays,#plan-card.plan-view-month #plan-grid{display:grid}
+ #plan-card.plan-view-month #plan-agenda{display:none}
+ .plan-toolbar{align-items:flex-start}
+ .score-actions{flex-wrap:wrap}
+ .score-actions .btn{flex:1 1 30%;font-size:.9rem;padding:8px}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+<header><img src="icons/icon-192.png" alt="" aria-hidden="true"><b>7metro</b><span id="account"></span></header>
+<main>
+<section id="v-login" class="on">
+  <h1>Saioa hasi</h1>
+  <p class="sub">Hasi saioa edo sortu 7metroko kontu berria. Pasahitzak gutxienez 8 karaktere izan behar ditu.</p>
+  <form id="login-form" class="card stack">
+    <label>Erabiltzailea<input id="username" autocomplete="username" required></label>
+    <label>Pasahitza<input id="password" type="password" autocomplete="current-password" required></label>
+    <button class="btn" type="submit">Saioa hasi</button>
+  </form>
+  <button class="btn secondary" id="create-account" type="button">Kontua sortu</button>
+  <div class="notice">Datuak Supabase bidez sinkronizatzen dira. Ez da ordenagailuko API lokalik abiarazi behar.</div>
+</section>
+
+<dialog id="account-create-dialog" class="attendance-dialog" aria-labelledby="account-create-title">
+  <div class="attendance-dialog-inner">
+    <div class="attendance-dialog-head"><h2 id="account-create-title">Kontu berria sortu</h2><button class="btn secondary" id="account-create-close" type="button">Itxi</button></div>
+    <form id="account-create-form" class="stack">
+      <label>Erabiltzailea<input id="new-username" autocomplete="username" minlength="3" maxlength="200" required></label>
+      <label>Pasahitza<input id="new-password" type="password" autocomplete="new-password" minlength="8" required></label>
+      <button class="btn" type="submit">Kontua sortu</button>
+    </form>
+  </div>
+</dialog>
+
+<div id="workspace" class="hidden">
+  <div id="team-picker" class="hidden">
+    <h1>Aukeratu taldea</h1><p class="sub">Talde bereko jokalariak eta jarduerak kudeatuko dituzu.</p>
+    <div class="card stack">
+      <label>Zure taldeak<select id="team-select"></select></label>
+      <button class="btn" id="open-team" type="button">Taldea ireki</button>
+    </div>
+    <div class="card"><h2>Taldeko gonbidapenak</h2><ul id="team-invitations" class="list"></ul></div>
+    <form id="team-form" class="card stack">
+      <h2>Talde berria sortu</h2>
+      <label>Taldearen izena<input name="name" required minlength="2" maxlength="100"></label>
+      <button class="btn secondary" type="submit">Sortu taldea</button>
+    </form>
+  </div>
+  <div id="team-app" class="hidden">
+    <section id="v-home">
+      <div class="home-hero"><div><span class="home-eyebrow">7METRO · TALDEAREN LABURPENA</span><h1 id="home-title">Ongi etorri</h1><p id="home-subtitle">Zure entrenamendu eta lehiaketen ikuspegi azkarra.</p></div><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
+      <div class="home-dashboard-grid">
+        <article class="card home-card"><span class="home-card-kicker">Azken entrenamendua</span><div id="home-session-content"></div></article>
+        <article class="card home-card"><span class="home-card-kicker">Azken partidua</span><div id="home-match-content"></div></article>
+        <article class="card home-card"><span class="home-card-kicker">Hurrengo partida</span><div id="home-next-match-content"></div></article>
+      </div>
+      <h2>Sarbide azkarrak</h2>
+      <div class="home-shortcuts"><button class="more-link" type="button" data-open-section="v-sessions"><strong>Entrenamenduak</strong><span>Saioak sortu eta ikusi</span></button><button class="more-link" type="button" data-open-section="v-scoreboard"><strong>Markagailu bizia</strong><span>Partida bat hasi</span></button><button class="more-link" type="button" data-open-section="v-planning"><strong>Denboraldiaren plangintza</strong><span>Egutegia eta zikloak</span></button></div>
+    </section>
+    <section id="v-board">
+      <h1>Ariketa-arbela</h1><p class="sub">Sortu ariketa bat kantxan marraztuz, programako arbelean bezala.</p>
+      <div class="card">
+        <form id="exercise-form" class="stack">
+          <label>Izena<input name="izena" required maxlength="140"></label>
+          <h2>Ariketaren arbela</h2>
+          <label>Atzeko planoa<select id="board-background"><option value="Zelaia">Zelaia</option><option value="Zelai-erdia">Zelai-erdia</option></select></label>
+          <div class="board-tools" aria-label="Arbelako tresnak">
+            <button class="btn secondary" type="button" data-board-tool="move" aria-pressed="true">Mugitu</button>
+            <button class="btn secondary" type="button" data-board-tool="u">+ Etxekoa</button>
+            <button class="btn secondary" type="button" data-board-tool="g">+ Kanpokoa</button>
+            <button class="btn secondary" type="button" data-board-tool="h">+ Horia</button>
+            <button class="btn secondary" type="button" data-board-tool="baloia">+ Baloia</button>
+            <button class="btn secondary" type="button" data-board-tool="poste">+ Konoa</button>
+            <button class="btn secondary" type="button" data-board-tool="line">Lerroa</button>
+            <button class="btn secondary" type="button" data-board-tool="arrow">Gezia</button>
+            <button class="btn secondary" type="button" data-board-tool="dashed">Lerro etena</button>
+            <button class="btn secondary" type="button" data-board-tool="rectangle">Laukia</button>
+            <button class="btn secondary" type="button" data-board-tool="oval">Zirkulua</button>
+            <button class="btn secondary" type="button" data-board-tool="text">Testua</button>
+            <button class="btn danger" id="board-delete" type="button">Ezabatu hautatuta</button>
+            <button class="btn danger" id="board-clear" type="button">Garbitu dena</button>
+          </div>
+          <div class="board-wrap"><canvas id="exercise-board" width="800" height="500" aria-label="Ariketa marrazteko arbela"></canvas></div>
+          <p class="muted">Aukeratu jokalari edo tresna eta ukitu arbela. Mugitu tresnarekin arrastatu; testua gehitzeko idatzi testua eskatzen denean.</p>
+          <details><summary><strong>Xehetasun gehiago</strong></summary><div class="stack" style="margin-top:12px"><div class="grid2"><label>Kategoria<input name="kategoria" maxlength="80"></label><label>Jokalari kopurua<input name="jokalari_kopurua" type="number" min="1" max="100"></label></div><label>Deskribapena<textarea name="deskribapena"></textarea></label><label>Bideoaren esteka<input name="bideo_url" type="url"></label></div></details>
+          <button class="btn" type="submit">Gehitu ariketa</button>
+        </form>
+      </div>
+      <div class="toolbar"><h2>Gordetako ariketak</h2><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
+      <ul id="exercises-list" class="list"></ul>
+    </section>
+    <section id="v-sessions" class="on">
+      <h1>Entrenamendua</h1><p class="sub">Antolatu saioak, aukeratu ariketak eta prestatu ariketa berriak kantxan.</p>
+      <div class="group-links"><button class="btn secondary" id="open-board" type="button">Ariketa-liburutegia eta arbela</button></div>
+      <details class="card"><summary><strong>Entrenamendu berria</strong></summary>
+        <form id="session-form" class="stack" style="margin-top:14px">
+          <div class="grid2"><label>Data eta ordua<input id="session-date" type="datetime-local" required></label><label>Tokia<input id="session-place" value="Kiroldegia"></label></div>
+          <label>Helburu taktikoa<input id="session-goal" maxlength="250"></label>
+          <label>Mikrozikloa<select id="session-micro"></select></label>
+          <div class="session-time">
+            <div class="session-time-head">
+              <label for="session-total-minutes">Entrenatzeko denbora (min)<input id="session-total-minutes" type="number" min="0" max="999" step="5" value="90"></label>
+              <span class="session-time-info" id="session-time-label">0 / 90 min</span>
+            </div>
+            <div class="session-time-bar" id="session-time-bar" role="progressbar" aria-label="Ariketen denbora"></div>
+            <p class="session-time-warn" id="session-time-warn" role="status"></p>
+          </div>
+          <div class="exercise-picker">
+            <div class="exercise-picker-col">
+              <h3>Liburutegia</h3>
+              <select id="session-category" class="category-filter" aria-label="Kategoriaren arabera filtratu"></select>
+              <ul id="session-library" class="list"></ul>
+            </div>
+            <div class="exercise-picker-col">
+              <h3>Saioan daudenak</h3>
+              <div class="session-group-tools">
+                <select id="session-group-preset" aria-label="Tartearen izena">
+                  <option value="Beroketa">Beroketa</option>
+                  <option value="Zati nagusia">Zati nagusia</option>
+                  <option value="Bukaera">Bukaera</option>
+                  <option value="__custom">Beste tarte bat...</option>
+                </select>
+                <button class="btn secondary" id="session-add-group" type="button">+ Gehitu tartea</button>
+                <input id="session-group-custom" class="hidden" type="text" maxlength="60" placeholder="Tartearen izena" aria-label="Tarte pertsonalizatuaren izena">
+                <button class="btn secondary session-group-clear" id="session-clear-group" type="button">Tarterik gabe</button>
+                <span class="session-current-group" id="session-current-group">Hurrengo ariketak: Tarterik gabe</span>
+              </div>
+              <ul id="session-selected" class="list"></ul>
+            </div>
+          </div>
+          <button class="btn" type="submit">Gorde entrenamendua</button>
+        </form>
+      </details>
+      <div class="toolbar"><h2>Saioak</h2><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
+      <ul id="sessions-list" class="list"></ul>
+    </section>
+    <section id="v-session-detail">
+      <button class="btn secondary" type="button" data-back-sessions>← Saioetara itzuli</button>
+      <h1 id="saved-session-title">Entrenamendua</h1><p class="sub" id="saved-session-meta"></p>
+      <div class="card training-session-overview"><span class="training-overview-label">SAIOAREN HELBURUA</span><p id="saved-session-goal">Helbururik gabe</p><div id="saved-session-cycle" class="muted"></div></div>
+      <div class="toolbar"><h2>Ariketen sekuentzia</h2><strong class="training-total" id="saved-session-total">0 min</strong></div>
+      <div id="saved-session-exercises" class="training-exercise-grid"></div>
+    </section>
+    <section id="v-session-view">
+      <h1 id="session-view-title">Saioa osatzen</h1>
+      <p class="sub">Aukeratutako ariketaren arbela ikusteko eta animazioa erreproduzitzeko.</p>
+      <div class="card">
+        <div class="toolbar"><button class="btn secondary" type="button" id="session-prev">← Aurrekoa</button>
+          <span class="muted" id="session-view-position"></span>
+          <button class="btn secondary" type="button" id="session-next">Hurrengoa →</button></div>
+        <div class="board-wrap"><canvas id="session-board" width="800" height="500" aria-label="Aukeratutako ariketaren arbela"></canvas></div>
+        <div class="toolbar"><button class="btn hidden" type="button" id="session-play">Animazioa ikusi</button>
+          <button class="btn secondary" type="button" id="session-back">Itzuli saiora</button></div>
+      </div>
+    </section>
+    <section id="v-players">
+      <h1>Taldea</h1><p class="sub">Kudeatu jokalari-zerrenda, kirol-datuak eta entrenamenduetako asistentzia.</p>
+      <details class="card"><summary><strong>Jokalari berria gehitu</strong></summary>
+        <form id="player-form" class="stack" style="margin-top:14px">
+          <div class="grid2"><label>Izena<input name="izena" required maxlength="100"></label><label>Abizena<input name="abizena" maxlength="100"></label></div>
+          <div class="grid2"><label>Dortsala<input name="dortsala" type="number" min="0" max="999"></label><label>Posizioa<select name="posizioa"><option value="">Aukeratu</option><option>Atezaina</option><option>Lehen Lerroa</option><option>Pibotea</option><option>Extremoa</option></select></label></div>
+          <div class="grid2"><label>Egoera<select name="egoera"><option>Erabilgarri</option><option>Zalantza</option><option>Baja</option></select></label><label>Eskua<select name="eskua"><option value="">Aukeratu</option><option>Eskubia</option><option>Ezkerra</option><option>Biak</option></select></label></div>
+          <div class="grid2"><label>Jaiotze-data<input name="jaiotze_data" type="date"></label><label>Altuera (cm)<input name="altuera_cm" type="number" min="100" max="250"></label></div>
+          <label>Pisua (kg)<input name="pisua_kg" type="number" min="20" max="250" step="0.1"></label>
+          <div class="grid2"><label>Telefonoa<input name="telefonoa" type="tel"></label><label>Emaila<input name="emaila" type="email"></label></div>
+          <label>Oharrak<textarea name="oharrak"></textarea></label>
+          <button class="btn" type="submit">Gehitu jokalaria</button>
+        </form>
+      </details>
+      <div class="grid2"><label>Bilatu jokalaria<input id="players-search" type="search" placeholder="Izena edo dorsala"></label><label>Egoeraren arabera<select id="players-status"><option value="">Egoera guztiak</option><option>Erabilgarri</option><option>Zalantza</option><option>Baja</option></select></label></div>
+      <div class="toolbar"><h2>Taldeko jokalariak</h2><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
+      <ul id="players-list" class="list"></ul>
+      <div class="card"><h2>Asistentzia</h2><p class="muted">Aukeratu entrenamendua eta apuntatu bertaratzea, berandutzeak eta haien arrazoiak.</p><div class="grid2"><label>Entrenamendua<select id="attendance-session"></select></label><button class="btn" id="attendance-open" type="button" disabled>Asistentzia apuntatu</button></div></div>
+    </section>
+    <section id="v-matches">
+      <h1>Lehiaketa</h1><p class="sub">Kudeatu partidak, erabili zuzeneko markagailua eta aztertu estatistikak.</p>
+      <div class="group-links"><button class="btn secondary" type="button" data-open-section="v-scoreboard">Markagailu bizia</button><button class="btn secondary" type="button" data-open-section="v-stats">Joan estatistiketara</button></div>
+      <details class="card"><summary><strong>Partida berria</strong></summary>
+        <form id="match-form" class="stack" style="margin-top:14px">
+          <div class="grid2"><label>Data eta ordua<input id="match-date" type="datetime-local" required></label><label>Aurkaria<input id="match-opponent" required maxlength="120"></label></div>
+          <div class="grid2"><label>Tokia<select id="match-place"><option>Etxean</option><option>Kanpoan</option></select></label><label>Emaitza<input id="match-score" placeholder="Adib. 28-24" inputmode="numeric"></label></div>
+          <h2>Jokalariak</h2><div id="match-players"></div>
+          <button class="btn" type="submit">Gorde partida</button>
+        </form>
+      </details>
+      <div class="toolbar"><h2>Partiden historia</h2><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
+      <ul id="matches-list" class="list"></ul><div id="match-detail" class="card hidden"></div>
+      <div class="card" id="stats-card">
+        <h2>Estatistikak</h2><p class="muted">Taldearen, jokalarien eta aurkarien errendimendua aztertu.</p>
+        <div class="grid3"><label>Ikuspegia<select id="stats-mode"><option value="team">Taldea</option><option value="players">Jokalariak</option><option value="opponents">Aurkariak</option></select></label><label>Denboraldia<select id="stats-period"><option value="all">Guztiak</option><option value="month">Azken hilabetea</option><option value="3months">Azken 3 hilabeteak</option><option value="season">Uneko denboraldia</option></select></label><label>Etxeko/kanpoko<select id="stats-venue"><option value="all">Guztiak</option><option value="home">Etxean</option><option value="away">Kanpoan</option></select></label></div>
+        <div class="grid3"><label>Hasiera data<input id="stats-start" type="date"></label><label>Amaiera data<input id="stats-end" type="date"></label><label>Aurkaria<select id="stats-opponent"><option value="">Aurkari guztiak</option></select></label></div>
+        <div class="grid3"><label>Partida<select id="stats-match"><option value="">Partida guztiak</option></select></label><label>Jokalari bilaketa<input id="stats-search" type="search" placeholder="Izena edo dorsala"></label><button class="btn secondary" id="stats-clear" type="button">Garbitu iragazkiak</button></div>
+        <div class="toolbar"><h2 id="stats-heading">Taldearen laburpena</h2><button class="btn secondary" id="stats-print" type="button">Inprimatu / PDF gorde</button></div>
+        <div id="stats-summary" class="grid3"></div>
+        <div id="stats-team-panel"><h3>Gol eta eraginkortasuna 10 minutuko tarteetan</h3><div id="stats-period-chart" class="stack"></div></div>
+        <div id="stats-player-panel" class="hidden"><div class="toolbar"><h3>Jokalari bakoitzaren xehetasunak</h3><div class="stats-view-toggle" role="group" aria-label="Jokalarien estatistiken ikuspegia"><button id="stats-view-visual" type="button" aria-pressed="true">Bisuala</button><button id="stats-view-list" type="button" aria-pressed="false">Zerrenda</button></div></div><div id="stats-players-visual" class="player-visual-grid"></div><ul id="stats-list" class="list hidden"></ul></div>
+        <div id="stats-opponent-panel" class="hidden"><h3>Aurkari bakoitzaren xehetasunak</h3><ul id="stats-opponent-list" class="list"></ul></div>
+        <div id="stats-shots-panel"><h3>Jaurtiketen mapa eta zonak</h3><p class="muted">Koordenatuak dituzten jaurtiketak baino ez dira mapan zenbatzen; berdea gola da eta gorria huts egindako jaurtiketa.</p><div class="grid2"><div><h4>Jaurtiketa jatorria</h4><div id="stats-court-map" class="stats-map"></div><ul id="stats-origin-zones" class="list"></ul></div><div><h4>Golaren norabidea</h4><div id="stats-goal-map" class="stats-map goal-map"></div><ul id="stats-goal-zones" class="list"></ul></div></div><div><h4>Penaltien emaitzak</h4><ul id="stats-penalties" class="list"></ul></div></div>
+      </div>
+    </section>
+    <section id="v-scoreboard">
+      <h1>Markagailua</h1><p class="sub">Partidako denbora, emaitza eta goleatzaileen erregistro azkarra.</p>
+      <div class="card stack score-live-panel" id="score-live-panel">
+        <div class="grid2"><label>Etxeko taldea<input id="score-home-name" maxlength="60" value="7metro"></label><label>Aurkaria<input id="score-away-name" maxlength="60" value="Aurkaria"></label></div>
+        <div class="card stack"><h2>Partida gorde</h2><p class="muted">Markagailuko emaitza, jokalarien golak eta erregistratutako jaurtiketa-kokapenak partiden historialean gordeko dira.</p><div class="grid2"><label>Data eta ordua<input id="score-save-date" type="datetime-local" required></label><label>Tokia<select id="score-save-venue"><option>Etxean</option><option>Kanpoan</option></select></label></div><button class="btn" id="score-save-match" type="button">Partida hau gorde</button><p class="muted" id="score-save-status" aria-live="polite">Oraindik ez da gorde.</p></div>
+        <div class="scoreboard">
+          <div class="score-side"><div class="score-number" id="score-home">0</div><div class="score-controls"><button type="button" data-score="home" data-delta="-1" aria-label="Etxekoaren gola kendu">−</button><button type="button" data-score="home" data-delta="1" aria-label="Etxekoaren gola gehitu">+</button></div></div>
+          <strong aria-hidden="true">:</strong>
+          <div class="score-side"><div class="score-number" id="score-away">0</div><div class="score-controls"><button type="button" data-score="away" data-delta="-1" aria-label="Kanpokoaren gola kendu">−</button><button type="button" data-score="away" data-delta="1" aria-label="Kanpokoaren gola gehitu">+</button></div></div>
+        </div>
+        <div class="score-clock" id="score-clock">00:00</div>
+        <div class="grid2"><label>Denbora mota<select id="score-mode"><option value="match">Partida (2 × 30 min)</option><option value="manual">Eskuzkoa</option><option value="countdown">Atzerako kontaketa</option></select></label><label>Minutuak<input id="score-minutes" type="number" min="1" max="180" value="30"></label></div>
+        <p class="muted" id="score-period" style="text-align:center;margin:0">1. zatia · 30:00</p>
+        <div class="score-actions"><button class="btn" id="score-start" type="button">Hasi</button><button class="btn secondary" id="score-period-next" type="button">Hurrengo zatia</button><button class="btn secondary" id="score-reset" type="button">Berrabiarazi</button></div>
+        <button class="btn secondary" id="score-fullscreen" type="button">Pantaila osoa</button>
+        <label>Goleatzailea (aukerakoa)<select id="score-player"><option value="">Ez zehaztu</option></select></label>
+        <div class="score-actions"><button class="btn secondary" id="score-goal-home" type="button">Etxeko gola</button><button class="btn secondary" id="score-goal-away" type="button">Kanpoko gola</button></div>
+      </div>
+      <div class="card stack">
+        <h2>Jaurtiketa baten kokapena</h2>
+        <p class="muted">Aukeratu jokalaria eta emaitza. Sakatu kantxan jaurtiketaren jatorria eta atean baloiaren helmuga.</p>
+        <div class="grid2"><label>Taldea<select id="shot-team"><option value="home">Etxekoa</option><option value="away">Kanpokoa</option></select></label><label>Jokalaria<select id="shot-player"><option value="">Jokalaria aukeratu</option></select></label></div>
+        <label>Jaurtiketa mota eta emaitza<select id="shot-result"><option value="gol">Jaurtiketa arrunta · gola</option><option value="jaurtiketa">Jaurtiketa arrunta · huts</option><option value="penalti_gol">Penaltia · gola</option><option value="penalti_jaurtiketa">Penaltia · huts</option></select></label>
+        <div class="shot-canvas-wrap"><canvas id="shot-goal-canvas" class="shot-canvas" width="600" height="400" aria-label="Sakatu baloiaren kokalekua porterian"></canvas></div>
+        <div class="shot-canvas-wrap"><canvas id="shot-court-canvas" class="shot-canvas" width="800" height="520" aria-label="Sakatu jaurtiketaren jatorria eskubaloi kantxan"></canvas></div>
+        <p class="muted" id="shot-location-hint" style="text-align:center;margin:0">Aukeratu jatorria kantxan eta helmuga atean</p>
+        <button class="btn" type="button" id="shot-record" disabled>Jaurtiketa erregistratu</button>
+      </div>
+      <div class="card"><div class="toolbar"><h2>Gertaerak</h2><button class="btn secondary" type="button" id="score-clear-events">Garbitu</button></div><ul id="score-events" class="list"></ul></div>
+    </section>
+    <section id="v-friends">
+      <h1>Lagunak</h1><p class="sub">Bidali eta kudeatu lagun-eskaerak; partekatu ariketak eta entrenamenduak.</p>
+      <form id="friend-form" class="card stack"><h2>Lagun berria</h2><label>Erabiltzaile-izena<input id="friend-username" minlength="3" maxlength="200" required autocomplete="off"></label><button class="btn" type="submit">Eskaera bidali</button></form>
+      <div class="toolbar"><h2>Jasotako eskaerak</h2><button class="btn secondary" type="button" id="friends-refresh">Freskatu</button></div><ul id="friend-incoming" class="list"></ul>
+      <div class="card"><h2>Lagunak</h2><ul id="friends-list" class="list"></ul></div>
+      <div class="card"><h2>Bidaltzeko ariketak</h2><p class="muted">Aukeratu laguna eta zure ariketetako bat partekatzeko.</p><form id="friend-share-exercise" class="stack"><label>Lagun<select id="share-exercise-friend" required></select></label><label>Ariketa<select id="share-exercise-item" required></select></label><button class="btn" type="submit">Ariketa partekatu</button></form></div>
+      <div class="card"><h2>Bidaltzeko entrenamenduak</h2><form id="friend-share-training" class="stack"><label>Lagun<select id="share-training-friend" required></select></label><label>Entrenamendua<select id="share-training-item" required></select></label><button class="btn" type="submit">Entrenamendua partekatu</button></form></div>
+      <div class="card"><h2>Nirekin partekatutako ariketak</h2><ul id="friend-shared-exercises" class="list"></ul></div>
+      <div class="card"><h2>Nirekin partekatutako entrenamenduak</h2><ul id="friend-shared-trainings" class="list"></ul></div>
+      <ul id="friend-outgoing" class="list"></ul>
+    </section>
+    <section id="v-planning">
+      <h1>Denboraldiaren plangintza</h1><p class="sub">Makrozikloak, mikrozikloak, entrenamenduak eta partidak hilabete-egutegi batean.</p>
+      <div class="card" id="plan-card">
+        <div class="plan-toolbar">
+          <div class="plan-nav">
+            <button class="btn secondary" type="button" id="plan-prev" aria-label="Aurreko hilabetea">◀</button>
+            <strong id="plan-month">—</strong>
+            <button class="btn secondary" type="button" id="plan-next" aria-label="Hurrengo hilabetea">▶</button>
+            <button class="btn secondary" type="button" id="plan-today">Gaur</button>
+          </div>
+          <div class="plan-actions">
+            <button class="btn" type="button" data-plan-new="macro">+ Makro</button>
+            <button class="btn" type="button" data-plan-new="micro">+ Mikro</button>
+          </div>
+        </div>
+        <div class="plan-view-toggle" role="group" aria-label="Egutegiaren ikuspegia"><button type="button" data-plan-view="agenda">Agenda</button><button type="button" data-plan-view="month">Hilabetea</button></div>
+        <div id="plan-legend" class="plan-legend"></div>
+        <div class="plan-weekdays" aria-hidden="true"><span>Al</span><span>Ar</span><span>Az</span><span>Og</span><span>Or</span><span>La</span><span>Ig</span></div>
+        <div id="plan-grid" class="plan-grid" role="grid" aria-label="Hilabete-egutegia"></div>
+        <ul id="plan-agenda" class="plan-agenda list"></ul>
+      </div>
+      <div class="card"><h2>Makrozikloak</h2><ul id="macros-list" class="list"></ul></div>
+      <div class="card"><h2>Mikrozikloak</h2><ul id="micros-list" class="list"></ul></div>
+    </section>
+    <section id="v-more">
+      <h1>Gehiago</h1><p class="sub">Komunitatea eta zure kontuaren ezarpenak.</p>
+      <div class="more-links">
+        <button class="more-link" type="button" data-open-section="v-friends"><strong>Komunitatea eta lagunak</strong><span>Eskaerak eta ariketa zein entrenamenduen partekatzea</span></button>
+      </div>
+      <form id="team-invite-form" class="card stack"><h2>Taldea partekatu</h2><p class="muted">Gonbidatu onartutako lagun bat talde honetara; gonbidapena onartzean taldeko datuak ikusiko ditu.</p><label>Lagunak<select id="team-invite-friend" required></select></label><button class="btn" type="submit">Taldeko gonbidapena bidali</button></form>
+      <div class="card"><h2>Itxura</h2><p class="muted">Aukeratu aplikazioaren kolore-modua.</p><div class="theme-choices" role="group" aria-label="Kolore-modua"><button class="btn secondary theme-choice" id="theme-light" type="button" data-theme-choice="light" aria-pressed="false">☀️ Modu argia</button><button class="btn secondary theme-choice" id="theme-dark" type="button" data-theme-choice="dark" aria-pressed="true">🌙 Modu iluna</button></div></div>
+      <details class="card"><summary><strong>Konexioa eta kontua</strong></summary>
+        <form id="url-form" class="stack" style="margin-top:14px"><label>Supabase proiektuaren URL<input id="settings-api-url" type="url" required></label>
+          <label>Publishable key<input id="settings-api-key" type="password" required autocomplete="off"></label><button class="btn secondary" type="submit">Konexioa eguneratu</button></form>
+        <button class="btn secondary" id="change-team" type="button">Taldea aldatu</button><button class="btn secondary" id="logout" type="button">Saioa itxi</button>
+      </details>
+      <details class="card"><summary><strong>PWA instalatu</strong></summary><button class="btn" id="install" type="button" hidden>Instalatu aplikazioa</button>
+        <h2>Androiden</h2><ol class="steps"><li>Ireki PWA hau Chromen.</li><li>Sakatu menuan “Instalatu aplikazioa”.</li></ol>
+        <h2>iPhonen</h2><ol class="steps"><li>Ireki Safarin.</li><li>Sakatu Partekatu eta “Hasierako pantailara gehitu”.</li></ol>
+        <p class="muted" id="install-status"></p>
+      </details>
+    </section>
+  </div>
+</div>
+</main>
+  <dialog id="session-preview-dialog" class="attendance-dialog session-preview-dialog" aria-labelledby="session-preview-title">
+    <div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="session-preview-title">Ariketa-arbela</h2><button class="btn secondary" id="session-preview-close" type="button" aria-label="Itxi">Itxi</button></div>
+      <canvas id="session-preview-canvas" class="session-preview-canvas" width="800" height="500" aria-label="Ariketaren arbela"></canvas>
+      <p class="session-preview-caption" id="session-preview-caption"></p>
+      <div class="session-preview-actions"><button class="btn hidden" id="session-preview-play" type="button">Animazioa ikusi</button></div>
+    </div>
+  </dialog>
+  <dialog id="attendance-dialog" class="attendance-dialog" aria-labelledby="attendance-dialog-title">
+    <div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="attendance-dialog-title">Asistentzia apuntatu</h2><button class="btn secondary" id="attendance-close" type="button" aria-label="Itxi">Itxi</button></div>
+      <div id="attendance-list" class="list"></div><button class="btn" id="save-attendance" type="button">Gorde eta itxi</button>
+    </div>
+  </dialog>
+<nav id="nav" class="hidden" aria-label="Nagusia"><div role="tablist">
+  <button role="tab" data-v="v-home" aria-selected="true">Hasiera</button><button role="tab" data-v="v-sessions" aria-selected="false">Entrenamendua</button><button role="tab" data-v="v-planning" aria-selected="false">Plangintza</button><button role="tab" data-v="v-players" aria-selected="false">Taldea</button><button role="tab" data-v="v-matches" aria-selected="false">Lehiaketa</button><button role="tab" data-v="v-more" aria-selected="false">Gehiago</button>
+</div></nav>
+<div id="plan-modal" class="modal hidden">
+  <div class="modal-box card">
+    <h2 id="plan-modal-title">Plangintza</h2>
+    <form id="plan-form" class="stack"></form>
+  </div>
+</div>
+<div id="calendar-cup-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="calendar-cup-title">
+  <div class="modal-box card">
+    <div class="toolbar"><h2 id="calendar-cup-title">Txapelketa</h2><button class="btn secondary" type="button" data-close-calendar-cup>Itxi</button></div>
+    <p id="calendar-cup-meta" class="muted"></p>
+  </div>
+</div>
+<div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
+<div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
+</div>
+<script src="app.js" defer></script>
+</body>
+</html>
