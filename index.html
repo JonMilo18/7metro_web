@@ -281,7 +281,126 @@ textarea{min-height:84px;resize:vertical}
  .score-actions{flex-wrap:wrap}
  .score-actions .btn{flex:1 1 30%;font-size:.9rem;padding:8px}
 }
+
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+@media(max-width:680px){
+ html{font-size:16px}
+ body{font-size:1rem;line-height:1.55}
+ header{gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px}
+ header img{height:36px}
+ header b{font-size:1.1rem}
+ #account{min-width:0;max-width:38vw;overflow-wrap:anywhere;font-size:.84rem}
+ main{padding:18px max(14px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
+ main>section,#team-picker{width:100%;min-width:0}
+ h1{font-size:clamp(1.65rem,7vw,2rem);line-height:1.18}
+ h2{font-size:1.18rem;line-height:1.3}
+ h3{line-height:1.3}
+ .sub{font-size:.96rem;line-height:1.55;margin-bottom:16px}
+ .card{padding:15px;margin:12px 0;border-radius:14px}
+ label{font-size:.95rem;line-height:1.4}
+ input,select,textarea{min-height:48px;padding:11px 12px;font-size:16px;line-height:1.35}
+ textarea{min-height:104px}
+ .btn{min-height:48px;padding:11px 14px;font-size:.98rem;line-height:1.3;white-space:normal}
+ .btn.danger{min-height:44px;padding:9px 12px;font-size:.9rem}
+ .grid2,.grid3{grid-template-columns:minmax(0,1fr);gap:8px}
+ .toolbar,.home-hero,.plan-toolbar,.pv-head{flex-wrap:wrap;align-items:flex-start}
+ .toolbar>*{min-width:0}
+ .notice,.empty,.item{font-size:.95rem;line-height:1.5}
+ .item{align-items:flex-start;flex-wrap:wrap;gap:9px;padding:13px 0}
+ .item-main{flex:1 1 100%;min-width:0}
+ .item-main small,.muted{font-size:.88rem;line-height:1.45}
+ .item .btn{flex:1 1 calc(50% - 8px);width:auto;min-width:0;min-height:44px;padding:9px 10px;font-size:.9rem;white-space:normal}
+ .list{margin:8px 0}
+ .checklist{max-height:42vh;gap:10px;padding:6px}
+ .checkrow{font-size:.95rem;line-height:1.4}
+ .checkrow input{width:22px;height:22px;min-height:22px;flex:none}
+ .board-tools{gap:8px}
+ .board-tools button{min-height:44px;padding:9px 12px}
+ .exercise-picker{grid-template-columns:minmax(0,1fr)}
+ .exercise-picker-col{padding:12px}
+ .session-actions,.match-actions{flex-wrap:wrap;white-space:normal}
+ .session-actions .btn,.match-actions .btn{flex:1 1 calc(50% - 6px);min-height:44px;padding:9px 10px;font-size:.9rem}
+ .session-group-tools{grid-template-columns:minmax(0,1fr);gap:9px}
+ .session-group-tools .btn,.session-group-tools .session-group-clear{grid-column:auto;justify-self:stretch;width:100%;min-height:44px;white-space:normal}
+ .session-current-group,.session-group-row strong{font-size:.9rem}
+ .session-slot{flex-wrap:wrap;gap:8px;padding:9px}
+ .session-slot .slot-name{flex:1 1 calc(100% - 44px);max-width:none;font-size:.95rem;line-height:1.4}
+ .session-slot input{min-height:44px;width:82px}
+ .session-slot .btn{min-height:44px}
+ #session-library{max-height:52vh;padding-right:0}
+ .training-exercise-grid{grid-template-columns:minmax(0,1fr);gap:10px}
+ .training-exercise-card{padding:13px}
+ .training-exercise-description{font-size:.95rem;line-height:1.5}
+ .training-exercise-meta,.training-overview-label{font-size:.84rem;letter-spacing:.04em}
+ .training-exercise-actions .btn{flex:1 1 calc(50% - 8px);min-height:44px}
+ .player-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .player-stats label,.attendance-row label{font-size:.86rem;line-height:1.35}
+ .player-stats input{min-height:44px;padding:9px 8px}
+ .player-attendance{flex-wrap:wrap;gap:7px}
+ .player-attendance-label,.player-attendance small{font-size:.82rem;white-space:normal}
+ .player-attendance-bar{flex-basis:100%;order:3}
+ .attendance-row{grid-template-columns:minmax(0,1fr) minmax(88px,.7fr);gap:8px}
+ .attendance-row .checkrow{grid-column:1/-1;padding-bottom:2px}
+ .attendance-row label{min-width:0}
+ .attendance-dialog{width:calc(100vw - 20px);max-height:calc(100dvh - 24px);border-radius:16px}
+ .attendance-dialog-inner{padding:16px}
+ .attendance-dialog-head{top:-16px;margin:-16px -16px 14px;padding:14px 16px;gap:8px}
+ .attendance-dialog-head h2{font-size:1.08rem}
+ .attendance-dialog-head .btn{width:auto;min-height:42px;flex:none;margin:0}
+ .attendance-dialog .attendance-row{grid-template-columns:minmax(0,1fr) minmax(82px,.7fr);gap:8px;padding:10px 0}
+ .attendance-dialog .attendance-row .checkrow{grid-column:1/-1}
+ .stats-view-toggle{max-width:100%;flex-wrap:wrap}
+ .stats-view-toggle button{min-height:40px;font-size:.9rem;padding:8px 11px}
+ .player-visual-grid{grid-template-columns:minmax(0,1fr);gap:10px}
+ .player-visual-card{padding:13px}
+ .pv-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .pv-metric{padding:10px 7px}
+ .pv-metric small,.pv-breakdown span,.pv-breakdown strong,.pv-sanctions span{font-size:.84rem;line-height:1.4}
+ .pv-section-title{font-size:.88rem}
+ .efficiency-label{font-size:.76rem}
+ .plan-toolbar{gap:10px}
+ .plan-nav{flex-wrap:wrap;gap:7px}
+ .plan-nav strong{min-width:0;flex:1 1 100%;font-size:1.05rem}
+ .plan-nav .btn,.plan-actions .btn{min-height:44px;padding:9px 12px}
+ .plan-actions{width:100%;flex-wrap:wrap;gap:8px}
+ .plan-actions .btn{flex:1 1 calc(50% - 8px)}
+ .plan-view-toggle button{min-height:46px;font-size:.95rem}
+ .plan-legend{gap:8px}
+ .plan-legend span,.plan-legend .plan-legend-type{font-size:.86rem;line-height:1.35;padding:7px 9px}
+ .plan-month-scroll{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;padding-bottom:8px}
+ .plan-weekdays,#plan-grid{min-width:600px}
+ .plan-weekdays span{font-size:.84rem;padding:8px 4px;letter-spacing:0}
+ .plan-grid{grid-auto-rows:minmax(96px,auto);gap:6px}
+ .plan-day{min-height:96px;padding:6px;gap:5px}
+ .plan-day-num{font-size:.88rem}
+ .plan-macro{height:auto;min-height:25px;padding:4px 5px;font-size:.78rem;line-height:1.25;white-space:normal;overflow-wrap:anywhere}
+ .plan-micro,.plan-event{min-height:25px;max-height:2.6em;padding:4px 5px;font-size:.78rem;line-height:1.25}
+ .plan-more{font-size:.8rem}
+ .agenda-date{min-width:58px;font-size:.9rem}
+ .agenda-kind{font-size:.86rem}
+ .scoreboard{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px}
+ .score-side{padding:9px}
+ .score-side input{padding:8px 5px;font-size:.9rem}
+ .score-number{font-size:clamp(2.5rem,15vw,4rem)}
+ .score-clock{font-size:clamp(2.2rem,11vw,3.5rem)}
+ .score-controls{gap:6px}
+ .score-controls button{width:46px;height:46px}
+ .score-actions{flex-wrap:wrap;gap:8px}
+ .score-actions .btn{flex:1 1 calc(50% - 8px);min-height:46px;font-size:.92rem}
+ .more-links{grid-template-columns:minmax(0,1fr)}
+ .more-link{min-height:76px;padding:14px}
+ .more-link strong{font-size:1rem}
+ .more-link span{font-size:.92rem;line-height:1.45}
+ .home-hero{padding:17px;gap:10px}
+ .home-hero p,.home-card p{font-size:.96rem;line-height:1.5}
+ .home-eyebrow,.home-card-kicker{font-size:.82rem;letter-spacing:.06em}
+ .home-dashboard-grid,.home-shortcuts{grid-template-columns:minmax(0,1fr);gap:10px}
+ .home-card{min-height:0;padding:16px}
+ .home-card .btn{width:100%;margin-top:10px}
+ .home-shortcuts .more-link{min-height:72px}
+ .shot-canvas-wrap{max-width:100%}
+ .loading-indicator-content{width:min(100%,360px);gap:14px;padding:18px}
+}
 </style>
 </head>
 <body>
@@ -547,8 +666,8 @@ textarea{min-height:84px;resize:vertical}
         </div>
         <div class="plan-view-toggle" role="group" aria-label="Egutegiaren ikuspegia"><button type="button" data-plan-view="agenda">Agenda</button><button type="button" data-plan-view="month">Hilabetea</button></div>
         <div id="plan-legend" class="plan-legend"></div>
-        <div class="plan-weekdays" aria-hidden="true"><span>Al</span><span>Ar</span><span>Az</span><span>Og</span><span>Or</span><span>La</span><span>Ig</span></div>
-        <div id="plan-grid" class="plan-grid" role="grid" aria-label="Hilabete-egutegia"></div>
+        <div class="plan-month-scroll"><div class="plan-weekdays" aria-hidden="true"><span>Al</span><span>Ar</span><span>Az</span><span>Og</span><span>Or</span><span>La</span><span>Ig</span></div>
+        <div id="plan-grid" class="plan-grid" role="grid" aria-label="Hilabete-egutegia"></div></div>
         <ul id="plan-agenda" class="plan-agenda list"></ul>
       </div>
       <div class="card"><h2>Makrozikloak</h2><ul id="macros-list" class="list"></ul></div>
