@@ -322,8 +322,8 @@ function drawBoard(canvas, state, selection) {
     if (!shape || !Array.isArray(shape.coords) || shape.coords.length < 2 ||
         !shape.coords.every(Number.isFinite)) return;
     var coords = shape.coords, type = shape.type;
-    var strokeColor = shape.fill || shape.outline || "#fff";
-    var fillColor = shape.fill || shape.outline || "#fff";
+    var strokeColor = "#000";
+    var fillColor = "#000";
     ctx.strokeStyle = strokeColor;
     ctx.fillStyle = fillColor;
     ctx.lineWidth = Math.max(1, Number(shape.width) || 3);
@@ -347,8 +347,8 @@ function drawBoard(canvas, state, selection) {
       ctx.moveTo(coords[0], coords[1]);
       for (var p = 2; p + 1 < coords.length; p += 2) ctx.lineTo(coords[p], coords[p + 1]);
       ctx.closePath();
-      if (shape.fill) { ctx.fillStyle = shape.fill; ctx.fill(); }
-      ctx.strokeStyle = shape.outline || strokeColor;
+      if (shape.fill) { ctx.fillStyle = "#000"; ctx.fill(); }
+      ctx.strokeStyle = "#000";
       ctx.stroke();
     } else if (type === "rectangle" || type === "oval") {
       var x = Math.min(coords[0], coords[2]), y = Math.min(coords[1], coords[3]);
