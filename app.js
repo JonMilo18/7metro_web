@@ -1100,7 +1100,12 @@ function renderExercises() {
   stopExerciseAnimation();
   renderExerciseCategories();
   renderSessionPicker();
-  $("exercises-list").innerHTML = exercises.length ? exercises.map(function (exercise) {
+  var filter = $("exercise-list-category");
+  var categoryFilter = filter ? filter.value : "";
+  var visibleExercises = categoryFilter ? exercises.filter(function (exercise) {
+    return String(exercise.kategoria || "").trim().toLocaleLowerCase() === categoryFilter.toLocaleLowerCase();
+  }) : exercises;
+  $("exercises-list").innerHTML = visibleExercises.length ? visibleExercises.map(function (exercise) {
     var board = parseBoardData(exercise.arbela_datuak);
     var hasAnimation = board && board.animazioa.length > 1;
     return '<li class="item"><div class="item-main"><strong class="exercise-name">' + esc(exercise.izena) +
@@ -1113,7 +1118,7 @@ function renderExercises() {
           '" aria-label="Animazioa ikusi">Animazioa ikusi</button>' : "") +
       '<button class="btn danger" type="button" data-delete-exercise="' +
       Number(exercise.id_ariketa) + '">Ezabatu</button></div></li>';
-  }).join("") : '<li class="empty">Ariketa-liburutegia hutsik dago.</li>';
+  }).join("") : '<li class="empty">' + (categoryFilter ? 'Ez dago ariketarik kategoria honetan.' : 'Ariketa-liburutegia hutsik dago.') + '</li>';
   document.querySelectorAll("[data-board-preview]").forEach(function (canvas) {
     var exercise = exercises.find(function (item) {
       return Number(item.id_ariketa) === Number(canvas.dataset.boardPreview);
@@ -1151,6 +1156,16 @@ function renderExerciseCategories() {
       return '<option value="' + esc(name) + '">' + esc(name) + '</option>';
     }).join("");
     if (names.indexOf(selected) !== -1) select.value = selected;
+  }
+  var listFilter = $("exercise-list-category");
+  if (listFilter) {
+    var selectedFilter = listFilter.value;
+    listFilter.innerHTML = '<option value="">Kategoria guztiak</option>' + names.map(function (name) {
+      return '<option value="' + esc(name) + '">' + esc(name) + '</option>';
+    }).join("");
+    listFilter.value = names.some(function (name) {
+      return name.toLocaleLowerCase() === selectedFilter.toLocaleLowerCase();
+    }) ? selectedFilter : "";
   }
   var list = $("exercise-category-list");
   if (list) list.innerHTML = categories.length ? categories.map(function (category) {
