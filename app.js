@@ -908,7 +908,8 @@ function exerciseCategoryNames(exercise) {
     // Older records sometimes store the category ID in ariketak.kategoria.
     if (/^\d+$/.test(name)) {
       var byId = categories.find(function (item) { return Number(item.id_kategoria) === Number(name); });
-      if (byId) name = String(byId.izena || "").trim();
+      if (!byId) return;
+      name = String(byId.izena || "").trim();
     }
     if (name && !result.some(function (existing) {
       return normalizeCategoryName(existing) === normalizeCategoryName(name);
