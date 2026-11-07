@@ -2162,6 +2162,7 @@ $("plan-agenda").addEventListener("keydown", function (event) {
 });
 $("players-search").addEventListener("input", renderPlayers);
 $("players-status").addEventListener("change", renderPlayers);
+$("exercise-list-category").addEventListener("change", renderExercises);
 $("stats-match").addEventListener("change", renderStats);
 ["stats-period", "stats-venue", "stats-opponent", "stats-mode", "stats-start", "stats-end"].forEach(function (id) { $(id).addEventListener("change", renderStats); });
 $("stats-search").addEventListener("input", renderStats);
