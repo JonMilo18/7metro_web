@@ -2679,6 +2679,9 @@ $("match-form").addEventListener("submit", async function (event) {
     form.querySelectorAll('[data-player="' + player.id_jokalaria + '"]').forEach(function (input) {
       row[input.dataset.stat] = Number(input.value);
     });
+    row.jaurtiketak = Math.max(row.jaurtiketak || 0, row.golak || 0);
+    var shotsInput = form.querySelector('[data-stat="jaurtiketak"][data-player="' + player.id_jokalaria + '"]');
+    if (shotsInput) shotsInput.value = String(row.jaurtiketak);
     return row;
   });
   button.disabled = true;
@@ -2713,6 +2716,11 @@ $("match-detail").addEventListener("submit", async function (event) {
     form.querySelectorAll('[data-edit-player="' + player.id_jokalaria + '"]').forEach(function (input) {
       row[input.dataset.editStat] = input.disabled ? 0 : Number(input.value);
     });
+    if (row.jokatu) {
+      row.jaurtiketak = Math.max(row.jaurtiketak || 0, row.golak || 0);
+      var shotsInput = form.querySelector('[data-edit-stat="jaurtiketak"][data-edit-player="' + player.id_jokalaria + '"]');
+      if (shotsInput) shotsInput.value = String(row.jaurtiketak);
+    }
     return row;
   });
   button.disabled = true;
