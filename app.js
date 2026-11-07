@@ -1369,8 +1369,9 @@ function renderMatchEditor(matchId) {
       var row = playerRows.find(function (item) { return Number(item.id_jokalaria) === playerId; });
       var playerSanctions = byPlayer(sanctions, playerId);
       var name = (player.dortsala != null ? "#" + player.dortsala + " " : "") + playerName(player);
-      return '<div class="match-player"><div class="match-player-head">' + esc(name) +
-        '</div><div class="player-stats">' + fields.map(function (field) {
+      return '<div class="match-player"><label class="checkrow match-player-head"><input type="checkbox" data-edit-played="' +
+        playerId + '"' + (row ? " checked" : "") + '><span>' + esc(name) +
+        ' · Partidara joan da</span></label><div class="player-stats">' + fields.map(function (field) {
           var value = field[1] === "golak" || field[1] === "jaurtiketak"
             ? Number(row && row[field[1]] || 0)
             : playerSanctions.filter(function (item) {
@@ -1378,7 +1379,7 @@ function renderMatchEditor(matchId) {
             }).length;
           return '<label>' + field[0] + '<input type="number" min="0" max="' + field[2] +
             '" required value="' + value + '" data-edit-stat="' + field[1] +
-            '" data-edit-player="' + playerId + '"></label>';
+            '" data-edit-player="' + playerId + '"' + (row ? "" : " disabled") + '></label>';
         }).join("") + '</div></div>';
     }).join("") || '<p class="empty">Ez dago jokalaririk.</p>') +
     '<p class="muted">Jaurtiketen kokapen zehatzak ez dira aldatuko.</p>' +
@@ -2707,8 +2708,10 @@ $("match-detail").addEventListener("submit", async function (event) {
   }
   var stats = players.map(function (player) {
     var row = { id_jokalaria: Number(player.id_jokalaria) };
+    var played = form.querySelector('[data-edit-played="' + player.id_jokalaria + '"]');
+    row.jokatu = Boolean(played && played.checked);
     form.querySelectorAll('[data-edit-player="' + player.id_jokalaria + '"]').forEach(function (input) {
-      row[input.dataset.editStat] = Number(input.value);
+      row[input.dataset.editStat] = input.disabled ? 0 : Number(input.value);
     });
     return row;
   });
@@ -2724,6 +2727,15 @@ $("match-detail").addEventListener("submit", async function (event) {
     notify("Partidaren emaitza eta estatistikak eguneratu dira", "success");
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
+});
+
+$("match-detail").addEventListener("change", function (event) {
+  var checkbox = event.target;
+  if (!checkbox.matches("[data-edit-played]")) return;
+  var playerId = checkbox.dataset.editPlayed;
+  this.querySelectorAll('[data-edit-player="' + playerId + '"]').forEach(function (input) {
+    input.disabled = !checkbox.checked;
+  });
 });
 
 $("score-save-match").addEventListener("click", async function () {

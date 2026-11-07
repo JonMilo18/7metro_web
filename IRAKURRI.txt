@@ -42,7 +42,7 @@ FUNTZIOAK
   partidak eta txapelketak ere agertzen dira. Goiko "+ Makro" eta "+ Mikro" botoiek
   pop-up bat irekitzen dute sortzeko; banda edo txip bat sakatuz editatu/ezabatu
   daiteke. Koloreak ordenagailuko app berak erabiltzen dituenak dira.
-- Partidak sortu, emaitza eta jokalarien estatistikak ikusi/editatu, eta partida ezabatu.
+- Partidak sortu, emaitza eta jokalarien estatistikak ikusi/editatu (partaidetza barne), eta partida ezabatu.
 - Jokalarien guztizko estatistikak eta partida bakoitzeko estatistikak ikusi.
 - Asistentzia eta berandutzeak erregistratu.
 - Ariketak eskubaloi-zelai baten gainean marraztu (jokalariak, baloia, lerroak,
