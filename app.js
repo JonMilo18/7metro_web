@@ -1324,7 +1324,8 @@ function renderMatches() {
       " · " + Number(match.emaitza_geurea || 0) + " - " + Number(match.emaitza_aurkaria || 0) +
       '</strong><small>' + esc(formatDate(match)) + " · " + esc(match.lekua || "") +
       '</small></div><span class="match-actions"><button class="btn secondary" type="button" data-match-stats="' +
-      Number(match.id_partida) + '">Estatistikak</button> <button class="btn danger" type="button" data-delete-match="' +
+      Number(match.id_partida) + '">Estatistikak</button> <button class="btn secondary" type="button" data-edit-match="' +
+      Number(match.id_partida) + '">Editatu</button> <button class="btn danger" type="button" data-delete-match="' +
       Number(match.id_partida) + '">Ezabatu</button></span></li>';
   }).join("") : '<li class="empty">Oraindik ez da partidarik gorde.</li>';
   var statsMatch = $("stats-match"), priorStatsMatch = statsMatch.value;
@@ -1336,6 +1337,55 @@ function renderMatches() {
   var opponentNames = Array.from(new Set(matches.map(function (match) { return String(match.aurkaria || "Aurkaria"); }))).sort();
   opponentSelect.innerHTML = '<option value="">Aurkari guztiak</option>' + opponentNames.map(function (name) { return '<option value="' + esc(name) + '">' + esc(name) + '</option>'; }).join("");
   if (opponentNames.indexOf(priorOpponent) !== -1) opponentSelect.value = priorOpponent;
+}
+
+function renderMatchEditor(matchId) {
+  var match = matches.find(function (item) { return Number(item.id_partida) === Number(matchId); });
+  if (!match) {
+    $("match-detail").classList.add("hidden");
+    notify("Ezin izan da partida aurkitu. Freskatu zerrenda.", "error");
+    return;
+  }
+  var playerRows = records("partida_jokalariak").filter(function (row) {
+    return Number(row.id_partida) === Number(matchId);
+  });
+  var sanctions = records("partidu_zigorrak").filter(function (row) {
+    return Number(row.id_partida) === Number(matchId);
+  });
+  var fields = [["Gol", "golak", 999], ["Jaurtiketa", "jaurtiketak", 999],
+    ["Horia", "horia", 100], ["2 min", "two_min", 100],
+    ["Gorria", "gorria", 100], ["Urdina", "urdina", 100]];
+  $("match-detail").innerHTML =
+    '<form id="match-edit-form" class="stack" data-match-edit-id="' + Number(matchId) + '">' +
+    '<div class="toolbar"><div><h2>' + esc(match.aurkaria || "Aurkaria") +
+    ' · partida editatzen</h2><p class="muted">' + esc(formatDate(match)) +
+    " · " + esc(match.lekua || "") + '</p></div><button class="btn secondary" type="button" data-close-match-stats>Itxi</button></div>' +
+    '<div class="grid2"><label>Gure emaitza<input type="number" min="0" max="999" required data-match-score="home" value="' +
+    Number(match.emaitza_geurea || 0) + '"></label><label>Aurkariaren emaitza<input type="number" min="0" max="999" required data-match-score="away" value="' +
+    Number(match.emaitza_aurkaria || 0) + '"></label></div>' +
+    '<h3>Jokalari bakoitzaren estatistikak</h3>' +
+    (players.map(function (player) {
+      var playerId = Number(player.id_jokalaria);
+      var row = playerRows.find(function (item) { return Number(item.id_jokalaria) === playerId; });
+      var playerSanctions = byPlayer(sanctions, playerId);
+      var name = (player.dortsala != null ? "#" + player.dortsala + " " : "") + playerName(player);
+      return '<div class="match-player"><div class="match-player-head">' + esc(name) +
+        '</div><div class="player-stats">' + fields.map(function (field) {
+          var value = field[1] === "golak" || field[1] === "jaurtiketak"
+            ? Number(row && row[field[1]] || 0)
+            : playerSanctions.filter(function (item) {
+              return item.mota === (field[1] === "two_min" ? "2min" : field[1]);
+            }).length;
+          return '<label>' + field[0] + '<input type="number" min="0" max="' + field[2] +
+            '" required value="' + value + '" data-edit-stat="' + field[1] +
+            '" data-edit-player="' + playerId + '"></label>';
+        }).join("") + '</div></div>';
+    }).join("") || '<p class="empty">Ez dago jokalaririk.</p>') +
+    '<p class="muted">Jaurtiketen kokapen zehatzak ez dira aldatuko.</p>' +
+    '<div class="grid2"><button class="btn" type="submit">Aldaketak gorde</button><button class="btn secondary" type="button" data-close-match-stats>Utzi</button></div>' +
+    '</form>';
+  $("match-detail").classList.remove("hidden");
+  $("match-detail").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderDashboard() {
@@ -2644,6 +2694,38 @@ $("match-form").addEventListener("submit", async function (event) {
   finally { button.disabled = false; }
 });
 
+$("match-detail").addEventListener("submit", async function (event) {
+  var form = event.target;
+  if (!form.matches("#match-edit-form")) return;
+  event.preventDefault();
+  var button = form.querySelector('button[type="submit"]');
+  var score = ["home", "away"].map(function (side) {
+    return Number(form.querySelector('[data-match-score="' + side + '"]').value);
+  });
+  if (score.some(function (value) { return !Number.isInteger(value) || value < 0 || value > 999; })) {
+    return notify("Emaitza 0 eta 999 arteko zenbaki osoz osatu behar da", "error");
+  }
+  var stats = players.map(function (player) {
+    var row = { id_jokalaria: Number(player.id_jokalaria) };
+    form.querySelectorAll('[data-edit-player="' + player.id_jokalaria + '"]').forEach(function (input) {
+      row[input.dataset.editStat] = Number(input.value);
+    });
+    return row;
+  });
+  button.disabled = true;
+  try {
+    await request({
+      action: "pwa_update_match", team_id: teamId,
+      id: Number(form.dataset.matchEditId),
+      emaitza_geurea: score[0], emaitza_aurkaria: score[1], stats: stats
+    });
+    await refreshAll();
+    $("match-detail").classList.add("hidden");
+    notify("Partidaren emaitza eta estatistikak eguneratu dira", "success");
+  } catch (error) { notify(error.message, "error"); }
+  finally { button.disabled = false; }
+});
+
 $("score-save-match").addEventListener("click", async function () {
   var button = this;
   if (scoreboard.savedMatchId) return notify("Markagailu hau gordeta dago. Berrabiarazi beste partida bat gordetzeko.", "error");
@@ -2793,6 +2875,11 @@ document.addEventListener("click", async function (event) {
       $("match-detail").classList.add("hidden");
       await refreshAll(); notify(successMessage, "success");
     } catch (error) { notify(error.message, "error"); }
+  }
+  if (target.hasAttribute("data-edit-match")) {
+    selectSection("v-matches");
+    renderMatchEditor(Number(target.dataset.editMatch));
+    return;
   }
   if (target.hasAttribute("data-match-stats")) {
     var matchId = Number(target.dataset.matchStats);
