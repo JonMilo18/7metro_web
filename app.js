@@ -23,6 +23,7 @@ var macros = [], micros = [], playerStats = [], toastTimer, installPrompt = null
 var loadingCount = 0, loadingDelay = 0;
 var boardState = { fondo: "Zelaia", posizioak: {}, marrazkiak: [], animazioa: [] };
 var boardTool = "move", boardSelection = null, boardPointer = null, boardImages = {};
+var boardCurve = 0;
 var boardFrameIndex = -1, boardAnimationRaf = 0;
 var previewAnimation = null, previewAnimationFrame = 0;
 var sessionView = { ids: [], index: 0, raf: 0 };
@@ -336,18 +337,15 @@ function drawBoard(canvas, state, selection) {
     var dashParts = String(shape.dash || "").match(/\d+/g);
     ctx.setLineDash(dashParts ? dashParts.map(Number) : []);
     ctx.beginPath();
-    if (type === "line") {
-      ctx.moveTo(coords[0], coords[1]);
-      ctx.lineTo(coords[2], coords[3]);
+    if (type === "line" && coords.length >= 4) {
+      traceBoardLine(ctx, shape);
       ctx.stroke();
-      if (shape.arrow === "last") {
-        var angle = Math.atan2(coords[3] - coords[1], coords[2] - coords[0]);
-        ctx.beginPath();
-        ctx.moveTo(coords[2], coords[3]);
-        ctx.lineTo(coords[2] - 16 * Math.cos(angle - Math.PI / 6), coords[3] - 16 * Math.sin(angle - Math.PI / 6));
-        ctx.lineTo(coords[2] - 16 * Math.cos(angle + Math.PI / 6), coords[3] - 16 * Math.sin(angle + Math.PI / 6));
-        ctx.closePath();
-        ctx.fill();
+      var end = coords.length - 2;
+      if (shape.arrow === "last" || shape.arrow === "both") {
+        drawBoardArrow(ctx, coords[end], coords[end + 1], coords[end - 2], coords[end - 1]);
+      }
+      if (shape.arrow === "first" || shape.arrow === "both") {
+        drawBoardArrow(ctx, coords[0], coords[1], coords[2], coords[3]);
       }
     } else if (type === "polygon") {
       ctx.moveTo(coords[0], coords[1]);
@@ -373,10 +371,8 @@ function drawBoard(canvas, state, selection) {
       ctx.strokeStyle = "#ffe14a";
       ctx.lineWidth = 2;
       ctx.setLineDash([5, 4]);
-      ctx.strokeRect(Math.min(coords[0], coords[2] || coords[0]) - 7,
-        Math.min(coords[1], coords[3] || coords[1]) - 7,
-        Math.abs((coords[2] || coords[0]) - coords[0]) + 14,
-        Math.abs((coords[3] || coords[1]) - coords[1]) + 14);
+      var bounds = boardShapeBounds(coords);
+      ctx.strokeRect(bounds.left - 7, bounds.top - 7, bounds.right - bounds.left + 14, bounds.bottom - bounds.top + 14);
       ctx.setLineDash([]);
     }
   });
@@ -443,7 +439,57 @@ function drawBoard(canvas, state, selection) {
   ctx.restore();
 }
 
+function boardShapeBounds(coords) {
+  var xs = coords.filter(function (_, i) { return i % 2 === 0; });
+  var ys = coords.filter(function (_, i) { return i % 2 === 1; });
+  return { left: Math.min.apply(null, xs), right: Math.max.apply(null, xs),
+    top: Math.min.apply(null, ys), bottom: Math.max.apply(null, ys) };
+}
+
+function traceBoardLine(ctx, shape) {
+  var c = shape.coords, curved = shape.smooth && !/^(0|false)$/i.test(String(shape.smooth));
+  ctx.moveTo(c[0], c[1]);
+  if (curved && c.length >= 6) {
+    for (var i = 2; i < c.length - 2; i += 2) {
+      var last = i === c.length - 4;
+      ctx.quadraticCurveTo(c[i], c[i + 1], last ? c[i + 2] : (c[i] + c[i + 2]) / 2,
+        last ? c[i + 3] : (c[i + 1] + c[i + 3]) / 2);
+    }
+  } else {
+    for (var j = 2; j + 1 < c.length; j += 2) ctx.lineTo(c[j], c[j + 1]);
+  }
+}
+
+function drawBoardArrow(ctx, x, y, previousX, previousY) {
+  var angle = Math.atan2(y - previousY, x - previousX);
+  ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(x, y);
+  ctx.lineTo(x - 16 * Math.cos(angle - Math.PI / 6), y - 16 * Math.sin(angle - Math.PI / 6));
+  ctx.lineTo(x - 16 * Math.cos(angle + Math.PI / 6), y - 16 * Math.sin(angle + Math.PI / 6));
+  ctx.closePath(); ctx.fill();
+}
+
+function curveBoardLine(shape, amount) {
+  var c = shape.coords, x = c[0], y = c[1], endX = c[c.length - 2], endY = c[c.length - 1];
+  var dx = endX - x, dy = endY - y, length = Math.hypot(dx, dy) || 1;
+  shape.coords = amount ? [x, y, (x + endX) / 2 - dy / length * amount,
+    (y + endY) / 2 + dx / length * amount, endX, endY] : [x, y, endX, endY];
+  shape.smooth = Boolean(amount);
+}
+
+function syncBoardCurveControl() {
+  var shape = boardSelection && boardSelection.kind === "drawing" && boardState.marrazkiak[boardSelection.index];
+  if (shape && shape.type === "line") {
+    var c = shape.coords, dx = c[c.length - 2] - c[0], dy = c[c.length - 1] - c[1];
+    boardCurve = c.length === 6 && shape.smooth && !/^(0|false)$/i.test(String(shape.smooth))
+      ? Math.round(((c[2] - (c[0] + c[4]) / 2) * -dy + (c[3] - (c[1] + c[5]) / 2) * dx) / (Math.hypot(dx, dy) || 1)) : 0;
+  }
+  $("board-curve").value = String(boardCurve);
+  $("board-curve-value").textContent = String(boardCurve);
+}
+
 function redrawBoard() {
+  syncBoardCurveControl();
   drawBoard($("exercise-board"), boardState, boardSelection);
 }
 
@@ -483,11 +529,8 @@ function boardHit(point) {
   for (var j = boardState.marrazkiak.length - 1; j >= 0; j--) {
     var coords = boardState.marrazkiak[j].coords || [];
     if (coords.length >= 2) {
-      var left = Math.min(coords[0], coords[2] == null ? coords[0] : coords[2]) - 10;
-      var right = Math.max(coords[0], coords[2] == null ? coords[0] : coords[2]) + 10;
-      var top = Math.min(coords[1], coords[3] == null ? coords[1] : coords[3]) - 10;
-      var bottom = Math.max(coords[1], coords[3] == null ? coords[1] : coords[3]) + 10;
-      if (point.x >= left && point.x <= right && point.y >= top && point.y <= bottom) {
+      var bounds = boardShapeBounds(coords);
+      if (point.x >= bounds.left - 10 && point.x <= bounds.right + 10 && point.y >= bounds.top - 10 && point.y <= bounds.bottom + 10) {
         return { kind: "drawing", index: j };
       }
     }
@@ -513,8 +556,7 @@ function addBoardToken(prefix, point) {
   redrawBoard();
 }
 
-function finishBoardShape(start, end, tool) {
-  if (Math.hypot(end.x - start.x, end.y - start.y) < 4) return;
+function makeBoardShape(start, end, tool) {
   var shape = {
     type: tool === "rectangle" || tool === "oval" ? tool : "line",
     coords: [start.x, start.y, end.x, end.y],
@@ -523,7 +565,13 @@ function finishBoardShape(start, end, tool) {
   };
   if (tool === "dashed") shape.dash = "8 6";
   if (tool === "arrow") shape.arrow = "last";
-  boardState.marrazkiak.push(shape);
+  if (shape.type === "line") curveBoardLine(shape, boardCurve);
+  return shape;
+}
+
+function finishBoardShape(start, end, tool) {
+  if (Math.hypot(end.x - start.x, end.y - start.y) < 4) return;
+  boardState.marrazkiak.push(makeBoardShape(start, end, tool));
   boardSelection = { kind: "drawing", index: boardState.marrazkiak.length - 1 };
   redrawBoard();
 }
@@ -562,26 +610,10 @@ function boardPointerMove(event) {
   if (!boardPointer || boardPointer.id !== event.pointerId) return;
   var point = boardPoint(event), dx = point.x - boardPointer.point.x, dy = point.y - boardPointer.point.y;
   if (boardPointer.tool) {
-    redrawBoard();
-    var ctx = $("exercise-board").getContext("2d");
-    ctx.strokeStyle = "#ffe14a";
-    ctx.lineWidth = 3;
-    ctx.setLineDash(boardPointer.tool === "dashed" ? [8, 6] : []);
-    if (boardPointer.tool === "rectangle") ctx.strokeRect(boardPointer.point.x, boardPointer.point.y, dx, dy);
-    else if (boardPointer.tool === "oval") {
-      ctx.beginPath(); ctx.ellipse(boardPointer.point.x + dx / 2, boardPointer.point.y + dy / 2,
-        Math.max(1, Math.abs(dx) / 2), Math.max(1, Math.abs(dy) / 2), 0, 0, Math.PI * 2); ctx.stroke();
-    } else {
-      ctx.beginPath(); ctx.moveTo(boardPointer.point.x, boardPointer.point.y); ctx.lineTo(point.x, point.y); ctx.stroke();
-      if (boardPointer.tool === "arrow") {
-        var angle = Math.atan2(dy, dx);
-        ctx.beginPath(); ctx.moveTo(point.x, point.y);
-        ctx.lineTo(point.x - 16 * Math.cos(angle - Math.PI / 6), point.y - 16 * Math.sin(angle - Math.PI / 6));
-        ctx.lineTo(point.x - 16 * Math.cos(angle + Math.PI / 6), point.y - 16 * Math.sin(angle + Math.PI / 6));
-        ctx.closePath(); ctx.fillStyle = "#ffe14a"; ctx.fill();
-      }
-    }
-    ctx.setLineDash([]);
+    var preview = Object.assign({}, boardState, {
+      marrazkiak: boardState.marrazkiak.concat([makeBoardShape(boardPointer.point, point, boardPointer.tool)])
+    });
+    drawBoard($("exercise-board"), preview, null);
   } else if (boardSelection && boardSelection.kind === "token") {
     var pos = boardState.posizioak[boardSelection.tag];
     pos.x = Math.max(10, Math.min(790, pos.x + dx));
@@ -665,6 +697,7 @@ function playBoardAnimation() {
 function resetBoard() {
   stopBoardAnimation();
   boardFrameIndex = -1;
+  boardCurve = 0;
   boardState = { fondo: $("board-background").value, posizioak: {}, marrazkiak: [], animazioa: [] };
   boardSelection = null;
   updateBoardAnimationControls();
@@ -681,6 +714,8 @@ function animationFrameState(frame, fondo) {
       var props = value.props || {};
       state.marrazkiak.push({
         type: props.type,
+        smooth: props.smooth,
+        splinesteps: props.splinesteps,
         coords: value.coords,
         fill: props.fill,
         outline: props.outline,
@@ -3206,4 +3241,17 @@ $("match-create").addEventListener("click", function () {
 });
 $("match-create-panel").addEventListener("toggle", function () {
   $("match-create").setAttribute("aria-expanded", String(this.open));
+});
+
+$("board-curve").addEventListener("input", function () {
+  var amount = Number(this.value);
+  stopBoardAnimation();
+  boardCurve = amount;
+  var shape = boardSelection && boardSelection.kind === "drawing" && boardState.marrazkiak[boardSelection.index];
+  if (shape && shape.type === "line") curveBoardLine(shape, boardCurve);
+  redrawBoard();
+});
+$("board-curve-reset").addEventListener("click", function () {
+  $("board-curve").value = "0";
+  $("board-curve").dispatchEvent(new Event("input"));
 });

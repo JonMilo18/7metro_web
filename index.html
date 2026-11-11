@@ -429,6 +429,7 @@ textarea{min-height:84px;resize:vertical}
 #session-create-panel,#match-create-panel{scroll-margin-top:18px}
 .match-score-inputs{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:end;min-width:0}.match-score-inputs label{min-width:0}.match-score-inputs>span{padding-bottom:10px}
 .exercise-categories{min-width:0;margin:0;padding:10px;border:1px solid var(--line);border-radius:10px}.exercise-categories legend{font-size:.9rem;font-weight:600;padding:0 4px}
+.board-curve-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.board-curve-tools label{flex:1;min-width:160px;display:block}.board-curve-tools input{padding:0;min-height:44px}.board-curve-tools .btn{width:auto;margin:0}
 </style>
 </head>
 <body>
@@ -517,8 +518,12 @@ textarea{min-height:84px;resize:vertical}
             <button class="btn danger" id="board-delete" type="button">Ezabatu hautatuta</button>
             <button class="btn danger" id="board-clear" type="button">Garbitu dena</button>
           </div>
+          <div class="board-curve-tools">
+            <label for="board-curve">Lerroaren kurba: <output id="board-curve-value" for="board-curve">0</output><input id="board-curve" type="range" min="-150" max="150" step="1" value="0"></label>
+            <button class="btn secondary" id="board-curve-reset" type="button">Zuzendu lerroa</button>
+          </div>
           <div class="board-wrap"><canvas id="exercise-board" width="800" height="500" aria-label="Ariketa marrazteko arbela"></canvas></div>
-          <p class="muted" id="help-text-5" hidden>Aukeratu jokalari edo tresna eta ukitu arbela. Mugitu tresnarekin arrastatu; testua gehitzeko idatzi testua eskatzen denean.</p>
+          <p class="muted" id="help-text-5" hidden>Kurba emateko, doitu lerroaren kurba marraztu aurretik, edo hautatu lerro bat Mugitu tresnarekin eta doitu kurba. Aukeratu jokalari edo tresna eta ukitu arbela. Mugitu tresnarekin arrastatu; testua gehitzeko idatzi testua eskatzen denean.</p>
           <div class="stack" aria-label="Animazioa sortzeko aukerak">
             <div class="help-heading"><h2>Animazioa</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-6" aria-label="Animazioa: informazioa"><span aria-hidden="true">i</span></button></div>
             <p class="muted" id="help-text-6" hidden>Prestatu hasierako kokapena eta sakatu &laquo;Gehitu pausoa&raquo;. Mugitu elementuak eta gehitu hurrengo pausoak. Hautatutako pausoan aldaketak gordetzeko, sakatu &laquo;Eguneratu pausoa&raquo;. Gordetzean azken kokapena ere gehituko da animazioan.</p>
@@ -777,6 +782,6 @@ textarea{min-height:84px;resize:vertical}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="app.js?v=110" defer></script>
+<script src="app.js?v=111" defer></script>
 </body>
 </html>
