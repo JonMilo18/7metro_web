@@ -533,6 +533,49 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
  .score-mode-dialog .score-shot-maps.is-penalty{grid-template-columns:1fr}
  .score-player-dialog{margin:auto;max-height:calc(100dvh - 16px)}
 }
+
+/* Large step-by-step location picker for the mobile match view. */
+.score-location-quick-only{display:none!important}
+#score-location-dialog.quick-location{width:min(650px,calc(100% - 12px));padding:10px;max-height:calc(100dvh - 12px)}
+.quick-location .score-location-quick-only{display:block!important}
+.quick-location .score-mode-dialog-heading{top:-10px;padding:4px 0 8px}
+.quick-location .score-mode-dialog-heading h2{font-size:1rem}
+.quick-location #shot-context,.quick-location #shot-location-hint,.quick-location #shot-record,.quick-location #shot-cancel-edit,.quick-location #score-shot-maps h3{display:none!important}
+.quick-location #shot-fields-details{margin:0}
+.quick-location #shot-fields-summary{font-size:.8rem;color:var(--muted);line-height:1.4;overflow-wrap:anywhere;cursor:pointer}
+.quick-location #shot-fields-details>.stack{margin:10px 0}
+.quick-location #shot-fields-details .grid2{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.quick-location #shot-fields-details label{min-width:0;font-size:.8rem}
+.quick-location #score-shot-panel>.score-details-content{gap:8px}
+.score-location-steps{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.quick-location.is-penalty .score-location-steps{grid-template-columns:1fr}
+.score-location-steps button{min-height:44px;padding:7px;border:1px solid var(--line);border-radius:10px;background:var(--bg2);color:var(--muted);font-weight:700;cursor:pointer}
+.score-location-steps button[aria-pressed="true"]{color:#fff;background:var(--blue);border-color:var(--blue)}
+.score-location-steps button:disabled{opacity:.45;cursor:default}
+.score-location-steps .hidden{display:none!important}
+.score-location-instruction{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 2px;min-height:36px}
+.score-location-instruction strong{font-size:.85rem;line-height:1.3}
+.score-location-instruction .btn{width:auto;min-height:44px;margin:0;padding:6px 9px;font-size:.75rem;flex:none}
+.quick-location #score-shot-maps{display:block}
+.quick-location .shot-canvas-wrap{position:relative;width:100%;max-width:min(100%,calc((100dvh - 235px) * 1.5));margin:0 auto}
+.quick-location .shot-canvas{border-radius:12px}
+.quick-location .shot-goal-zones{display:grid!important;position:absolute;inset:3% 2%;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:2px}
+.quick-location.is-exact .shot-goal-zones{display:none!important}
+.shot-goal-zone{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;padding:3px;border:1px solid #ffffff70;border-radius:5px;background:#0c172899;color:#fff;cursor:pointer;font-size:clamp(.75rem,2.5vw,.9rem);line-height:1.2;touch-action:manipulation}
+.shot-goal-zone strong{font-size:inherit}.shot-goal-zone[aria-pressed="true"]{background:#0044eeaa;outline:2px solid white;outline-offset:-2px}
+.shot-goal-zone:active{background:#0044ee}.shot-goal-zone:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+@media(orientation:landscape) and (max-height:500px) and (min-width:600px){
+ #score-location-dialog.quick-location #score-shot-panel>.score-details-content{display:grid;grid-template-columns:180px minmax(0,1fr);align-items:start;gap:8px}
+ .quick-location #shot-fields-details{grid-column:1;grid-row:1}
+ .quick-location .score-location-flow{grid-column:1;grid-row:2}
+ .quick-location #score-shot-maps{grid-column:2;grid-row:1/span 2}
+ .quick-location .shot-canvas-wrap{max-width:min(100%,calc((100dvh - 112px) * 1.5))}
+ .quick-location .score-mode-dialog-heading{padding-bottom:4px}
+ .quick-location .score-location-instruction{margin-top:6px;min-height:30px;flex-direction:column;align-items:stretch}
+ .quick-location .score-location-instruction .btn{align-self:stretch}
+ .quick-location .score-mode-dialog-heading h2{font-size:.9rem}
+ .shot-goal-zone{font-size:.75rem}
+}
 </style>
 </head>
 <body>
@@ -805,9 +848,12 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
           <div class="help-heading"><h2>Jaurtiketaren kokapena</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-17" aria-label="Jaurtiketaren kokapena: informazioa"><span aria-hidden="true">i</span></button></div>
           <p class="muted" id="help-text-17" hidden>Azken ekintzari kokapena gehitzeko, erabili goiko botoia: ez da beste golik gehituko. Hemendik jaurtiketa berri bat ere erregistra dezakezu. Ukitu kantxa eta atea kokapenak aukeratzeko. 7 metroko jaurtiketetan ateko helmuga bakarrik aukeratu behar da.</p>
           <p id="shot-context" class="muted">Jaurtiketa berria</p>
+          <details id="shot-fields-details" open><summary id="shot-fields-summary">Jaurtiketaren datuak</summary><div class="stack score-details-content">
           <div class="grid2"><label>Taldea<select id="shot-team"><option value="home">Gure taldea</option><option value="away">Aurkaria</option></select></label><label>Jokalaria (aukerakoa)<select id="shot-player"><option value="">Ez zehaztu</option></select></label></div>
           <label>Jaurtiketa mota eta emaitza<select id="shot-result"><option value="gol">Jaurtiketa arrunta &middot; gola</option><option value="jaurtiketa">Jaurtiketa arrunta &middot; huts</option><option value="penalti_gol">Penaltia &middot; gola</option><option value="penalti_jaurtiketa">Penaltia &middot; huts</option></select></label>
-          <div class="score-shot-maps" id="score-shot-maps"><div id="shot-court-panel"><h3>1. Jatorria kantxan</h3><div class="shot-canvas-wrap"><canvas id="shot-court-canvas" class="shot-canvas" width="800" height="520" aria-label="Sakatu jaurtiketaren jatorria eskubaloi kantxan"></canvas></div></div><div><h3 id="shot-goal-title">2. Helmuga atean</h3><div class="shot-canvas-wrap"><canvas id="shot-goal-canvas" class="shot-canvas" width="600" height="400" aria-label="Sakatu baloiaren kokalekua porterian"></canvas></div></div></div>
+          </div></details>
+          <div class="score-location-flow score-location-quick-only"><div class="score-location-steps" role="group" aria-label="Kokapenaren pausoa"><button type="button" data-location-step="court" aria-pressed="true">1. Kantxa</button><button type="button" data-location-step="goal" aria-pressed="false" disabled>2. Atea</button></div><div class="score-location-instruction"><strong id="shot-quick-instruction">Ukitu nondik jaurti duen</strong><button class="btn secondary" id="shot-exact-toggle" type="button" aria-pressed="false">Puntu zehatza</button></div></div>
+          <div class="score-shot-maps" id="score-shot-maps"><div id="shot-court-panel"><h3>1. Jatorria kantxan</h3><div class="shot-canvas-wrap"><canvas id="shot-court-canvas" class="shot-canvas" width="800" height="520" aria-label="Sakatu jaurtiketaren jatorria eskubaloi kantxan"></canvas></div></div><div id="shot-goal-panel"><h3 id="shot-goal-title">2. Helmuga atean</h3><div class="shot-canvas-wrap"><canvas id="shot-goal-canvas" class="shot-canvas" width="600" height="400" aria-label="Sakatu baloiaren kokalekua porterian"></canvas><div id="shot-goal-zones" class="shot-goal-zones score-location-quick-only" role="group" aria-label="Ateko helmuga aukeratu"></div></div></div></div>
           <p class="muted" id="shot-location-hint" style="text-align:center;margin:0">Aukeratu jatorria kantxan eta helmuga atean</p>
           <button class="btn" type="button" id="shot-record" disabled>Jaurtiketa erregistratu</button><button class="btn secondary" type="button" id="shot-cancel-edit" hidden>Beste jaurtiketa bat prestatu</button>
         </div>
@@ -913,6 +959,6 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="app.js?v=119" defer></script>
+<script src="app.js?v=120" defer></script>
 </body>
 </html>

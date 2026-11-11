@@ -2140,6 +2140,7 @@ function scoreRenderShotType() {
     button.setAttribute("aria-label", (button.dataset.quickSide === "home" ? "Gure taldea: " : "Aurkaria: ") + label);
   });
 }
+var scoreLocationStep = "court", scoreLocationExact = false;
 var shotFrom = null, shotTo = null, shotCourtImage = new Image();
 shotCourtImage.src = "irudiak/Zelai-erdia.png";
 shotCourtImage.onload = function () { drawShotCanvases(); };
@@ -2185,17 +2186,69 @@ function drawShotCanvases() {
   $("shot-location-hint").textContent = penalty ? destinationHint :
     (shotFrom ? "Kantxako jatorria aukeratuta" : "Aukeratu jatorria kantxan") + " \u00b7 " + destinationHint;
   $("shot-record").disabled = scoreIsLocked() || !(shotOrigin() && shotTo);
+  renderQuickLocation();
 }
 function drawShotMarker(ctx, point, w, h) {
   var x = point[0] * w, y = point[1] * h;
   ctx.beginPath(); ctx.arc(x, y, Math.max(9, w * .018), 0, Math.PI * 2);
   ctx.fillStyle = "#ed3434"; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = "#fff"; ctx.stroke();
 }
+function quickLocationActive() { return $("score-location-dialog").classList.contains("quick-location"); }
+function renderQuickLocation() {
+  var quick = quickLocationActive(), penalty = shotIsPenalty();
+  var side = $("shot-team").value === "away" ? "Aurkaria" : "Gure taldea";
+  var player = $("shot-player").selectedOptions[0];
+  $("shot-fields-summary").textContent = [side, scoreActionLabel($("shot-result").value), player && $("shot-player").value ? player.textContent : "Jokalaria zehaztu gabe"].join(" \u00b7 ");
+  if (!quick) { $("shot-court-panel").hidden = penalty; $("shot-goal-panel").hidden = false; return; }
+  if (penalty) scoreLocationStep = "goal";
+  else if (scoreLocationStep === "goal" && !shotOrigin()) scoreLocationStep = "court";
+  $("score-location-dialog").classList.toggle("is-penalty", penalty);
+  $("shot-court-panel").hidden = penalty || scoreLocationStep !== "court";
+  $("shot-goal-panel").hidden = scoreLocationStep !== "goal";
+  $("score-location-dialog").classList.toggle("is-exact", scoreLocationExact);
+  document.querySelectorAll("[data-location-step]").forEach(function (button) {
+    var court = button.dataset.locationStep === "court";
+    button.classList.toggle("hidden", court && penalty);
+    button.disabled = court ? penalty : !shotOrigin();
+    button.setAttribute("aria-pressed", String(button.dataset.locationStep === scoreLocationStep));
+    if (!court) button.textContent = penalty ? "7 m: Atea" : "2. Atea";
+  });
+  $("shot-exact-toggle").classList.toggle("hidden", scoreLocationStep !== "goal");
+  $("shot-exact-toggle").setAttribute("aria-pressed", String(scoreLocationExact));
+  $("shot-exact-toggle").textContent = scoreLocationExact ? "9 zonak" : "Puntu zehatza";
+  $("shot-quick-instruction").textContent = scoreLocationStep === "court" ? "Ukitu kantxan nondik jaurti duen" :
+    scoreLocationExact ? "Ukitu ateko puntua gordetzeko" : "Ukitu ateko zona gordetzeko";
+  document.querySelectorAll("[data-shot-zone]").forEach(function (button) {
+    var index = Number(button.dataset.shotZone);
+    var selected = shotTo && Math.min(2, Math.floor(shotTo[1] * 3)) * 3 + Math.min(2, Math.floor(shotTo[0] * 3)) === index;
+    button.setAttribute("aria-pressed", String(Boolean(selected)));
+    button.disabled = scoreIsLocked();
+  });
+}
+function setupQuickLocation() {
+  scoreLocationStep = shotIsPenalty() ? "goal" : "court";
+  scoreLocationExact = false;
+  $("score-location-dialog").classList.add("quick-location");
+  $("shot-fields-details").open = !shotTargetEvent;
+  drawShotCanvases();
+  $("score-location-dialog").scrollTop = 0;
+}
+function commitQuickLocation() {
+  if (quickLocationActive() && shotOrigin() && shotTo && !scoreIsLocked()) $("shot-record").click();
+}
 function bindShotCanvas(id, setter) {
-  $(id).addEventListener("pointerdown", function (event) {
+  $(id).addEventListener("click", function (event) {
+    if (event.button !== 0 || scoreIsLocked()) return;
+    if (quickLocationActive() && id === "shot-goal-canvas" && !scoreLocationExact) return;
     var rect = event.currentTarget.getBoundingClientRect();
     setter([Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)), Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height))]);
+    if (quickLocationActive() && id === "shot-court-canvas") {
+      scoreLocationStep = "goal";
+      $("shot-fields-details").open = false;
+      $("score-location-dialog").scrollTop = 0;
+    }
     drawShotCanvases();
+    if (id === "shot-goal-canvas") commitQuickLocation();
   });
 }
 function scoreSnapshot(side, type) {
@@ -2387,6 +2440,22 @@ function scoreUpdate() {
   }
   scoreSave(); scoreRender();
 }
+$("shot-goal-zones").innerHTML = ["Goian", "Erdian", "Behean"].map(function (row, y) {
+  return ["Ezkerra", "Erdia", "Eskuina"].map(function (column, x) {
+    return '<button class="shot-goal-zone" type="button" data-shot-zone="' + (y * 3 + x) + '" aria-pressed="false" aria-label="' + row + ': ' + column + '"><span>' + row + '</span><strong>' + column + '</strong></button>';
+  }).join("");
+}).join("");
+$("shot-goal-zones").addEventListener("click", function (event) {
+  var button = event.target.closest("[data-shot-zone]");
+  if (!button || !quickLocationActive() || scoreIsLocked() || !shotOrigin()) return;
+  var index = Number(button.dataset.shotZone);
+  shotTo = [(index % 3 + 0.5) / 3, (Math.floor(index / 3) + 0.5) / 3];
+  drawShotCanvases(); commitQuickLocation();
+});
+document.querySelectorAll("[data-location-step]").forEach(function (button) {
+  button.addEventListener("click", function () { scoreLocationStep = this.dataset.locationStep; renderQuickLocation(); });
+});
+$("shot-exact-toggle").addEventListener("click", function () { scoreLocationExact = !scoreLocationExact; renderQuickLocation(); });
 bindShotCanvas("shot-court-canvas", function (point) { shotFrom = point; });
 bindShotCanvas("shot-goal-canvas", function (point) { shotTo = point; });
 $("shot-player").addEventListener("change", drawShotCanvases);
@@ -2397,6 +2466,7 @@ $("shot-result").addEventListener("change", function () {
 $("shot-team").addEventListener("change", function () {
   $("shot-player").value = "";
   renderShotPlayers();
+  renderQuickLocation();
 });
 $("shot-record").addEventListener("click", function () {
   var origin = shotOrigin();
@@ -2432,7 +2502,7 @@ $("score-add-location").addEventListener("click", function () {
   $("shot-record").textContent = "Kokapena gorde"; $("shot-cancel-edit").hidden = false;
   $("score-shot-panel").open = true;
   drawShotCanvases();
-  if (scoreMatchMode) $("score-location-dialog").showModal();
+  if (scoreMatchMode) { setupQuickLocation(); $("score-location-dialog").showModal(); }
   else $("score-shot-panel").scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
 });
 document.querySelectorAll("[data-quick-side]").forEach(function (button) {
@@ -2600,9 +2670,14 @@ $("score-mode-new-shot").addEventListener("click", function () {
   $("shot-team").value = "home"; $("shot-result").value = "gol"; $("shot-player").value = "";
   renderShotPlayers(); drawShotCanvases();
   $("score-shot-panel").open = true;
+  setupQuickLocation();
   $("score-location-dialog").showModal();
 });
-$("score-location-dialog").addEventListener("close", function () { scoreClearShot(); $("score-shot-panel").open = false; });
+$("score-location-dialog").addEventListener("close", function () {
+  this.classList.remove("quick-location", "is-exact", "is-penalty");
+  $("shot-fields-details").open = true;
+  scoreClearShot(); $("score-shot-panel").open = false;
+});
 document.addEventListener("fullscreenchange", function () {
   if (document.fullscreenElement === $("v-scoreboard")) {
     if (scoreMatchMode) scoreNativeFullscreen = true;
