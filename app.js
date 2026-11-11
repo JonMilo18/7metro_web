@@ -151,6 +151,7 @@ async function requestImpl(payload, anonymous) {
 }
 
 function showLogin() {
+  if (scoreMatchMode) scoreExitMatchMode();
   token = "";
   setMobileMenu(false);
   $("mobile-menu-toggle").hidden = true;
@@ -161,6 +162,7 @@ function showLogin() {
 }
 
 function showTeamPicker() {
+  if (scoreMatchMode) scoreExitMatchMode();
   setMobileMenu(false);
   $("mobile-menu-toggle").hidden = true;
   $("workspace").classList.remove("hidden");
@@ -1988,6 +1990,7 @@ async function refreshAll() {
 }
 
 function selectSection(id) {
+  if (id !== "v-scoreboard" && scoreMatchMode) scoreExitMatchMode();
   if (id !== "v-board") stopBoardAnimation();
   setMobileMenu(false);
   if (id !== "v-session-view") stopSessionAnimation();
@@ -2009,6 +2012,7 @@ function selectSection(id) {
 }
 
 var scoreboard = { home: 0, away: 0, seconds: 0, period: 0, running: false, events: [], lastTick: 0 };
+var scoreMatchMode = false, scoreModePanels = [], scoreModeScroll = 0, scoreNativeFullscreen = false, scoreWakeLock = null, scoreWakePending = false;
 var scoreTimer = 0, scoreSaving = false, scoreShotType = "normal", scoreSanctionSide = "home", pendingScoreAction = null, shotTargetEvent = null;
 function scoreStorageKey() { return "7metro-scoreboard-" + (teamId || "local"); }
 function scoreRead() {
@@ -2408,6 +2412,7 @@ $("shot-record").addEventListener("click", function () {
     scoreRecordAction(scoreSnapshot($("shot-team").value, $("shot-result").value), $("shot-player").value, origin, shotTo, shotSelectedOpponent());
   }
   scoreClearShot(); $("score-shot-panel").open = false;
+  if ($("score-location-dialog").open) $("score-location-dialog").close();
 });
 $("shot-cancel-edit").addEventListener("click", scoreClearShot);
 $("score-add-location").addEventListener("click", function () {
@@ -2425,7 +2430,8 @@ $("score-add-location").addEventListener("click", function () {
   $("shot-record").textContent = "Kokapena gorde"; $("shot-cancel-edit").hidden = false;
   $("score-shot-panel").open = true;
   drawShotCanvases();
-  $("score-shot-panel").scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+  if (scoreMatchMode) $("score-location-dialog").showModal();
+  else $("score-shot-panel").scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
 });
 document.querySelectorAll("[data-quick-side]").forEach(function (button) {
   button.addEventListener("click", function () {
@@ -2521,19 +2527,95 @@ $("score-minutes").addEventListener("change", function () {
   scoreSave(); scoreRender();
 });
 ["score-home-name", "score-away-name"].forEach(function (id) { $(id).addEventListener("change", function () { scoreSave(); scoreRender(); }); });
-$("score-fullscreen").addEventListener("click", async function () {
+function scoreMoveModePanel(id, host) {
+  var element = $(id), placeholder = document.createComment("Match view: " + id);
+  element.before(placeholder);
+  scoreModePanels.push({ element: element, placeholder: placeholder });
+  host.appendChild(element);
+}
+async function scoreKeepAwake() {
+  if (!scoreMatchMode || document.visibilityState !== "visible" || !navigator.wakeLock || scoreWakeLock || scoreWakePending) return;
+  scoreWakePending = true;
   try {
-    if (document.fullscreenElement) await document.exitFullscreen();
-    else await $("v-scoreboard").requestFullscreen();
-
-  } catch (error) { notify("Pantaila osoa ezin izan da aktibatu gailu honetan", "error"); }
+    var lock = await navigator.wakeLock.request("screen");
+    if (!scoreMatchMode || document.visibilityState !== "visible") { await lock.release(); return; }
+    scoreWakeLock = lock;
+    lock.addEventListener("release", function () { if (scoreWakeLock === lock) scoreWakeLock = null; });
+  } catch (error) { /* The match view also works without a screen wake lock. */ }
+  finally { scoreWakePending = false; }
+}
+async function scoreEnterMatchMode() {
+  if (scoreMatchMode) return;
+  scoreMatchMode = true; scoreModeScroll = window.scrollY;
+  setMobileMenu(false);
+  $("v-scoreboard").classList.add("score-match-mode");
+  document.body.classList.add("score-match-active");
+  ["score-history", "score-settings", "score-save-panel"].forEach(function (id) { scoreMoveModePanel(id, $("score-tools-content")); });
+  scoreMoveModePanel("score-shot-panel", $("score-location-content"));
+  $("score-fullscreen").setAttribute("aria-pressed", "true");
+  $("score-fullscreen").setAttribute("aria-label", "Partida modutik irten");
+  $("score-fullscreen").querySelector(".score-fullscreen-label").textContent = "Irten";
+  $("v-scoreboard").scrollTop = 0;
+  // iPhone and browsers without Fullscreen API use the same viewport layout.
+  try {
+    if ($("v-scoreboard").requestFullscreen && document.fullscreenEnabled) {
+      // Track the request before its events: entry and exit may share one frame.
+      scoreNativeFullscreen = true;
+      await $("v-scoreboard").requestFullscreen({ navigationUI: "hide" });
+      if (!scoreMatchMode && document.fullscreenElement === $("v-scoreboard")) await document.exitFullscreen();
+    }
+  } catch (error) { scoreNativeFullscreen = false; /* Keep the viewport match view when native fullscreen is unavailable. */ }
+  if (scoreMatchMode) scoreKeepAwake();
+}
+async function scoreExitMatchMode() {
+  if (!scoreMatchMode) return;
+  scoreMatchMode = false; scoreNativeFullscreen = false;
+  ["score-player-dialog", "score-tools-dialog", "score-location-dialog"].forEach(function (id) { if ($(id).open) $(id).close(); });
+  scoreModePanels.forEach(function (panel) { panel.placeholder.replaceWith(panel.element); });
+  scoreModePanels = [];
+  $("v-scoreboard").classList.remove("score-match-mode");
+  document.body.classList.remove("score-match-active");
+  $("score-fullscreen").setAttribute("aria-pressed", "false");
+  $("score-fullscreen").setAttribute("aria-label", "Pantaila osoko partida modua ireki");
+  $("score-fullscreen").querySelector(".score-fullscreen-label").textContent = "Partida modua";
+  if (scoreWakeLock) { var lock = scoreWakeLock; scoreWakeLock = null; lock.release().catch(function () {}); }
+  window.scrollTo(0, scoreModeScroll);
+  $("score-fullscreen").focus({ preventScroll: true });
+  if (document.fullscreenElement === $("v-scoreboard")) {
+    try { await document.exitFullscreen(); } catch (error) { /* Layout and match state have already been restored. */ }
+  }
+}
+$("score-fullscreen").addEventListener("click", function () {
+  if (scoreMatchMode) scoreExitMatchMode(); else scoreEnterMatchMode();
 });
-
+$("score-match-tools").addEventListener("click", function () { $("score-tools-dialog").showModal(); });
+document.querySelectorAll("[data-close-score-dialog]").forEach(function (button) {
+  button.addEventListener("click", function () { $(this.dataset.closeScoreDialog).close(); });
+});
+$("score-mode-new-shot").addEventListener("click", function () {
+  $("score-tools-dialog").close();
+  scoreClearShot();
+  $("shot-team").value = "home"; $("shot-result").value = "gol"; $("shot-player").value = "";
+  renderShotPlayers(); drawShotCanvases();
+  $("score-shot-panel").open = true;
+  $("score-location-dialog").showModal();
+});
+$("score-location-dialog").addEventListener("close", function () { scoreClearShot(); $("score-shot-panel").open = false; });
 document.addEventListener("fullscreenchange", function () {
-  var label = document.fullscreenElement ? "Pantaila osotik irten" : "Pantaila osoa";
-  $("score-fullscreen").setAttribute("aria-label", label);
-  $("score-fullscreen").querySelector(".score-fullscreen-label").textContent = label;
+  if (document.fullscreenElement === $("v-scoreboard")) {
+    if (scoreMatchMode) scoreNativeFullscreen = true;
+    else document.exitFullscreen().catch(function () {});
+    return;
+  }
+  if (scoreNativeFullscreen && scoreMatchMode) scoreExitMatchMode();
+  else scoreNativeFullscreen = false;
 });
+document.addEventListener("keydown", function (event) {
+  if (event.key === "Escape" && scoreMatchMode && !document.querySelector("dialog[open]")) {
+    event.preventDefault(); scoreExitMatchMode();
+  }
+});
+document.addEventListener("visibilitychange", function () { if (scoreMatchMode && document.visibilityState === "visible") scoreKeepAwake(); });
 
 function setMobileMenu(open) {
   var nav = $("nav"), toggle = $("mobile-menu-toggle"), backdrop = $("mobile-menu-backdrop");

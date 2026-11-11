@@ -451,6 +451,88 @@ textarea{min-height:84px;resize:vertical}
 @media(prefers-reduced-motion:reduce){.score-action:active{transform:none}}
 .score-sanctions{margin-top:14px}.score-sanctions h3{font-size:.82rem;font-weight:650;color:var(--muted);margin:0 0 8px}.score-sanction-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-sanction{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;min-height:52px;padding:7px 3px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font-weight:700;font-size:.8rem;cursor:pointer;touch-action:manipulation}.score-sanction:disabled{opacity:.45;cursor:default}.score-sanction:active{border-color:var(--blue)}.score-card-icon{display:inline-block;flex:none;width:10px;height:15px;border-radius:2px}.score-card-icon.yellow{background:#f5c542}.score-card-icon.red{background:#f05252}.score-card-icon.blue{background:#508dff}
 .score-opponent-add{margin:14px 0}.score-opponent-fields{display:grid;grid-template-columns:minmax(72px,.6fr) minmax(0,1.4fr);gap:10px}.score-opponent-fields label{min-width:0}.score-sanctions .score-quick-heading h3{margin:0}
+
+/* Dedicated match view reuses the same controls and match state. */
+.score-mode-only{display:none!important}
+#score-fullscreen{width:auto;min-width:44px;min-height:44px;padding:8px 12px}.score-fullscreen-label{display:inline}
+body.score-match-active{overflow:hidden;overscroll-behavior:none}
+#v-scoreboard.score-match-mode{position:fixed;inset:0;z-index:30;display:grid!important;grid-template-rows:44px auto minmax(354px,1fr);gap:8px;width:100%;height:100vh;height:100dvh;max-width:none;margin:0;padding:calc(8px + env(safe-area-inset-top,0px)) calc(8px + env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) calc(8px + env(safe-area-inset-left,0px));overflow:auto;overscroll-behavior:contain;background:var(--bg);color:var(--ink)}
+#v-scoreboard.score-match-mode>.card{margin:0;max-width:none;min-width:0;box-shadow:none}
+.score-match-mode .score-mode-only{display:inline-flex!important}
+.score-match-mode .score-page-title{flex-wrap:nowrap;min-width:0;gap:6px}
+.score-match-mode .score-page-title>.help-heading{flex:1;min-width:0}
+.score-match-mode .score-page-title h1{font-size:1rem;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.score-match-mode .score-page-title .info-toggle,.score-match-mode .score-page-title>p{display:none!important}
+.score-match-mode .score-page-title>.btn{min-height:44px;width:auto;margin:0;padding:7px 10px;font-size:.8rem;box-shadow:none}
+#v-scoreboard.score-match-mode>#score-live-panel{position:static;top:auto;padding:8px;border-radius:12px}
+.score-match-mode .score-live-summary{gap:4px;grid-template-columns:minmax(0,1fr) minmax(94px,1.2fr) minmax(0,1fr)}
+.score-match-mode .score-live-side>span{font-size:.75rem}
+.score-match-mode .score-live-side>strong{font-size:clamp(2.1rem,7dvh,3.7rem);line-height:1}
+.score-match-mode #score-clock{font-size:clamp(1.9rem,5dvh,2.8rem)}
+.score-match-mode .score-live-time>span{font-size:.7rem}
+.score-match-mode .score-timer-actions{gap:6px;margin-top:6px}
+.score-match-mode .score-timer-actions .btn{min-height:44px;padding:6px;font-size:.88rem}
+#v-scoreboard.score-match-mode>.score-quick-panel{display:grid;grid-template-rows:44px minmax(122px,1fr) 88px 66px;gap:6px;min-height:354px;padding:8px;border-radius:12px}
+.score-match-mode .score-quick-panel>.score-quick-heading{margin:0;gap:6px}
+.score-match-mode .score-quick-panel>.score-quick-heading h2{font-size:.85rem;margin:0}
+.score-match-mode .score-shot-type{padding:2px;gap:2px;border-radius:9px}
+.score-match-mode .score-shot-type button{min-height:38px;padding:4px 12px;font-size:.85rem}
+.score-match-mode .score-quick-grid{gap:8px;min-height:0}
+.score-match-mode .score-quick-team{grid-template-rows:16px minmax(54px,1fr) 44px;gap:4px;min-height:0}
+.score-match-mode .score-quick-team h3{font-size:.8rem;line-height:16px;margin:0}
+.score-match-mode .score-action-goal{height:100%;min-height:54px;padding:6px;gap:0}
+.score-match-mode .score-action-goal>span{font-size:clamp(1.5rem,5dvh,2.5rem)}
+.score-match-mode .score-action-goal>strong{font-size:1rem}
+.score-match-mode .score-action-miss{min-height:44px;padding:6px;font-size:.85rem}
+.score-match-mode .score-sanctions{margin:0;display:grid;grid-template-rows:40px 44px;gap:4px}
+.score-match-mode .score-sanctions>.score-quick-heading{margin:0}
+.score-match-mode .score-sanctions h3{font-size:.8rem}
+.score-match-mode .score-sanction{min-height:44px;padding:3px;font-size:.76rem;gap:2px}
+.score-match-mode .score-card-icon{height:12px;width:9px}
+.score-match-mode #score-sanction-note{display:none!important}
+.score-match-mode .score-last-action{display:grid;grid-template-rows:18px 44px;gap:4px;padding:0;border:0;margin:0;min-width:0}
+.score-match-mode .score-last-action>.score-small-label{display:none}
+.score-match-mode #score-last-event{margin:0;min-height:0;line-height:18px;font-size:.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.score-match-mode .score-last-tools{gap:6px}
+.score-match-mode .score-last-tools .btn{min-height:44px;padding:6px;font-size:.82rem}
+.score-mode-dialog{width:min(760px,calc(100% - 16px));max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);padding:12px;border:1px solid var(--line);border-radius:16px;background:var(--bg);color:var(--ink);overflow:auto;overscroll-behavior:contain;box-shadow:0 20px 60px #0006}
+.score-mode-dialog::backdrop{background:#0009;backdrop-filter:blur(3px)}
+.score-mode-dialog-heading{position:sticky;top:-12px;z-index:3;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;background:var(--bg)}
+.score-mode-dialog-heading h2{font-size:1.1rem;margin:0}
+.score-mode-dialog-heading .btn{width:auto;min-height:44px;margin:0;padding:7px 12px}
+.score-mode-dialog .card{margin:10px 0;padding:12px;box-shadow:none}
+#score-location-dialog #score-shot-panel{border:0;margin:0;padding:0;scroll-margin-top:0}
+#score-location-dialog #score-shot-panel>summary,#score-location-dialog #score-shot-panel .help-heading{display:none}
+#score-location-dialog .score-details-content{margin-top:0}
+.score-mode-dialog .shot-canvas-wrap{max-width:340px}
+@media(orientation:portrait) and (max-height:650px){
+ #v-scoreboard.score-match-mode>#score-live-panel{padding:5px}
+ .score-match-mode .score-timer-actions{margin-top:4px}
+}
+@media(orientation:landscape) and (max-height:600px) and (min-width:600px){
+ #v-scoreboard.score-match-mode{grid-template-columns:minmax(190px,.75fr) minmax(0,1.7fr);grid-template-rows:44px minmax(270px,1fr)}
+ .score-match-mode>.score-page-title{grid-column:1/-1}
+ #v-scoreboard.score-match-mode>#score-live-panel{grid-column:1;grid-row:2;display:flex;flex-direction:column;justify-content:space-between}
+ .score-match-mode .score-live-summary{grid-template-columns:1fr 1fr;gap:8px;align-content:center;flex:1}
+ .score-match-mode .score-live-time{grid-row:2;grid-column:1/-1}
+ .score-match-mode .score-live-side>strong{font-size:2.7rem}
+ .score-match-mode .score-timer-actions{grid-template-columns:1fr}
+ #v-scoreboard.score-match-mode>.score-quick-panel{grid-column:2;grid-row:2;grid-template-rows:44px minmax(106px,1fr) 44px 62px;min-height:270px;gap:4px;padding:6px}
+ .score-match-mode .score-quick-team{grid-template-rows:14px minmax(44px,1fr) 44px;gap:2px}
+ .score-match-mode .score-quick-team h3{line-height:14px;font-size:.75rem}
+ .score-match-mode .score-action-goal{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px}
+ .score-match-mode .score-action-goal>span{font-size:1.4rem}
+ .score-match-mode .score-sanctions{grid-template-columns:auto minmax(0,1fr);grid-template-rows:44px;gap:6px;align-items:center}
+ .score-match-mode .score-sanctions h3{display:none}
+ .score-match-mode .score-sanction-grid{gap:4px}
+ .score-match-mode .score-sanctions .score-shot-type button{padding:4px 6px;font-size:.75rem}
+ .score-match-mode .score-sanction{font-size:.72rem}
+ .score-match-mode .score-last-action{grid-template-rows:14px 44px}
+ .score-match-mode #score-last-event{font-size:.7rem;line-height:14px}
+ .score-mode-dialog .score-shot-maps{grid-template-columns:1fr 1fr}
+ .score-mode-dialog .score-shot-maps.is-penalty{grid-template-columns:1fr}
+ .score-player-dialog{margin:auto;max-height:calc(100dvh - 16px)}
+}
 </style>
 </head>
 <body>
@@ -693,7 +775,7 @@ textarea{min-height:84px;resize:vertical}
     <section id="v-scoreboard">
       <div class="score-page-title">
       <div class="help-heading"><h1>Markagailua</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-15" aria-label="Markagailua: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-15" hidden>Partidako denbora, emaitza eta goleatzaileen erregistro azkarra.</p>
-        <button class="btn secondary" id="score-fullscreen" type="button" aria-label="Pantaila osoa"><span aria-hidden="true">&#9974;</span><span class="score-fullscreen-label">Pantaila osoa</span></button>
+        <button class="btn secondary score-mode-only" id="score-match-tools" type="button">Aukerak</button><button class="btn" id="score-fullscreen" type="button" aria-label="Pantaila osoko partida modua ireki" aria-pressed="false"><span aria-hidden="true">&#9974;</span><span class="score-fullscreen-label">Partida modua</span></button>
       </div>
       <div class="card score-live-panel" id="score-live-panel">
         <div class="score-live-summary">
@@ -741,6 +823,8 @@ textarea{min-height:84px;resize:vertical}
         <div class="help-heading"><h2>Partida gorde</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-16" aria-label="Partida gorde: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-16" hidden>Emaitza, bi taldeetako jokalarien golak, jaurtiketak eta zigorrak, eta erregistratutako kokapenak partiden historialean gordeko dira.</p>
         <div class="grid2"><label>Data eta ordua<input id="score-save-date" type="datetime-local" required></label><label>Tokia<select id="score-save-venue"><option>Etxean</option><option>Kanpoan</option></select></label></div><button class="btn" id="score-save-match" type="button">Partida hau gorde</button><p class="muted" id="score-save-status" aria-live="polite">Oraindik ez da gorde.</p>
       </div></details>
+      <dialog id="score-tools-dialog" class="score-mode-dialog" aria-labelledby="score-tools-title"><div class="score-mode-dialog-heading"><h2 id="score-tools-title">Partidaren aukerak</h2><button class="btn secondary" type="button" data-close-score-dialog="score-tools-dialog">Itxi</button></div><button class="btn secondary" type="button" id="score-mode-new-shot">Jaurtiketa berria kokapenarekin</button><div id="score-tools-content"></div></dialog>
+      <dialog id="score-location-dialog" class="score-mode-dialog" aria-labelledby="score-location-title"><div class="score-mode-dialog-heading"><h2 id="score-location-title">Jaurtiketaren kokapena</h2><button class="btn secondary" type="button" data-close-score-dialog="score-location-dialog">Utzi</button></div><div id="score-location-content"></div></dialog>
       <dialog id="score-player-dialog" class="score-player-dialog" aria-labelledby="score-player-title"><div class="score-player-heading"><div><span class="score-small-label" id="score-player-time"></span><h2 id="score-player-title">Aukeratu jokalaria</h2></div><button type="button" class="btn secondary" id="score-player-cancel">Utzi</button></div><div class="score-player-grid" id="score-player-grid"></div><details id="score-opponent-add" class="score-opponent-add hidden"><summary><strong>+ Aurkariaren jokalaria</strong></summary><form id="score-opponent-form" class="stack score-details-content"><div class="score-opponent-fields"><label>Dortsala<input id="score-opponent-number" type="number" inputmode="numeric" min="0" max="999" step="1" placeholder="7"></label><label>Izena (aukerakoa)<input id="score-opponent-name" type="text" maxlength="100" autocomplete="off"></label></div><p id="score-opponent-error" class="notice error" role="alert" hidden></p><button class="btn" type="submit">Gehitu eta erregistratu</button></form></details><button class="btn secondary" type="button" id="score-player-unspecified">Jokalaria zehaztu gabe</button></dialog>
     </section>
     <section id="v-friends">
@@ -829,6 +913,6 @@ textarea{min-height:84px;resize:vertical}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="app.js?v=117" defer></script>
+<script src="app.js?v=118" defer></script>
 </body>
 </html>
