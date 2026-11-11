@@ -30,6 +30,9 @@ var previewAnimation = null, previewAnimationFrame = 0;
 var sessionView = { ids: [], index: 0, raf: 0 };
 var sessionViewReturn = "v-sessions";
 var sessionSelection = [];
+var sessionEditor = { mode: "create", source: null, snapshot: null };
+var sessionEditorBusy = false, sessionLoadSequence = 0, sessionCleanDraft = "";
+var sessionReferenceExercises = [];
 var activeSessionGroup = null;
 var sessionDragState = null;
 var sessionCategoryFilter = "";
@@ -132,6 +135,7 @@ window.addEventListener("languagechange", function () {
   renderSessionBoard(); renderShotGoalZones(); updateBoardAnimationControls();
   restore();
   renderStats(); updateSessionTimeBar(); updateShareExerciseCount(); scoreRender(); drawShotCanvases();
+  renderSessionEditor();
   $("score-save-status").textContent = scoreboard.savedMatchId ? t("Partida gordeta dago.") : t("Oraindik ez da gorde.");
   $("shot-record").textContent = shotTargetEvent ? t("Kokapena gorde") : t("Jaurtiketa erregistratu");
   $("shot-context").textContent = shotTargetEvent ? t("Kokapena gehitu: ") + scoreEventText(shotTargetEvent) : t("Jaurtiketa berria");
@@ -299,6 +303,10 @@ async function loadTeams(autoOpen) {
 async function openTeam(id) {
   var selected = teams.find(function (item) { return Number(item.id_taldea) === Number(id); });
   if (!selected) throw new Error(t("Aukeratutako taldea ez da aurkitu"));
+  if (teamId !== Number(selected.id_taldea)) {
+    sessionLoadSequence++; sessionEditorBusy = false; sessionReferenceExercises = [];
+    resetSessionEditor();
+  }
   team = selected;
   teamId = Number(selected.id_taldea);
   await refreshAll();
@@ -1052,7 +1060,103 @@ function renderPlayers() {
 }
 
 function sessionExerciseById(id) {
-  return exercises.find(function (item) { return Number(item.id_ariketa) === Number(id); });
+  return sessionReferenceExercises.concat(exercises).find(function (item) { return Number(item.id_ariketa) === Number(id); });
+}
+
+function sessionEntryKey(entry) {
+  return entry.entryKey == null ? Number(entry.id_ariketa) : entry.entryKey;
+}
+
+function sessionDraftValue() {
+  return JSON.stringify([$("session-date").value, $("session-place").value, $("session-goal").value,
+    $("session-micro").value, $("session-total-minutes").value, sessionSelection]);
+}
+
+function canReplaceSessionDraft() {
+  return !sessionCleanDraft || sessionDraftValue() === sessionCleanDraft ||
+    confirm(t("Gorde gabeko entrenamenduaren aldaketak baztertu nahi dituzu?"));
+}
+
+function renderSessionEditor() {
+  var editing = sessionEditor.mode === "edit", copying = sessionEditor.mode === "duplicate";
+  $("session-editor-title").textContent = editing ? t("Entrenamendua editatu") : copying ? t("Entrenamendua bikoiztu") : t("Entrenamendu berria");
+  $("session-submit").textContent = sessionEditorBusy === "save" ? t("Gordetzen...") :
+    editing ? t("Aldaketak gorde") : copying ? t("Kopia gorde") : t("Gorde entrenamendua");
+  $("session-form").inert = Boolean(sessionEditorBusy);
+  $("session-form").setAttribute("aria-busy", String(Boolean(sessionEditorBusy)));
+  document.querySelectorAll("[data-edit-session],[data-duplicate-session],#session-create,#session-submit,#session-cancel")
+    .forEach(function (button) { button.disabled = Boolean(sessionEditorBusy); });
+}
+
+function resetSessionEditor() {
+  sessionEditor = { mode: "create", source: null, snapshot: null };
+  sessionSelection = []; activeSessionGroup = null; sessionDragState = null;
+  $("session-form").reset(); $("session-date").value = localDateTime();
+  $("session-micro").value = ""; $("session-group-custom").classList.add("hidden");
+  renderSessionPicker(); renderSessionEditor();
+  sessionCleanDraft = sessionDraftValue();
+}
+
+function showSessionEditor() {
+  selectSection("v-sessions");
+  $("session-create-panel").open = true;
+  $("session-create").setAttribute("aria-expanded", "true");
+  $("session-form").focus({ preventScroll: true });
+  $("session-create-panel").scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+}
+
+function cacheSessionSource(result) {
+  var id = Number(result.session.id_saio);
+  tables.saioak = records("saioak").filter(function (row) { return Number(row.id_saio) !== id; }).concat([result.session]);
+  tables.saio_xehetasuna = records("saio_xehetasuna").filter(function (row) { return Number(row.id_saio) !== id; }).concat(result.details);
+  sessions = records("saioak").slice().sort(function (a, b) { return String(b.data_ordua).localeCompare(String(a.data_ordua)); });
+  (result.exercises || []).forEach(function (exercise) {
+    sessionReferenceExercises = sessionReferenceExercises.filter(function (row) { return Number(row.id_ariketa) !== Number(exercise.id_ariketa); }).concat([exercise]);
+  });
+}
+
+function restoreSessionSelection(details) {
+  var group = null;
+  return details.map(function (detail, index) {
+    var name = detail.taldea || null;
+    if (detail.id_ariketa == null) group = { id: "saved-group-" + index, name: name };
+    else if (!group || group.name !== name) group = name ? { id: "saved-group-" + index, name: name } : null;
+    return { is_separator: detail.id_ariketa == null, id_ariketa: detail.id_ariketa == null ? null : Number(detail.id_ariketa),
+      entryKey: -(index + 1), iraupena_minutuak: Number(detail.iraupena_minutuak) || 0,
+      taldea: name, group_id: group ? group.id : null, aldaerak: detail.aldaerak || null,
+      paraleloa: Number(detail.paraleloa) ? 1 : 0 };
+  });
+}
+
+async function openSessionEditor(id, duplicate) {
+  if (sessionEditorBusy || !canReplaceSessionDraft()) return;
+  var sequence = ++sessionLoadSequence, sourceTeam = teamId;
+  sessionEditorBusy = "load"; renderSessionEditor();
+  try {
+    var result = await request({ action: "pwa_get_session", team_id: sourceTeam, id: Number(id) });
+    if (sequence !== sessionLoadSequence || sourceTeam !== teamId) return;
+    cacheSessionSource(result);
+    sessionEditor = { mode: duplicate ? "duplicate" : "edit", source: result.session, snapshot: result.snapshot };
+    sessionSelection = restoreSessionSelection(result.details); activeSessionGroup = null;
+    $("session-date").value = duplicate ? localDateTime() : String(result.session.data_ordua || "").replace(" ", "T").slice(0, 16);
+    $("session-place").value = result.session.lekua || "";
+    $("session-goal").value = result.session.helburu_taktikoa || "";
+    renderCycles();
+    var micro = result.session.id_mikroziklo == null ? "" : String(result.session.id_mikroziklo);
+    // A deleted cycle does not prevent recovering the rest of the training.
+    $("session-micro").value = micro;
+    $("session-total-minutes").value = Math.min(999, sessionSelection.reduce(function (sum, entry) {
+      return sum + (entry.is_separator ? 0 : entry.iraupena_minutuak);
+    }, 0)) || 90;
+    $("session-group-preset").value = "Beroketa"; $("session-group-custom").value = "";
+    $("session-group-custom").classList.add("hidden");
+    renderSessionPicker(); sessionCleanDraft = sessionDraftValue();
+    sessionEditorBusy = false; renderSessionEditor();
+    showSessionEditor();
+  } catch (error) { notify(error.message, "error"); }
+  finally {
+    if (sequence === sessionLoadSequence) { sessionEditorBusy = false; renderSessionEditor(); }
+  }
 }
 
 function sessionGroupLabel(name) {
@@ -1103,7 +1207,7 @@ function updateSessionTimeBar() {
   total = Math.min(999, total);
   var segments = sessionSelection.filter(function (entry) { return !entry.is_separator; }).map(function (entry) {
     var exercise = sessionExerciseById(entry.id_ariketa);
-    return { id: Number(entry.id_ariketa), name: exercise ? exercise.izena : "", minutes: Number(entry.iraupena_minutuak) || 0 };
+    return { id: sessionEntryKey(entry), name: exercise ? exercise.izena : "", minutes: Number(entry.iraupena_minutuak) || 0 };
   }).filter(function (segment) { return segment.minutes > 0; });
   var used = segments.reduce(function (sum, segment) { return sum + segment.minutes; }, 0);
   var over = total > 0 && used > total;
@@ -1215,7 +1319,7 @@ function renderSessionPicker() {
   $("session-selected").innerHTML = sessionSelection.length ? sessionSelection.map(function (entry) {
     if (entry.is_separator) return '<li class="session-group-row" data-session-drop-group="' + esc(entry.group_id) + '"><strong>' + esc(sessionGroupLabel(entry.taldea)) +
       '</strong><button class="slot-remove" type="button" data-session-remove-group="' + esc(entry.group_id) + ("\" aria-label=\"" + esc(t("Kendu tartea")) + "\">" + esc(t("×")) + "</button></li>");
-    var exercise = sessionExerciseById(entry.id_ariketa), id = Number(entry.id_ariketa);
+    var exercise = sessionExerciseById(entry.id_ariketa), id = sessionEntryKey(entry);
     if (!exercise) return "";
     return '<li class="session-slot" data-session-drop-exercise="' + id + ("\"><button class=\"session-drag-handle\" type=\"button\" data-session-drag-handle aria-label=\"" + esc(t("Arrastatu ordena aldatzeko: "))) + esc(exercise.izena) + ("\" title=\"" + esc(t("Arrastatu ordena aldatzeko")) + "\">&#8942;&#8942;</button><span class=\"slot-name\">") + esc(exercise.izena) +
       '</span><input type="number" min="0" max="999" value="' + Number(entry.iraupena_minutuak) +
@@ -1263,14 +1367,14 @@ function removeSessionGroup(id) {
 function removeSessionExercise(id) {
   id = Number(id);
   sessionSelection = sessionSelection.filter(function (entry) {
-    return Number(entry.id_ariketa) !== id;
+    return entry.is_separator || sessionEntryKey(entry) !== id;
   });
   renderSessionPicker();
 }
 
 function dropSessionExercise(draggedId, target) {
   var sourceIndex = sessionSelection.findIndex(function (entry) {
-    return !entry.is_separator && Number(entry.id_ariketa) === Number(draggedId);
+    return !entry.is_separator && sessionEntryKey(entry) === Number(draggedId);
   });
   if (sourceIndex < 0) return;
   var entry = sessionSelection[sourceIndex];
@@ -1288,7 +1392,7 @@ function dropSessionExercise(draggedId, target) {
     insertAt = separatorIndex + 1;
   } else {
     var targetIndex = sessionSelection.findIndex(function (item) {
-      return !item.is_separator && Number(item.id_ariketa) === Number(target.id);
+      return !item.is_separator && sessionEntryKey(item) === Number(target.id);
     });
     if (targetIndex < 0) return;
     var targetEntry = sessionSelection[targetIndex];
@@ -1301,10 +1405,10 @@ function dropSessionExercise(draggedId, target) {
 }
 
 function setSessionMinutes(id, value) {
-  var entry = sessionSelection.find(function (item) { return Number(item.id_ariketa) === Number(id); });
+  var entry = sessionSelection.find(function (item) { return !item.is_separator && sessionEntryKey(item) === Number(id); });
   if (!entry) return;
   var minutes = Math.round(Number(value));
-  entry.iraupena_minutuak = Number.isFinite(minutes) && minutes >= 1 ? Math.min(999, minutes) : 10;
+  entry.iraupena_minutuak = Number.isFinite(minutes) && minutes >= 0 ? Math.min(999, minutes) : 10;
   updateSessionTimeBar();
 }
 
@@ -1395,6 +1499,8 @@ function renderSavedSession(sessionId) {
   var session = sessions.find(function (item) { return Number(item.id_saio) === Number(sessionId); });
   if (!session) return false;
   $("v-session-detail").dataset.sessionId = String(sessionId);
+  $("saved-session-edit").dataset.editSession = String(sessionId);
+  $("saved-session-duplicate").dataset.duplicateSession = String(sessionId);
   var micro = records("mikrozikloak").find(function (item) {
     return Number(item.id_mikroziklo) === Number(session.id_mikroziklo);
   });
@@ -1427,7 +1533,7 @@ function renderSavedSession(sessionId) {
     }
     lastGroup = detailGroup || null;
     var step = ++renderedExerciseIndex;
-    var exercise = exercises.find(function (item) { return Number(item.id_ariketa) === Number(detail.id_ariketa); });
+    var exercise = sessionExerciseById(detail.id_ariketa);
     var board = exercise && parseBoardData(exercise.arbela_datuak);
     var hasAnimation = board && board.animazioa.length > 1;
     if (board) previewBoards.push({ index: index, data: board });
@@ -1458,9 +1564,7 @@ function renderSessions() {
     var names = details.filter(function (item) {
       return Number(item.id_saio) === Number(session.id_saio);
     }).map(function (item) {
-      var exercise = exercises.find(function (entry) {
-        return Number(entry.id_ariketa) === Number(item.id_ariketa);
-      });
+      var exercise = sessionExerciseById(item.id_ariketa);
       return exercise ? exercise.izena : "";
     }).filter(Boolean);
     return '<li class="item"><div class="item-main"><strong>' + esc(formatDay(session)) +
@@ -1469,7 +1573,9 @@ function renderSessions() {
       (names.length ? " · " + esc(names.join(", ")) : "") +
       '</small></div><div class="session-actions"><button class="btn secondary" type="button" data-view-session="' +
       Number(session.id_saio) + ("\">" + esc(t("Ikusi")) + "</button><button class=\"btn secondary\" type=\"button\" data-attendance-session=\"") +
-      Number(session.id_saio) + ("\">" + esc(t("Asistentzia")) + "</button></div></li>");
+      Number(session.id_saio) + ("\">" + esc(t("Asistentzia")) + "</button>") +
+      '<button class="btn secondary" type="button" data-edit-session="' + Number(session.id_saio) + '">' + esc(t("Editatu")) + '</button>' +
+      '<button class="btn secondary" type="button" data-duplicate-session="' + Number(session.id_saio) + '">' + esc(t("Bikoiztu")) + '</button></div></li>';
   }).join("") : ("<li class=\"empty\">" + esc(t("Oraindik ez da entrenamendurik gorde.")) + "</li>");
   var select = $("attendance-session"), prior = select.value;
   select.innerHTML = ("<option value=\"\">" + esc(t("Aukeratu entrenamendua")) + "</option>") + sessions.map(function (session) {
@@ -1478,6 +1584,7 @@ function renderSessions() {
   }).join("");
   if (sessions.some(function (session) { return String(session.id_saio) === prior; })) select.value = prior;
   $("attendance-open").disabled = !select.value;
+  renderSessionEditor();
 }
 
 function renderMatches() {
@@ -3235,26 +3342,41 @@ $("calendar-cup-modal").addEventListener("click", function (event) {
 
 $("session-form").addEventListener("submit", async function (event) {
   event.preventDefault();
-  var form = this, button = form.querySelector('button[type="submit"]');
+  if (sessionEditorBusy) return;
+  var mode = sessionEditor.mode, source = sessionEditor.source, sourceTeam = teamId;
   var exerciseList = sessionSelection.map(function (entry) {
-    if (entry.is_separator) return { is_separator: true, taldea: entry.taldea };
-    return { id_ariketa: Number(entry.id_ariketa), iraupena_minutuak: Number(entry.iraupena_minutuak), taldea: entry.taldea || null, aldaerak: entry.aldaerak || null };
+    return { is_separator: Boolean(entry.is_separator), id_ariketa: entry.is_separator ? null : Number(entry.id_ariketa),
+      iraupena_minutuak: Number(entry.iraupena_minutuak) || 0, taldea: entry.taldea || null,
+      aldaerak: entry.aldaerak || null, paraleloa: Number(entry.paraleloa) ? 1 : 0 };
   });
-  button.disabled = true;
+  var payload = {
+    action: mode === "edit" ? "pwa_update_session" : mode === "duplicate" ? "pwa_duplicate_session" : "pwa_create_session",
+    team_id: sourceTeam, data_ordua: $("session-date").value, lekua: $("session-place").value,
+    helburu_taktikoa: $("session-goal").value, id_mikroziklo: numberOrNull($("session-micro").value), exercises: exerciseList
+  };
+  if (source) { payload.id = Number(source.id_saio); payload.source_id = Number(source.id_saio); payload.snapshot = sessionEditor.snapshot; }
+  sessionEditorBusy = "save"; renderSessionEditor();
   try {
-    await request({
-      action: "pwa_create_session", team_id: teamId,
-      data_ordua: $("session-date").value, lekua: $("session-place").value,
-      helburu_taktikoa: $("session-goal").value,
-      id_mikroziklo: numberOrNull($("session-micro").value),
-      exercises: exerciseList
-    });
-    sessionSelection = [];
-    activeSessionGroup = null;
-    form.reset(); $("session-date").value = localDateTime();
-    await refreshAll(); notify(t("Entrenamendua gorde da"), "success");
+    var result = await request(payload);
+    if (sourceTeam !== teamId) return;
+    resetSessionEditor();
+    var refreshError = null;
+    try { await refreshAll(); } catch (error) { refreshError = error; }
+    if (mode !== "create") {
+      cacheSessionSource(result); renderSessions(); renderCycles(); renderDashboard();
+      renderSavedSession(result.id); $("session-create-panel").open = false; selectSection("v-session-detail");
+    }
+    notify(refreshError ? t("Entrenamendua gordeta dago, baina zerrenda ezin izan da birkargatu") :
+      mode === "edit" ? t("Entrenamendua eguneratu da") : mode === "duplicate" ? t("Entrenamendua bikoiztu da") : t("Entrenamendua gorde da"), refreshError ? "error" : "success");
   } catch (error) { notify(error.message, "error"); }
-  finally { button.disabled = false; }
+  finally { sessionEditorBusy = false; renderSessionEditor(); }
+});
+
+$("session-cancel").addEventListener("click", function () {
+  if (sessionEditorBusy || !canReplaceSessionDraft()) return;
+  var source = sessionEditor.source;
+  resetSessionEditor(); $("session-create-panel").open = false;
+  if (source && renderSavedSession(source.id_saio)) selectSection("v-session-detail");
 });
 
 $("session-library").addEventListener("click", function (event) {
@@ -3290,7 +3412,7 @@ $("session-selected").addEventListener("input", function (event) {
   var notes = event.target.closest("[data-session-notes]");
   if (!notes) return;
   var entry = sessionSelection.find(function (item) {
-    return !item.is_separator && Number(item.id_ariketa) === Number(notes.dataset.sessionNotes);
+    return !item.is_separator && sessionEntryKey(item) === Number(notes.dataset.sessionNotes);
   });
   if (entry) entry.aldaerak = notes.value;
 });
@@ -3373,7 +3495,7 @@ $("session-selected").addEventListener("change", function (event) {
   if (event.target.matches("[data-session-minutes]")) {
     setSessionMinutes(event.target.dataset.sessionMinutes, event.target.value);
     event.target.value = sessionSelection.find(function (entry) {
-      return Number(entry.id_ariketa) === Number(event.target.dataset.sessionMinutes);
+      return !entry.is_separator && sessionEntryKey(entry) === Number(event.target.dataset.sessionMinutes);
     }).iraupena_minutuak;
   }
 });
@@ -3634,6 +3756,10 @@ $("save-attendance").addEventListener("click", async function () {
 document.addEventListener("click", async function (event) {
   var target = event.target.closest("button");
   if (!target) return;
+  if (target.hasAttribute("data-edit-session") || target.hasAttribute("data-duplicate-session")) {
+    openSessionEditor(target.dataset.editSession || target.dataset.duplicateSession, target.hasAttribute("data-duplicate-session"));
+    return;
+  }
   if (target.hasAttribute("data-team-invitation")) {
     target.disabled = true;
     try {
@@ -3821,15 +3947,23 @@ $("team-management").addEventListener("toggle", function () {
 $("team-invitations-refresh").addEventListener("click", loadTeamInvitations);
 
 $("session-create").addEventListener("click", function () {
-  var panel = $("session-create-panel");
-  panel.open = true;
-  this.setAttribute("aria-expanded", "true");
-  $("session-form").focus({ preventScroll: true });
-  panel.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+  if (sessionEditorBusy) return;
+  if (sessionEditor.mode !== "create") {
+    if (!canReplaceSessionDraft()) return;
+    resetSessionEditor();
+  }
+  if (!$("session-date").value) {
+    var clean = sessionDraftValue() === sessionCleanDraft;
+    $("session-date").value = localDateTime();
+    if (clean) sessionCleanDraft = sessionDraftValue();
+  }
+  showSessionEditor();
 });
 $("session-create-panel").addEventListener("toggle", function () {
   $("session-create").setAttribute("aria-expanded", String(this.open));
 });
+sessionCleanDraft = sessionDraftValue();
+renderSessionEditor();
 
 $("match-create").addEventListener("click", function () {
   var panel = $("match-create-panel");

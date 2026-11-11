@@ -32,6 +32,18 @@ jobs:
           node --check locales/es.js
           node --check sw.js
 
+      - name: Set up Node.js for backend tests
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Verify training editing and duplication
+        run: |
+          npm ci --ignore-scripts
+          node --experimental-strip-types --check backend/session-actions.ts
+          npm test
+
       - name: Prepare public files
         run: |
           mkdir -p _site

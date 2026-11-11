@@ -928,6 +928,21 @@ window.SevenMetroLocales.es = {
     "(jolasteko)": "(pendiente)",
     "9 zonak": "9 zonas",
     "| A": "| S",
-    "Ezin izan da programako kantxaren irudia kargatu:": "No se ha podido cargar la imagen de la pista:"
+    "Ezin izan da programako kantxaren irudia kargatu:": "No se ha podido cargar la imagen de la pista:",
+    "Bikoiztu": "Duplicar",
+    "Entrenamendua editatu": "Editar entrenamiento",
+    "Entrenamendua bikoiztu": "Duplicar entrenamiento",
+    "Kopia gorde": "Guardar copia",
+    "Gorde gabeko entrenamenduaren aldaketak baztertu nahi dituzu?": "¿Quieres descartar los cambios sin guardar del entrenamiento?",
+    "Entrenamendua gordeta dago, baina zerrenda ezin izan da birkargatu": "El entrenamiento está guardado, pero no se ha podido recargar la lista",
+    "Entrenamendua eguneratu da": "Entrenamiento actualizado",
+    "Entrenamendua bikoiztu da": "Entrenamiento duplicado",
+    "Entrenamendua ez da baliozkoa": "El entrenamiento no es válido",
+    "Ezin izan da entrenamendua kargatu": "No se ha podido cargar el entrenamiento",
+    "Ez da taldeko entrenamendua aurkitu": "No se ha encontrado el entrenamiento del equipo",
+    "Birkargatu entrenamendua aldaketak gorde aurretik": "Recarga el entrenamiento antes de guardar los cambios",
+    "Ezin izan da entrenamendua bikoiztu": "No se ha podido duplicar el entrenamiento",
+    "Ezin izan da entrenamendua eguneratu": "No se ha podido actualizar el entrenamiento",
+    "Entrenamendua beste gailu batean aldatu da. Birkargatu editatu aurretik": "El entrenamiento ha cambiado en otro dispositivo. Recárgalo antes de editarlo"
   }
 };

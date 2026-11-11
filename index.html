@@ -115,6 +115,7 @@ textarea{min-height:84px;resize:vertical}
 .exercise-picker{display:grid;grid-template-columns:1fr;gap:10px;align-items:start}
 @media(min-width:680px){.exercise-picker{grid-template-columns:1fr 1fr}}
 .session-actions{display:flex;flex:none;gap:6px}.session-actions .btn{width:auto;min-height:38px;margin:0;padding:6px 11px}
+.session-editor-actions{display:flex;flex-wrap:wrap;gap:8px}.session-editor-actions .btn{flex:1 1 180px;margin:0}.session-detail-actions{flex-wrap:wrap;margin:12px 0 18px}#sessions-list .session-actions{flex-wrap:wrap;max-width:400px}#session-selected .session-slot .slot-name{max-width:none}
 .match-actions{display:flex;flex:none;flex-direction:row;align-items:center;gap:6px;white-space:nowrap}.match-actions .btn{width:auto;min-height:38px;margin:0;padding:6px 9px}
 .training-session-overview{border-color:rgba(0,68,238,.35);background:linear-gradient(135deg,rgba(0,68,238,.17),var(--bg2))}
 .training-overview-label{color:var(--muted);font-size:.72rem;font-weight:750;letter-spacing:.1em}.training-session-overview p{font-size:1.1rem;font-weight:650;margin:5px 0 8px}
@@ -702,14 +703,14 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
     <section id="v-sessions" class="on">
       <div class="session-page-heading"><div class="help-heading"><h1>Entrenamendua</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-8" aria-label="Entrenamendua: informazioa"><span aria-hidden="true">i</span></button></div><button class="btn session-create-button" id="session-create" type="button" aria-label="Entrenamendu berria sortu" title="Entrenamendu berria sortu" aria-controls="session-create-panel" aria-expanded="false"><span aria-hidden="true">+</span></button></div><p class="sub" id="help-text-8" hidden>Antolatu saioak, aukeratu ariketak eta prestatu ariketa berriak kantxan.</p>
       <div class="group-links"><button class="btn secondary" id="open-board" type="button">Ariketa-liburutegia eta arbela</button></div>
-      <details class="card" id="session-create-panel"><summary><strong>Entrenamendu berria</strong></summary>
+      <details class="card" id="session-create-panel"><summary><strong id="session-editor-title">Entrenamendu berria</strong></summary>
         <form id="session-form" tabindex="-1" class="stack" style="margin-top:14px">
           <div class="grid2"><label>Data eta ordua<input id="session-date" type="datetime-local" required></label><label>Tokia<input id="session-place" value="Kiroldegia"></label></div>
           <label>Helburu taktikoa<input id="session-goal" maxlength="250"></label>
           <label>Mikrozikloa<select id="session-micro"></select></label>
           <div class="session-time">
             <div class="session-time-head">
-              <label for="session-total-minutes">Entrenatzeko denbora (min)<input id="session-total-minutes" type="number" min="0" max="999" step="5" value="90"></label>
+              <label for="session-total-minutes">Entrenatzeko denbora (min)<input id="session-total-minutes" type="number" min="0" max="999" step="1" value="90"></label>
               <span class="session-time-info" id="session-time-label">0 / 90 min</span>
             </div>
             <div class="session-time-bar" id="session-time-bar" role="progressbar" aria-label="Ariketen denbora"></div>
@@ -738,7 +739,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
               <ul id="session-selected" class="list"></ul>
             </div>
           </div>
-          <button class="btn" type="submit">Gorde entrenamendua</button>
+          <div class="session-editor-actions"><button class="btn" id="session-submit" type="submit">Gorde entrenamendua</button><button class="btn secondary" id="session-cancel" type="button">Utzi</button></div>
         </form>
       </details>
       <div class="toolbar"><h2>Saioak</h2><button class="btn secondary" type="button" data-refresh>Birkargatu</button></div>
@@ -747,6 +748,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
     <section id="v-session-detail">
       <button class="btn secondary" type="button" data-back-sessions>← Saioetara itzuli</button>
       <h1 id="saved-session-title">Entrenamendua</h1><p class="sub" id="saved-session-meta"></p>
+      <div class="session-actions session-detail-actions"><button class="btn secondary" id="saved-session-edit" type="button" data-edit-session>Editatu</button><button class="btn secondary" id="saved-session-duplicate" type="button" data-duplicate-session>Bikoiztu</button></div>
       <div class="card training-session-overview"><span class="training-overview-label">SAIOAREN HELBURUA</span><p id="saved-session-goal">Helbururik gabe</p><div id="saved-session-cycle" class="muted"></div></div>
       <div class="toolbar"><h2>Ariketen sekuentzia</h2><strong class="training-total" id="saved-session-total">0 min</strong></div>
       <div id="saved-session-exercises" class="training-exercise-grid"></div>
@@ -974,8 +976,8 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=124" defer></script>
-<script src="i18n.js?v=124" defer></script>
-<script src="app.js?v=124" defer></script>
+<script src="locales/es.js?v=125" defer></script>
+<script src="i18n.js?v=125" defer></script>
+<script src="app.js?v=125" defer></script>
 </body>
 </html>
