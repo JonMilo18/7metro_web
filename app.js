@@ -1442,7 +1442,7 @@ function renderMatchEditor(matchId) {
   var match = matches.find(function (item) { return Number(item.id_partida) === Number(matchId); });
   if (!match) {
     $("match-detail").classList.add("hidden");
-    notify("Ezin izan da partida aurkitu. Freskatu zerrenda.", "error");
+    notify("Ezin izan da partida aurkitu. Birkargatu zerrenda.", "error");
     return;
   }
   var playerRows = records("partida_jokalariak").filter(function (row) {
@@ -3493,7 +3493,7 @@ $("score-save-match").addEventListener("click", async function () {
   button.textContent = "Partida gordeta";
   notify("Partida markagailutik gorde da", "success");
   try { await refreshAll(); }
-  catch (error) { notify("Partida gordeta dago, baina historiala ezin izan da freskatu: " + error.message, "error"); }
+  catch (error) { notify("Partida gordeta dago, baina historiala ezin izan da birkargatu: " + error.message, "error"); }
 });
 
 async function openMatchStats(matchId, view) {
@@ -3514,7 +3514,7 @@ async function openMatchStats(matchId, view) {
     tables.partidu_zigorrak = records("partidu_zigorrak").filter(function (row) { return Number(row.id_partida) !== id; }).concat(sanctions);
     renderMatches();
   }
-  if (!selected) { notify("Ezin izan da partida aurkitu. Freskatu zerrenda.", "error"); return; }
+  if (!selected) { notify("Ezin izan da partida aurkitu. Birkargatu zerrenda.", "error"); return; }
   if (scoreMatchMode) await scoreExitMatchMode();
   $("stats-match").value = String(matchId);
   $("stats-mode").value = view === "opponents" ? "opponents" : "players";
@@ -3637,7 +3637,7 @@ document.addEventListener("click", async function (event) {
   if (target.hasAttribute("data-view-cup")) {
     var cupId = Number(target.dataset.viewCup);
     var cup = records("txapelketak").find(function (item) { return Number(item.id_txapelketa) === cupId; });
-    if (!cup) { notify("Ezin izan da txapelketa aurkitu. Freskatu egutegia.", "error"); return; }
+    if (!cup) { notify("Ezin izan da txapelketa aurkitu. Birkargatu egutegia.", "error"); return; }
     $("calendar-cup-title").textContent = cup.izena || "Txapelketa";
     $("calendar-cup-meta").textContent = [formatDate(cup), cup.kategoria, cup.lekua].filter(Boolean).join(" · ");
     $("calendar-cup-modal").classList.remove("hidden");
@@ -3645,7 +3645,7 @@ document.addEventListener("click", async function (event) {
   if (target.hasAttribute("data-close-calendar-cup")) $("calendar-cup-modal").classList.add("hidden");
   if (target.hasAttribute("data-view-session")) {
     if (renderSavedSession(target.dataset.viewSession)) selectSection("v-session-detail");
-    else notify("Ezin izan da entrenamendua aurkitu. Freskatu zerrenda.", "error");
+    else notify("Ezin izan da entrenamendua aurkitu. Birkargatu zerrenda.", "error");
   }
   if (target.hasAttribute("data-back-sessions")) selectSection("v-sessions");
   if (target.hasAttribute("data-training-board")) {

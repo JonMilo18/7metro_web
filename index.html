@@ -639,14 +639,14 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
   </div>
   <div id="team-app" class="hidden">
     <section id="v-home">
-      <div class="home-hero"><div><span class="home-eyebrow">7METRO · TALDEAREN LABURPENA</span><div class="help-heading"><h1 id="home-title">Ongi etorri</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="home-subtitle" aria-label="Ongi etorri: informazioa"><span aria-hidden="true">i</span></button></div><p id="home-subtitle" hidden>Zure entrenamendu eta lehiaketen ikuspegi azkarra.</p></div><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
+      <div class="home-hero"><div><span class="home-eyebrow">7METRO · TALDEAREN LABURPENA</span><div class="help-heading"><h1 id="home-title">Ongi etorri</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="home-subtitle" aria-label="Ongi etorri: informazioa"><span aria-hidden="true">i</span></button></div><p id="home-subtitle" hidden>Zure entrenamendu eta lehiaketen ikuspegi azkarra.</p></div><button class="btn secondary" type="button" data-refresh>Birkargatu</button></div>
       <div class="home-dashboard-grid">
         <article class="card home-card"><span class="home-card-kicker">Azken entrenamendua</span><div id="home-session-content"></div></article>
         <article class="card home-card"><span class="home-card-kicker">Azken partidua</span><div id="home-match-content"></div></article>
         <article class="card home-card"><span class="home-card-kicker">Hurrengo partida</span><div id="home-next-match-content"></div></article>
       </div>
       <h2>Sarbide azkarrak</h2>
-      <div class="home-shortcuts"><button class="more-link" type="button" data-open-section="v-sessions"><strong>Entrenamenduak</strong><span>Saioak sortu eta ikusi</span></button><button class="more-link" type="button" data-open-section="v-scoreboard"><strong>Markagailu bizia</strong><span>Partida bat hasi</span></button><button class="more-link" type="button" data-open-section="v-planning"><strong>Denboraldiaren plangintza</strong><span>Egutegia eta zikloak</span></button></div>
+      <div class="home-shortcuts"><button class="more-link" type="button" data-open-section="v-sessions"><strong>Entrenamenduak</strong><span>Saioak sortu eta ikusi</span></button><button class="more-link" type="button" data-open-section="v-scoreboard"><strong>Markagailua</strong><span>Partida bat hasi</span></button><button class="more-link" type="button" data-open-section="v-planning"><strong>Denboraldiaren plangintza</strong><span>Egutegia eta zikloak</span></button></div>
     </section>
     <section id="v-board">
       <div class="help-heading"><h1>Ariketa-arbela</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-4" aria-label="Ariketa-arbela: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-4" hidden>Sortu ariketa bat kantxan marraztuz, programako arbelean bezala.</p>
@@ -693,7 +693,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
           <button class="btn" type="submit">Gehitu ariketa</button>
         </form>
       </div>
-      <div class="toolbar"><h2>Gordetako ariketak</h2><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
+      <div class="toolbar"><h2>Gordetako ariketak</h2><button class="btn secondary" type="button" data-refresh>Birkargatu</button></div>
       <div class="toolbar"><label for="exercise-list-category">Filtratu kategoriaren arabera<select id="exercise-list-category" class="category-filter"><option value="">Kategoria guztiak</option></select></label></div>
       <details class="card" id="exercise-category-manager"><summary><strong>Kudeatu kategoriak</strong><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-7" aria-label="Kudeatu kategoriak: informazioa"><span aria-hidden="true">i</span></button></summary><div class="stack" style="margin-top:12px"><form id="exercise-category-form" class="toolbar"><label for="new-exercise-category">Kategoria berria<input id="new-exercise-category" maxlength="80" required placeholder="Adib. Defentsa"></label><button class="btn" type="submit">Sortu kategoria</button></form><ul id="exercise-category-list" class="list"></ul><p class="muted" id="help-text-7" hidden>Kategoriak liburutegi partekatuan daude. Kategoria bat ezabatzean ariketa guztietatik kenduko da.</p></div></details>
       <ul id="exercises-list" class="list"></ul>
@@ -740,7 +740,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
           <button class="btn" type="submit">Gorde entrenamendua</button>
         </form>
       </details>
-      <div class="toolbar"><h2>Saioak</h2><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
+      <div class="toolbar"><h2>Saioak</h2><button class="btn secondary" type="button" data-refresh>Birkargatu</button></div>
       <ul id="sessions-list" class="list"></ul>
     </section>
     <section id="v-session-detail">
@@ -777,7 +777,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
         </form>
       </details>
       <div class="grid2"><label>Bilatu jokalaria<input id="players-search" type="search" placeholder="Izena edo dorsala"></label><label>Egoeraren arabera<select id="players-status"><option value="">Egoera guztiak</option><option>Erabilgarri</option><option>Zalantza</option><option>Baja</option></select></label></div>
-      <div class="toolbar"><h2>Taldeko jokalariak</h2><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
+      <div class="toolbar"><h2>Taldeko jokalariak</h2><button class="btn secondary" type="button" data-refresh>Birkargatu</button></div>
       <ul id="players-list" class="list"></ul>
       <div class="card"><div class="help-heading"><h2>Asistentzia</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-11" aria-label="Asistentzia: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-11" hidden>Aukeratu entrenamendua eta apuntatu bertaratzea, berandutzeak eta haien arrazoiak.</p><div class="grid2"><label>Entrenamendua<select id="attendance-session"></select></label><button class="btn" id="attendance-open" type="button" disabled>Asistentzia apuntatu</button></div></div>
 
@@ -787,7 +787,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
           <button class="btn secondary" id="change-team" type="button">Taldea aldatu</button>
           <form id="team-invite-form" class="stack"><div class="help-heading"><h2>Taldea partekatu</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-22" aria-label="Taldea partekatu: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-22" hidden>Gonbidatu onartutako lagun bat talde honetara; gonbidapena onartzean taldeko datuak ikusiko ditu.</p><label>Lagunak<select id="team-invite-friend" required></select></label><button class="btn" type="submit">Taldeko gonbidapena bidali</button></form>
           <div>
-            <div class="toolbar"><h2>Talde berrien gonbidapenak</h2><button class="btn secondary" id="team-invitations-refresh" type="button">Freskatu</button></div>
+            <div class="toolbar"><h2>Talde berrien gonbidapenak</h2><button class="btn secondary" id="team-invitations-refresh" type="button">Birkargatu</button></div>
             <ul id="team-module-invitations" class="list" data-team-invitations></ul>
           </div>
         </div>
@@ -795,7 +795,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
     </section>
     <section id="v-matches">
       <div class="session-page-heading"><div class="help-heading"><h1>Lehiaketa</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-12" aria-label="Lehiaketa: informazioa"><span aria-hidden="true">i</span></button></div><button class="btn session-create-button" id="match-create" type="button" aria-label="Partida berria sortu" title="Partida berria sortu" aria-controls="match-create-panel" aria-expanded="false"><span aria-hidden="true">+</span></button></div><p class="sub" id="help-text-12" hidden>Kudeatu partidak, erabili zuzeneko markagailua eta aztertu estatistikak.</p>
-      <div class="group-links"><button class="btn secondary" type="button" data-open-section="v-scoreboard">Markagailu bizia</button></div>
+      <div class="group-links"><button class="btn secondary" type="button" data-open-section="v-scoreboard">Markagailua</button></div>
       <details class="card" id="match-create-panel"><summary><strong>Partida berria</strong></summary>
         <form id="match-form" tabindex="-1" class="stack" style="margin-top:14px">
           <div class="grid2"><label>Data eta ordua<input id="match-date" type="datetime-local" required></label><label>Aurkaria<input id="match-opponent" required maxlength="120"></label></div>
@@ -804,7 +804,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
           <button class="btn" type="submit">Gorde partida</button>
         </form>
       </details>
-      <div class="toolbar"><h2>Partiden historia</h2><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
+      <div class="toolbar"><h2>Partiden historia</h2><button class="btn secondary" type="button" data-refresh>Birkargatu</button></div>
       <ul id="matches-list" class="list"></ul><div id="match-detail" class="card hidden"></div>
     </section>
     <section id="v-stats">
@@ -889,7 +889,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
     <section id="v-friends">
       <div class="help-heading"><h1>Lagunak</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-18" aria-label="Lagunak: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-18" hidden>Bidali eta kudeatu lagun-eskaerak; partekatu ariketak eta entrenamenduak.</p>
       <form id="friend-form" class="card stack"><h2>Lagun berria</h2><label>Erabiltzaile-izena<input id="friend-username" minlength="3" maxlength="200" required autocomplete="off"></label><button class="btn" type="submit">Eskaera bidali</button></form>
-      <div class="toolbar"><h2>Jasotako eskaerak</h2><button class="btn secondary" type="button" id="friends-refresh">Freskatu</button></div><ul id="friend-incoming" class="list"></ul>
+      <div class="toolbar"><h2>Jasotako eskaerak</h2><button class="btn secondary" type="button" id="friends-refresh">Birkargatu</button></div><ul id="friend-incoming" class="list"></ul>
       <div class="card"><h2>Lagunak</h2><ul id="friends-list" class="list"></ul></div>
       <div class="card"><div class="help-heading"><h2>Bidaltzeko ariketak</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-19" aria-label="Bidaltzeko ariketak: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-19" hidden>Aukeratu lagun bat eta partekatu nahi dituzun ariketa guztiak.</p><form id="friend-share-exercise" class="stack"><label>Lagun<select id="share-exercise-friend" required></select></label><div><label>Ariketak <span id="share-exercise-count" class="muted">0 hautatuta</span></label><div class="board-tools" aria-label="Ariketak hautatzeko aukerak"><button class="btn secondary" id="share-exercise-select-all" type="button">Denak hautatu</button><button class="btn secondary" id="share-exercise-clear" type="button">Garbitu</button></div><div id="share-exercise-items" class="checklist" aria-label="Partekatzeko ariketak"></div></div><button class="btn" type="submit">Hautatutako ariketak partekatu</button></form></div>
       <div class="card"><h2>Bidaltzeko entrenamenduak</h2><form id="friend-share-training" class="stack"><label>Lagun<select id="share-training-friend" required></select></label><label>Entrenamendua<select id="share-training-item" required></select></label><button class="btn" type="submit">Entrenamendua partekatu</button></form></div>
@@ -972,6 +972,6 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="app.js?v=122" defer></script>
+<script src="app.js?v=123" defer></script>
 </body>
 </html>
