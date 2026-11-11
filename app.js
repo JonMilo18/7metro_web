@@ -1328,11 +1328,7 @@ function renderExerciseCategories() {
   }
   var list = $("exercise-category-list");
   if (list) list.innerHTML = categories.length ? categories.map(function (category) {
-    var duplicates = records("kategoriak").filter(function (item) {
-      return String(item.izena || "").trim().toLocaleLowerCase() === String(category.izena).trim().toLocaleLowerCase();
-    }).length;
     return '<li class="item"><div class="item-main"><strong>' + esc(category.izena) + '</strong></div>' +
-      (duplicates > 1 ? '<small class="muted">' + duplicates + ' erregistro batu</small>' : '') +
       '<button class="btn danger" type="button" data-delete-exercise-category="' + esc(category.izena) + '">Ezabatu</button></li>';
   }).join("") : '<li class="empty">Oraindik ez dago kategoriarik. Sortu kategoria liburutegian erabiltzeko.</li>';
 }
@@ -1958,17 +1954,17 @@ function selectSection(id) {
     previewAnimation.canvas.closest("#saved-session-exercises")) stopExerciseAnimation();
   var primarySection = id === "v-home" ? "v-home" :
     (["v-sessions", "v-board", "v-session-view", "v-session-detail"].indexOf(id) !== -1 ? "v-sessions" :
-    (["v-matches", "v-scoreboard", "v-stats"].indexOf(id) !== -1 ? "v-matches" :
-      (["v-planning", "v-players"].indexOf(id) !== -1 ? id : "v-more")));
+    (["v-matches", "v-scoreboard"].indexOf(id) !== -1 ? "v-matches" :
+      (["v-planning", "v-players", "v-stats"].indexOf(id) !== -1 ? id : "v-more")));
   document.querySelectorAll("nav [data-v]").forEach(function (button) {
     button.setAttribute("aria-selected", String(button.dataset.v === primarySection));
   });
   document.querySelectorAll("#team-app section").forEach(function (section) {
-    section.classList.toggle("on", section.id === (id === "v-stats" ? "v-matches" : id));
+    section.classList.toggle("on", section.id === id);
   });
   if (id === "v-friends") loadFriends();
   window.scrollTo(0, 0);
-  if (id === "v-stats") requestAnimationFrame(function () { $("stats-card").scrollIntoView({ behavior: "smooth", block: "start" }); });
+  if (id === "v-stats") renderStats();
 }
 
 var scoreboard = { home: 0, away: 0, seconds: 0, period: 0, running: false, events: [], lastTick: 0 };
@@ -2296,7 +2292,6 @@ var matchToolbar = $("matches-list").previousElementSibling, matchesList = $("ma
 matchesSection.insertBefore(matchToolbar, matchCreate);
 matchesSection.insertBefore(matchesList, matchCreate);
 matchesSection.insertBefore($("match-detail"), matchCreate);
-matchesSection.insertBefore($("stats-card"), matchCreate);
 document.querySelectorAll("[data-open-section]").forEach(function (button) {
   button.addEventListener("click", function () { selectSection(button.dataset.openSection); });
 });
@@ -3061,7 +3056,7 @@ document.addEventListener("click", async function (event) {
       notify("Ezin izan da partida aurkitu. Freskatu zerrenda.", "error");
       return;
     }
-    selectSection("v-matches");
+    selectSection("v-stats");
     // Historiako botoiak analisi osoa partida horretara bideratzen du.
     $("stats-match").value = String(matchId);
     $("stats-mode").value = "players";
@@ -3072,35 +3067,6 @@ document.addEventListener("click", async function (event) {
     $("stats-end").value = "";
     $("stats-search").value = "";
     renderStats();
-    var matchRows = records("partida_jokalariak").filter(function (row) {
-      return Number(row.id_partida) === matchId;
-    });
-    var sanctions = records("partidu_zigorrak").filter(function (row) {
-      return Number(row.id_partida) === matchId;
-    });
-    $("match-detail").innerHTML = '<div class="toolbar"><div><h2>' +
-      esc(selected.aurkaria || "Aurkaria") + " · " + Number(selected.emaitza_geurea || 0) +
-      " - " + Number(selected.emaitza_aurkaria || 0) + '</h2><p class="muted">' +
-      esc(formatDate(selected)) + " · " + esc(selected.lekua || "") +
-      '</p></div><button class="btn secondary" type="button" data-close-match-stats>Itxi</button></div>' +
-      "<h3>Partidako jokalari-estatistikak</h3>" +
-      (matchRows.map(function (row) {
-        var player = players.find(function (item) {
-          return Number(item.id_jokalaria) === Number(row.id_jokalaria);
-        });
-        var playerSanctions = byPlayer(sanctions, row.id_jokalaria);
-        var count = function (kind) {
-          return playerSanctions.filter(function (item) { return item.mota === kind; }).length;
-        };
-        return '<div class="item"><div class="item-main"><strong>' +
-          esc(player ? playerName(player) : "Jokalaria") + '</strong><small>' +
-          Number(row.golak || 0) + " gol / " + Number(row.jaurtiketak || 0) +
-          ' jaurtiketa</small></div><span>🟨 ' + count("horia") + " · 2' " +
-          count("2min") + " · 🟥 " + count("gorria") + " · 🔵 " + count("urdina") +
-          "</span></div>";
-      }).join("") || '<p class="empty">Ez dago estatistikarik.</p>');
-    $("match-detail").classList.remove("hidden");
-    $("match-detail").scrollIntoView({ behavior: "smooth", block: "start" });
   }
   if (target.hasAttribute("data-close-match-stats")) {
     $("match-detail").classList.add("hidden");

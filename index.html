@@ -42,7 +42,7 @@ h2{font-size:1.1rem;margin:0 0 10px}
 .sub{color:var(--muted);margin:0 0 20px}
 section{display:none}section.on{display:block}
 nav{position:fixed;z-index:3;left:0;right:0;bottom:0;background:rgba(6,14,26,.96);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);backdrop-filter:blur(16px)}
-nav div{max-width:720px;margin:0 auto;display:grid;grid-template-columns:repeat(6,minmax(0,1fr))}
+nav div{max-width:720px;margin:0 auto;display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
 nav button{background:none;border:0;padding:10px 4px;font:650 .82rem var(--f);color:var(--muted);min-height:56px;cursor:pointer}
 nav button[aria-selected="true"]{color:#fff;background:rgba(0,68,238,.18);box-shadow:inset 0 3px 0 var(--blue)}
 :focus-visible{outline:3px solid var(--blue);outline-offset:2px}
@@ -642,7 +642,7 @@ textarea{min-height:84px;resize:vertical}
     </section>
     <section id="v-matches">
       <div class="session-page-heading"><div class="help-heading"><h1>Lehiaketa</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-12" aria-label="Lehiaketa: informazioa"><span aria-hidden="true">i</span></button></div><button class="btn session-create-button" id="match-create" type="button" aria-label="Partida berria sortu" title="Partida berria sortu" aria-controls="match-create-panel" aria-expanded="false"><span aria-hidden="true">+</span></button></div><p class="sub" id="help-text-12" hidden>Kudeatu partidak, erabili zuzeneko markagailua eta aztertu estatistikak.</p>
-      <div class="group-links"><button class="btn secondary" type="button" data-open-section="v-scoreboard">Markagailu bizia</button><button class="btn secondary" type="button" data-open-section="v-stats">Joan estatistiketara</button></div>
+      <div class="group-links"><button class="btn secondary" type="button" data-open-section="v-scoreboard">Markagailu bizia</button></div>
       <details class="card" id="match-create-panel"><summary><strong>Partida berria</strong></summary>
         <form id="match-form" tabindex="-1" class="stack" style="margin-top:14px">
           <div class="grid2"><label>Data eta ordua<input id="match-date" type="datetime-local" required></label><label>Aurkaria<input id="match-opponent" required maxlength="120"></label></div>
@@ -653,8 +653,11 @@ textarea{min-height:84px;resize:vertical}
       </details>
       <div class="toolbar"><h2>Partiden historia</h2><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
       <ul id="matches-list" class="list"></ul><div id="match-detail" class="card hidden"></div>
+    </section>
+    <section id="v-stats">
+      <div class="help-heading"><h1>Estatistikak</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-13" aria-label="Estatistikak: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-13" hidden>Taldearen, jokalarien eta aurkarien errendimendua aztertu.</p>
       <div class="card" id="stats-card">
-        <div class="help-heading"><h2>Estatistikak</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-13" aria-label="Estatistikak: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-13" hidden>Taldearen, jokalarien eta aurkarien errendimendua aztertu.</p>
+
         <div class="grid3"><label>Ikuspegia<select id="stats-mode"><option value="team">Taldea</option><option value="players">Jokalariak</option><option value="opponents">Aurkariak</option></select></label><label>Denboraldia<select id="stats-period"><option value="all">Guztiak</option><option value="month">Azken hilabetea</option><option value="3months">Azken 3 hilabeteak</option><option value="season">Uneko denboraldia</option></select></label><label>Etxeko/kanpoko<select id="stats-venue"><option value="all">Guztiak</option><option value="home">Etxean</option><option value="away">Kanpoan</option></select></label></div>
         <div class="grid3"><label>Hasiera data<input id="stats-start" type="date"></label><label>Amaiera data<input id="stats-end" type="date"></label><label>Aurkaria<select id="stats-opponent"><option value="">Aurkari guztiak</option></select></label></div>
         <div class="grid3"><label>Partida<select id="stats-match"><option value="">Partida guztiak</option></select></label><label>Jokalari bilaketa<input id="stats-search" type="search" placeholder="Izena edo dorsala"></label><button class="btn secondary" id="stats-clear" type="button">Garbitu iragazkiak</button></div>
@@ -765,7 +768,7 @@ textarea{min-height:84px;resize:vertical}
   </dialog>
 <button id="mobile-menu-backdrop" class="mobile-menu-backdrop hidden" type="button" aria-label="Menua itxi" tabindex="-1"></button>
 <nav id="nav" class="hidden" aria-label="Nagusia" aria-hidden="true" inert><div role="tablist">
-  <button role="tab" data-v="v-home" aria-selected="true">Hasiera</button><button role="tab" data-v="v-sessions" aria-selected="false">Entrenamendua</button><button role="tab" data-v="v-planning" aria-selected="false">Plangintza</button><button role="tab" data-v="v-players" aria-selected="false">Taldea</button><button role="tab" data-v="v-matches" aria-selected="false">Lehiaketa</button><button role="tab" data-v="v-more" aria-selected="false">Gehiago</button>
+  <button role="tab" data-v="v-home" aria-selected="true">Hasiera</button><button role="tab" data-v="v-sessions" aria-selected="false">Entrenamendua</button><button role="tab" data-v="v-planning" aria-selected="false">Plangintza</button><button role="tab" data-v="v-players" aria-selected="false">Taldea</button><button role="tab" data-v="v-matches" aria-selected="false">Lehiaketa</button><button role="tab" data-v="v-stats" aria-selected="false">Estatistikak</button><button role="tab" data-v="v-more" aria-selected="false">Gehiago</button>
 </div></nav>
 <div id="plan-modal" class="modal hidden">
   <div class="modal-box card">
@@ -782,6 +785,6 @@ textarea{min-height:84px;resize:vertical}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="app.js?v=111" defer></script>
+<script src="app.js?v=113" defer></script>
 </body>
 </html>
