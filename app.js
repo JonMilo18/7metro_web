@@ -2785,12 +2785,12 @@ $("session-back").addEventListener("click", function () {
 $("match-form").addEventListener("submit", async function (event) {
   event.preventDefault();
   var form = this, button = form.querySelector('button[type="submit"]');
-  var scoreText = $("match-score").value.trim(), score = scoreText.split("-").map(function (value) {
-    return Number(value.trim());
+  var score = [$("match-score-home").value, $("match-score-away").value].map(function (value) {
+    return value.trim() === "" ? 0 : Number(value);
   });
-  if (scoreText && (score.length !== 2 || score.some(function (value) {
-    return !Number.isInteger(value) || value < 0;
-  }))) return notify("Idatzi emaitza honela: 28-24", "error");
+  if (score.some(function (value) { return !Number.isInteger(value) || value < 0 || value > 999; })) {
+    return notify("Golak 0 eta 999 arteko zenbaki osoak izan behar dira", "error");
+  }
   var stats = players.map(function (player) {
     var row = { id_jokalaria: Number(player.id_jokalaria) };
     form.querySelectorAll('[data-player="' + player.id_jokalaria + '"]').forEach(function (input) {
@@ -2806,8 +2806,8 @@ $("match-form").addEventListener("submit", async function (event) {
     await request({
       action: "pwa_create_match", team_id: teamId,
       data_ordua: $("match-date").value, aurkaria: $("match-opponent").value.trim(),
-      lekua: $("match-place").value, emaitza_geurea: scoreText ? score[0] : 0,
-      emaitza_aurkaria: scoreText ? score[1] : 0, stats: stats
+      lekua: $("match-place").value, emaitza_geurea: score[0],
+      emaitza_aurkaria: score[1], stats: stats
     });
     form.reset(); $("match-date").value = localDateTime();
     await refreshAll(); notify("Partida gorde da", "success");
@@ -3195,4 +3195,15 @@ $("session-create").addEventListener("click", function () {
 });
 $("session-create-panel").addEventListener("toggle", function () {
   $("session-create").setAttribute("aria-expanded", String(this.open));
+});
+
+$("match-create").addEventListener("click", function () {
+  var panel = $("match-create-panel");
+  panel.open = true;
+  this.setAttribute("aria-expanded", "true");
+  $("match-form").focus({ preventScroll: true });
+  panel.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+});
+$("match-create-panel").addEventListener("toggle", function () {
+  $("match-create").setAttribute("aria-expanded", String(this.open));
 });

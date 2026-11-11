@@ -426,7 +426,8 @@ textarea{min-height:84px;resize:vertical}
 .session-page-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .session-page-heading>.help-heading{min-width:0}
 .session-create-button{flex:none;width:46px;min-height:46px;margin:0;border-radius:50%;padding:0;font-size:1.8rem;line-height:1}
-#session-create-panel{scroll-margin-top:18px}
+#session-create-panel,#match-create-panel{scroll-margin-top:18px}
+.match-score-inputs{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:end;min-width:0}.match-score-inputs label{min-width:0}.match-score-inputs>span{padding-bottom:10px}
 .exercise-categories{min-width:0;margin:0;padding:10px;border:1px solid var(--line);border-radius:10px}.exercise-categories legend{font-size:.9rem;font-weight:600;padding:0 4px}
 </style>
 </head>
@@ -443,7 +444,6 @@ textarea{min-height:84px;resize:vertical}
     <button class="btn" type="submit">Saioa hasi</button>
   </form>
   <button class="btn secondary" id="create-account" type="button">Kontua sortu</button>
-  <div class="notice">Datuak Supabase bidez sinkronizatzen dira. Ez da ordenagailuko API lokalik abiarazi behar.</div>
 </section>
 
 <dialog id="account-create-dialog" class="attendance-dialog" aria-labelledby="account-create-title">
@@ -636,12 +636,12 @@ textarea{min-height:84px;resize:vertical}
       </details>
     </section>
     <section id="v-matches">
-      <div class="help-heading"><h1>Lehiaketa</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-12" aria-label="Lehiaketa: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-12" hidden>Kudeatu partidak, erabili zuzeneko markagailua eta aztertu estatistikak.</p>
+      <div class="session-page-heading"><div class="help-heading"><h1>Lehiaketa</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-12" aria-label="Lehiaketa: informazioa"><span aria-hidden="true">i</span></button></div><button class="btn session-create-button" id="match-create" type="button" aria-label="Partida berria sortu" title="Partida berria sortu" aria-controls="match-create-panel" aria-expanded="false"><span aria-hidden="true">+</span></button></div><p class="sub" id="help-text-12" hidden>Kudeatu partidak, erabili zuzeneko markagailua eta aztertu estatistikak.</p>
       <div class="group-links"><button class="btn secondary" type="button" data-open-section="v-scoreboard">Markagailu bizia</button><button class="btn secondary" type="button" data-open-section="v-stats">Joan estatistiketara</button></div>
-      <details class="card"><summary><strong>Partida berria</strong></summary>
-        <form id="match-form" class="stack" style="margin-top:14px">
+      <details class="card" id="match-create-panel"><summary><strong>Partida berria</strong></summary>
+        <form id="match-form" tabindex="-1" class="stack" style="margin-top:14px">
           <div class="grid2"><label>Data eta ordua<input id="match-date" type="datetime-local" required></label><label>Aurkaria<input id="match-opponent" required maxlength="120"></label></div>
-          <div class="grid2"><label>Tokia<select id="match-place"><option>Etxean</option><option>Kanpoan</option></select></label><label>Emaitza<input id="match-score" placeholder="Adib. 28-24" inputmode="numeric"></label></div>
+          <div class="grid2"><label>Tokia<select id="match-place"><option>Etxean</option><option>Kanpoan</option></select></label><div class="match-score-inputs"><label>Gure golak<input id="match-score-home" type="number" inputmode="numeric" min="0" max="999" step="1" placeholder="0"></label><span aria-hidden="true">?</span><label>Aurkariaren golak<input id="match-score-away" type="number" inputmode="numeric" min="0" max="999" step="1" placeholder="0"></label></div></div>
           <h2>Jokalariak</h2><div id="match-players"></div>
           <button class="btn" type="submit">Gorde partida</button>
         </form>
@@ -777,6 +777,6 @@ textarea{min-height:84px;resize:vertical}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="app.js?v=107" defer></script>
+<script src="app.js?v=110" defer></script>
 </body>
 </html>
