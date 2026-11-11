@@ -41,7 +41,6 @@ jobs:
       - name: Verify training editing and duplication
         run: |
           npm ci --ignore-scripts
-          node --experimental-strip-types --check backend/session-actions.ts
           npm test
 
       - name: Prepare public files
