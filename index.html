@@ -413,6 +413,14 @@ textarea{min-height:84px;resize:vertical}
  .shot-canvas-wrap{max-width:100%}
  .loading-indicator-content{width:min(100%,360px);gap:14px;padding:18px}
 }
+/* Contextual help: keep information within reach without crowding the page. */
+.help-heading{display:flex;align-items:center;gap:8px;min-width:0}
+.help-heading h1,.help-heading h2,.help-heading h3{min-width:0}
+.info-toggle{display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--muted);cursor:pointer;vertical-align:middle}
+.info-toggle span{display:grid;place-items:center;width:21px;height:21px;border:1.5px solid currentColor;border-radius:50%;font:bold 14px Georgia,serif}
+.info-toggle:hover,.info-toggle[aria-expanded="true"]{color:var(--blue);background:rgba(0,68,238,.1)}
+.help-heading+p[hidden],p[hidden]{display:none!important}
+.home-hero>div>.help-heading{width:100%}
 </style>
 </head>
 <body>
@@ -420,8 +428,8 @@ textarea{min-height:84px;resize:vertical}
 <header><button class="menu-toggle" id="mobile-menu-toggle" type="button" aria-label="Menua ireki" aria-controls="nav" aria-expanded="false" hidden>☰</button><img src="icons/icon-192.png" alt="" aria-hidden="true"><b>7metro</b><span id="account"></span></header>
 <main>
 <section id="v-login" class="on">
-  <h1>Saioa hasi</h1>
-  <p class="sub">Hasi saioa edo sortu 7metroko kontu berria. Pasahitzak gutxienez 8 karaktere izan behar ditu.</p>
+  <div class="help-heading"><h1>Saioa hasi</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-1" aria-label="Saioa hasi: informazioa"><span aria-hidden="true">i</span></button></div>
+  <p class="sub" id="help-text-1" hidden>Hasi saioa edo sortu 7metroko kontu berria. Pasahitzak gutxienez 8 karaktere izan behar ditu.</p>
   <form id="login-form" class="card stack">
     <label>Erabiltzailea<input id="username" autocomplete="username" required></label>
     <label>Pasahitza<input id="password" type="password" autocomplete="current-password" required></label>
@@ -454,7 +462,7 @@ textarea{min-height:84px;resize:vertical}
 
 <div id="workspace" class="hidden">
   <div id="team-picker" class="hidden">
-    <h1>Aukeratu taldea</h1><p class="sub">Talde bereko jokalariak eta jarduerak kudeatuko dituzu.</p>
+    <div class="help-heading"><h1>Aukeratu taldea</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-2" aria-label="Aukeratu taldea: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-2" hidden>Talde bereko jokalariak eta jarduerak kudeatuko dituzu.</p>
     <div class="card stack">
       <label>Zure taldeak<select id="team-select"></select></label>
       <button class="btn" id="open-team" type="button">Taldea ireki</button>
@@ -470,7 +478,7 @@ textarea{min-height:84px;resize:vertical}
   </div>
   <div id="team-app" class="hidden">
     <section id="v-home">
-      <div class="home-hero"><div><span class="home-eyebrow">7METRO · TALDEAREN LABURPENA</span><h1 id="home-title">Ongi etorri</h1><p id="home-subtitle">Zure entrenamendu eta lehiaketen ikuspegi azkarra.</p></div><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
+      <div class="home-hero"><div><span class="home-eyebrow">7METRO · TALDEAREN LABURPENA</span><div class="help-heading"><h1 id="home-title">Ongi etorri</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="home-subtitle" aria-label="Ongi etorri: informazioa"><span aria-hidden="true">i</span></button></div><p id="home-subtitle" hidden>Zure entrenamendu eta lehiaketen ikuspegi azkarra.</p></div><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
       <div class="home-dashboard-grid">
         <article class="card home-card"><span class="home-card-kicker">Azken entrenamendua</span><div id="home-session-content"></div></article>
         <article class="card home-card"><span class="home-card-kicker">Azken partidua</span><div id="home-match-content"></div></article>
@@ -480,11 +488,11 @@ textarea{min-height:84px;resize:vertical}
       <div class="home-shortcuts"><button class="more-link" type="button" data-open-section="v-sessions"><strong>Entrenamenduak</strong><span>Saioak sortu eta ikusi</span></button><button class="more-link" type="button" data-open-section="v-scoreboard"><strong>Markagailu bizia</strong><span>Partida bat hasi</span></button><button class="more-link" type="button" data-open-section="v-planning"><strong>Denboraldiaren plangintza</strong><span>Egutegia eta zikloak</span></button></div>
     </section>
     <section id="v-board">
-      <h1>Ariketa-arbela</h1><p class="sub">Sortu ariketa bat kantxan marraztuz, programako arbelean bezala.</p>
+      <div class="help-heading"><h1>Ariketa-arbela</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-4" aria-label="Ariketa-arbela: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-4" hidden>Sortu ariketa bat kantxan marraztuz, programako arbelean bezala.</p>
       <div class="card">
         <form id="exercise-form" class="stack">
           <label>Izena<input name="izena" required maxlength="140"></label>
-          <h2>Ariketaren arbela</h2>
+          <div class="help-heading"><h2>Ariketaren arbela</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-5" aria-label="Ariketaren arbela: informazioa"><span aria-hidden="true">i</span></button></div>
           <label>Atzeko planoa<select id="board-background"><option value="Zelaia">Zelaia</option><option value="Zelai-erdia">Zelai-erdia</option></select></label>
           <div class="board-tools" aria-label="Arbelako tresnak">
             <button class="btn secondary" type="button" data-board-tool="move" aria-pressed="true">Mugitu</button>
@@ -503,10 +511,10 @@ textarea{min-height:84px;resize:vertical}
             <button class="btn danger" id="board-clear" type="button">Garbitu dena</button>
           </div>
           <div class="board-wrap"><canvas id="exercise-board" width="800" height="500" aria-label="Ariketa marrazteko arbela"></canvas></div>
-          <p class="muted">Aukeratu jokalari edo tresna eta ukitu arbela. Mugitu tresnarekin arrastatu; testua gehitzeko idatzi testua eskatzen denean.</p>
+          <p class="muted" id="help-text-5" hidden>Aukeratu jokalari edo tresna eta ukitu arbela. Mugitu tresnarekin arrastatu; testua gehitzeko idatzi testua eskatzen denean.</p>
           <div class="stack" aria-label="Animazioa sortzeko aukerak">
-            <h2>Animazioa</h2>
-            <p class="muted">Prestatu hasierako kokapena eta sakatu ?Gehitu pausoa?. Mugitu elementuak eta gehitu hurrengo pausoak. Hautatutako pausoan aldaketak gordetzeko, sakatu ?Eguneratu pausoa?. Ondoren, gorde ariketa animazioarekin.</p>
+            <div class="help-heading"><h2>Animazioa</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-6" aria-label="Animazioa: informazioa"><span aria-hidden="true">i</span></button></div>
+            <p class="muted" id="help-text-6" hidden>Prestatu hasierako kokapena eta sakatu &laquo;Gehitu pausoa&raquo;. Mugitu elementuak eta gehitu hurrengo pausoak. Hautatutako pausoan aldaketak gordetzeko, sakatu &laquo;Eguneratu pausoa&raquo;. Gordetzean azken kokapena ere gehituko da animazioan.</p>
             <label>Pausoak<select id="board-frames"><option value="-1">Uneko arbela</option></select></label>
             <div class="board-tools">
               <button class="btn secondary" id="board-frame-add" type="button">Gehitu pausoa</button>
@@ -522,11 +530,11 @@ textarea{min-height:84px;resize:vertical}
       </div>
       <div class="toolbar"><h2>Gordetako ariketak</h2><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
       <div class="toolbar"><label for="exercise-list-category">Filtratu kategoriaren arabera<select id="exercise-list-category" class="category-filter"><option value="">Kategoria guztiak</option></select></label></div>
-      <details class="card" id="exercise-category-manager"><summary><strong>Kudeatu kategoriak</strong></summary><div class="stack" style="margin-top:12px"><form id="exercise-category-form" class="toolbar"><label for="new-exercise-category">Kategoria berria<input id="new-exercise-category" maxlength="80" required placeholder="Adib. Defentsa"></label><button class="btn" type="submit">Sortu kategoria</button></form><ul id="exercise-category-list" class="list"></ul><p class="muted">Kategoriak liburutegi partekatuan daude. Kategoria bat ezabatzean ariketa guztietatik kenduko da.</p></div></details>
+      <details class="card" id="exercise-category-manager"><summary><strong>Kudeatu kategoriak</strong><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-7" aria-label="Kudeatu kategoriak: informazioa"><span aria-hidden="true">i</span></button></summary><div class="stack" style="margin-top:12px"><form id="exercise-category-form" class="toolbar"><label for="new-exercise-category">Kategoria berria<input id="new-exercise-category" maxlength="80" required placeholder="Adib. Defentsa"></label><button class="btn" type="submit">Sortu kategoria</button></form><ul id="exercise-category-list" class="list"></ul><p class="muted" id="help-text-7" hidden>Kategoriak liburutegi partekatuan daude. Kategoria bat ezabatzean ariketa guztietatik kenduko da.</p></div></details>
       <ul id="exercises-list" class="list"></ul>
     </section>
     <section id="v-sessions" class="on">
-      <h1>Entrenamendua</h1><p class="sub">Antolatu saioak, aukeratu ariketak eta prestatu ariketa berriak kantxan.</p>
+      <div class="help-heading"><h1>Entrenamendua</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-8" aria-label="Entrenamendua: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-8" hidden>Antolatu saioak, aukeratu ariketak eta prestatu ariketa berriak kantxan.</p>
       <div class="group-links"><button class="btn secondary" id="open-board" type="button">Ariketa-liburutegia eta arbela</button></div>
       <details class="card"><summary><strong>Entrenamendu berria</strong></summary>
         <form id="session-form" class="stack" style="margin-top:14px">
@@ -578,8 +586,8 @@ textarea{min-height:84px;resize:vertical}
       <div id="saved-session-exercises" class="training-exercise-grid"></div>
     </section>
     <section id="v-session-view">
-      <h1 id="session-view-title">Saioa osatzen</h1>
-      <p class="sub">Aukeratutako ariketaren arbela ikusteko eta animazioa erreproduzitzeko.</p>
+      <div class="help-heading"><h1 id="session-view-title">Saioa osatzen</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-9" aria-label="Saioa osatzen: informazioa"><span aria-hidden="true">i</span></button></div>
+      <p class="sub" id="help-text-9" hidden>Aukeratutako ariketaren arbela ikusteko eta animazioa erreproduzitzeko.</p>
       <div class="card">
         <div class="toolbar"><button class="btn secondary" type="button" id="session-prev">← Aurrekoa</button>
           <span class="muted" id="session-view-position"></span>
@@ -590,7 +598,7 @@ textarea{min-height:84px;resize:vertical}
       </div>
     </section>
     <section id="v-players">
-      <h1>Taldea</h1><p class="sub">Kudeatu jokalari-zerrenda, kirol-datuak eta entrenamenduetako asistentzia.</p>
+      <div class="help-heading"><h1>Taldea</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-10" aria-label="Taldea: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-10" hidden>Kudeatu jokalari-zerrenda, kirol-datuak eta entrenamenduetako asistentzia.</p>
       <details class="card"><summary><strong>Jokalari berria gehitu</strong></summary>
         <form id="player-form" class="stack" style="margin-top:14px">
           <div class="grid2"><label>Izena<input name="izena" required maxlength="100"></label><label>Abizena<input name="abizena" maxlength="100"></label></div>
@@ -606,10 +614,10 @@ textarea{min-height:84px;resize:vertical}
       <div class="grid2"><label>Bilatu jokalaria<input id="players-search" type="search" placeholder="Izena edo dorsala"></label><label>Egoeraren arabera<select id="players-status"><option value="">Egoera guztiak</option><option>Erabilgarri</option><option>Zalantza</option><option>Baja</option></select></label></div>
       <div class="toolbar"><h2>Taldeko jokalariak</h2><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
       <ul id="players-list" class="list"></ul>
-      <div class="card"><h2>Asistentzia</h2><p class="muted">Aukeratu entrenamendua eta apuntatu bertaratzea, berandutzeak eta haien arrazoiak.</p><div class="grid2"><label>Entrenamendua<select id="attendance-session"></select></label><button class="btn" id="attendance-open" type="button" disabled>Asistentzia apuntatu</button></div></div>
+      <div class="card"><div class="help-heading"><h2>Asistentzia</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-11" aria-label="Asistentzia: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-11" hidden>Aukeratu entrenamendua eta apuntatu bertaratzea, berandutzeak eta haien arrazoiak.</p><div class="grid2"><label>Entrenamendua<select id="attendance-session"></select></label><button class="btn" id="attendance-open" type="button" disabled>Asistentzia apuntatu</button></div></div>
     </section>
     <section id="v-matches">
-      <h1>Lehiaketa</h1><p class="sub">Kudeatu partidak, erabili zuzeneko markagailua eta aztertu estatistikak.</p>
+      <div class="help-heading"><h1>Lehiaketa</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-12" aria-label="Lehiaketa: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-12" hidden>Kudeatu partidak, erabili zuzeneko markagailua eta aztertu estatistikak.</p>
       <div class="group-links"><button class="btn secondary" type="button" data-open-section="v-scoreboard">Markagailu bizia</button><button class="btn secondary" type="button" data-open-section="v-stats">Joan estatistiketara</button></div>
       <details class="card"><summary><strong>Partida berria</strong></summary>
         <form id="match-form" class="stack" style="margin-top:14px">
@@ -622,7 +630,7 @@ textarea{min-height:84px;resize:vertical}
       <div class="toolbar"><h2>Partiden historia</h2><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
       <ul id="matches-list" class="list"></ul><div id="match-detail" class="card hidden"></div>
       <div class="card" id="stats-card">
-        <h2>Estatistikak</h2><p class="muted">Taldearen, jokalarien eta aurkarien errendimendua aztertu.</p>
+        <div class="help-heading"><h2>Estatistikak</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-13" aria-label="Estatistikak: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-13" hidden>Taldearen, jokalarien eta aurkarien errendimendua aztertu.</p>
         <div class="grid3"><label>Ikuspegia<select id="stats-mode"><option value="team">Taldea</option><option value="players">Jokalariak</option><option value="opponents">Aurkariak</option></select></label><label>Denboraldia<select id="stats-period"><option value="all">Guztiak</option><option value="month">Azken hilabetea</option><option value="3months">Azken 3 hilabeteak</option><option value="season">Uneko denboraldia</option></select></label><label>Etxeko/kanpoko<select id="stats-venue"><option value="all">Guztiak</option><option value="home">Etxean</option><option value="away">Kanpoan</option></select></label></div>
         <div class="grid3"><label>Hasiera data<input id="stats-start" type="date"></label><label>Amaiera data<input id="stats-end" type="date"></label><label>Aurkaria<select id="stats-opponent"><option value="">Aurkari guztiak</option></select></label></div>
         <div class="grid3"><label>Partida<select id="stats-match"><option value="">Partida guztiak</option></select></label><label>Jokalari bilaketa<input id="stats-search" type="search" placeholder="Izena edo dorsala"></label><button class="btn secondary" id="stats-clear" type="button">Garbitu iragazkiak</button></div>
@@ -631,14 +639,14 @@ textarea{min-height:84px;resize:vertical}
         <div id="stats-team-panel"><h3>Gol eta eraginkortasuna 10 minutuko tarteetan</h3><div id="stats-period-chart" class="stack"></div></div>
         <div id="stats-player-panel" class="hidden"><div class="toolbar"><h3>Jokalari bakoitzaren xehetasunak</h3><div class="stats-view-toggle" role="group" aria-label="Jokalarien estatistiken ikuspegia"><button id="stats-view-visual" type="button" aria-pressed="true">Bisuala</button><button id="stats-view-list" type="button" aria-pressed="false">Zerrenda</button></div></div><div id="stats-players-visual" class="player-visual-grid"></div><ul id="stats-list" class="list hidden"></ul></div>
         <div id="stats-opponent-panel" class="hidden"><h3>Aurkari bakoitzaren xehetasunak</h3><ul id="stats-opponent-list" class="list"></ul></div>
-        <div id="stats-shots-panel"><h3>Jaurtiketen mapa eta zonak</h3><p class="muted">Koordenatuak dituzten jaurtiketak baino ez dira mapan zenbatzen; berdea gola da eta gorria huts egindako jaurtiketa.</p><div class="grid2"><div><h4>Jaurtiketa jatorria</h4><div id="stats-court-map" class="stats-map"></div><ul id="stats-origin-zones" class="list"></ul></div><div><h4>Golaren norabidea</h4><div id="stats-goal-map" class="stats-map goal-map"></div><ul id="stats-goal-zones" class="list"></ul></div></div><div><h4>Penaltien emaitzak</h4><ul id="stats-penalties" class="list"></ul></div></div>
+        <div id="stats-shots-panel"><div class="help-heading"><h3>Jaurtiketen mapa eta zonak</h3><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-14" aria-label="Jaurtiketen mapa eta zonak: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-14" hidden>Koordenatuak dituzten jaurtiketak baino ez dira mapan zenbatzen; berdea gola da eta gorria huts egindako jaurtiketa.</p><div class="grid2"><div><h4>Jaurtiketa jatorria</h4><div id="stats-court-map" class="stats-map"></div><ul id="stats-origin-zones" class="list"></ul></div><div><h4>Golaren norabidea</h4><div id="stats-goal-map" class="stats-map goal-map"></div><ul id="stats-goal-zones" class="list"></ul></div></div><div><h4>Penaltien emaitzak</h4><ul id="stats-penalties" class="list"></ul></div></div>
       </div>
     </section>
     <section id="v-scoreboard">
-      <h1>Markagailua</h1><p class="sub">Partidako denbora, emaitza eta goleatzaileen erregistro azkarra.</p>
+      <div class="help-heading"><h1>Markagailua</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-15" aria-label="Markagailua: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-15" hidden>Partidako denbora, emaitza eta goleatzaileen erregistro azkarra.</p>
       <div class="card stack score-live-panel" id="score-live-panel">
         <div class="grid2"><label>Etxeko taldea<input id="score-home-name" maxlength="60" value="7metro"></label><label>Aurkaria<input id="score-away-name" maxlength="60" value="Aurkaria"></label></div>
-        <div class="card stack"><h2>Partida gorde</h2><p class="muted">Markagailuko emaitza, jokalarien golak eta erregistratutako jaurtiketa-kokapenak partiden historialean gordeko dira.</p><div class="grid2"><label>Data eta ordua<input id="score-save-date" type="datetime-local" required></label><label>Tokia<select id="score-save-venue"><option>Etxean</option><option>Kanpoan</option></select></label></div><button class="btn" id="score-save-match" type="button">Partida hau gorde</button><p class="muted" id="score-save-status" aria-live="polite">Oraindik ez da gorde.</p></div>
+        <div class="card stack"><div class="help-heading"><h2>Partida gorde</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-16" aria-label="Partida gorde: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-16" hidden>Markagailuko emaitza, jokalarien golak eta erregistratutako jaurtiketa-kokapenak partiden historialean gordeko dira.</p><div class="grid2"><label>Data eta ordua<input id="score-save-date" type="datetime-local" required></label><label>Tokia<select id="score-save-venue"><option>Etxean</option><option>Kanpoan</option></select></label></div><button class="btn" id="score-save-match" type="button">Partida hau gorde</button><p class="muted" id="score-save-status" aria-live="polite">Oraindik ez da gorde.</p></div>
         <div class="scoreboard">
           <div class="score-side"><div class="score-number" id="score-home">0</div><div class="score-controls"><button type="button" data-score="home" data-delta="-1" aria-label="Etxekoaren gola kendu">−</button><button type="button" data-score="home" data-delta="1" aria-label="Etxekoaren gola gehitu">+</button></div></div>
           <strong aria-hidden="true">:</strong>
@@ -653,8 +661,8 @@ textarea{min-height:84px;resize:vertical}
         <div class="score-actions"><button class="btn secondary" id="score-goal-home" type="button">Etxeko gola</button><button class="btn secondary" id="score-goal-away" type="button">Kanpoko gola</button></div>
       </div>
       <div class="card stack">
-        <h2>Jaurtiketa baten kokapena</h2>
-        <p class="muted">Aukeratu jokalaria eta emaitza. Sakatu kantxan jaurtiketaren jatorria eta atean baloiaren helmuga.</p>
+        <div class="help-heading"><h2>Jaurtiketa baten kokapena</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-17" aria-label="Jaurtiketa baten kokapena: informazioa"><span aria-hidden="true">i</span></button></div>
+        <p class="muted" id="help-text-17" hidden>Aukeratu jokalaria eta emaitza. Sakatu kantxan jaurtiketaren jatorria eta atean baloiaren helmuga.</p>
         <div class="grid2"><label>Taldea<select id="shot-team"><option value="home">Etxekoa</option><option value="away">Kanpokoa</option></select></label><label>Jokalaria<select id="shot-player"><option value="">Jokalaria aukeratu</option></select></label></div>
         <label>Jaurtiketa mota eta emaitza<select id="shot-result"><option value="gol">Jaurtiketa arrunta · gola</option><option value="jaurtiketa">Jaurtiketa arrunta · huts</option><option value="penalti_gol">Penaltia · gola</option><option value="penalti_jaurtiketa">Penaltia · huts</option></select></label>
         <div class="shot-canvas-wrap"><canvas id="shot-goal-canvas" class="shot-canvas" width="600" height="400" aria-label="Sakatu baloiaren kokalekua porterian"></canvas></div>
@@ -665,18 +673,18 @@ textarea{min-height:84px;resize:vertical}
       <div class="card"><div class="toolbar"><h2>Gertaerak</h2><button class="btn secondary" type="button" id="score-clear-events">Garbitu</button></div><ul id="score-events" class="list"></ul></div>
     </section>
     <section id="v-friends">
-      <h1>Lagunak</h1><p class="sub">Bidali eta kudeatu lagun-eskaerak; partekatu ariketak eta entrenamenduak.</p>
+      <div class="help-heading"><h1>Lagunak</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-18" aria-label="Lagunak: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-18" hidden>Bidali eta kudeatu lagun-eskaerak; partekatu ariketak eta entrenamenduak.</p>
       <form id="friend-form" class="card stack"><h2>Lagun berria</h2><label>Erabiltzaile-izena<input id="friend-username" minlength="3" maxlength="200" required autocomplete="off"></label><button class="btn" type="submit">Eskaera bidali</button></form>
       <div class="toolbar"><h2>Jasotako eskaerak</h2><button class="btn secondary" type="button" id="friends-refresh">Freskatu</button></div><ul id="friend-incoming" class="list"></ul>
       <div class="card"><h2>Lagunak</h2><ul id="friends-list" class="list"></ul></div>
-      <div class="card"><h2>Bidaltzeko ariketak</h2><p class="muted">Aukeratu lagun bat eta partekatu nahi dituzun ariketa guztiak.</p><form id="friend-share-exercise" class="stack"><label>Lagun<select id="share-exercise-friend" required></select></label><div><label>Ariketak <span id="share-exercise-count" class="muted">0 hautatuta</span></label><div class="board-tools" aria-label="Ariketak hautatzeko aukerak"><button class="btn secondary" id="share-exercise-select-all" type="button">Denak hautatu</button><button class="btn secondary" id="share-exercise-clear" type="button">Garbitu</button></div><div id="share-exercise-items" class="checklist" aria-label="Partekatzeko ariketak"></div></div><button class="btn" type="submit">Hautatutako ariketak partekatu</button></form></div>
+      <div class="card"><div class="help-heading"><h2>Bidaltzeko ariketak</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-19" aria-label="Bidaltzeko ariketak: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-19" hidden>Aukeratu lagun bat eta partekatu nahi dituzun ariketa guztiak.</p><form id="friend-share-exercise" class="stack"><label>Lagun<select id="share-exercise-friend" required></select></label><div><label>Ariketak <span id="share-exercise-count" class="muted">0 hautatuta</span></label><div class="board-tools" aria-label="Ariketak hautatzeko aukerak"><button class="btn secondary" id="share-exercise-select-all" type="button">Denak hautatu</button><button class="btn secondary" id="share-exercise-clear" type="button">Garbitu</button></div><div id="share-exercise-items" class="checklist" aria-label="Partekatzeko ariketak"></div></div><button class="btn" type="submit">Hautatutako ariketak partekatu</button></form></div>
       <div class="card"><h2>Bidaltzeko entrenamenduak</h2><form id="friend-share-training" class="stack"><label>Lagun<select id="share-training-friend" required></select></label><label>Entrenamendua<select id="share-training-item" required></select></label><button class="btn" type="submit">Entrenamendua partekatu</button></form></div>
       <div class="card"><h2>Nirekin partekatutako ariketak</h2><ul id="friend-shared-exercises" class="list"></ul></div>
       <div class="card"><h2>Nirekin partekatutako entrenamenduak</h2><ul id="friend-shared-trainings" class="list"></ul></div>
       <ul id="friend-outgoing" class="list"></ul>
     </section>
     <section id="v-planning">
-      <h1>Denboraldiaren plangintza</h1><p class="sub">Makrozikloak, mikrozikloak, entrenamenduak eta partidak hilabete-egutegi batean.</p>
+      <div class="help-heading"><h1>Denboraldiaren plangintza</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-20" aria-label="Denboraldiaren plangintza: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-20" hidden>Makrozikloak, mikrozikloak, entrenamenduak eta partidak hilabete-egutegi batean.</p>
       <div class="card" id="plan-card">
         <div class="plan-toolbar">
           <div class="plan-nav">
@@ -700,14 +708,14 @@ textarea{min-height:84px;resize:vertical}
       <div class="card"><h2>Mikrozikloak</h2><ul id="micros-list" class="list"></ul></div>
     </section>
     <section id="v-more">
-      <h1>Gehiago</h1><p class="sub">Komunitatea eta zure kontuaren ezarpenak.</p>
+      <div class="help-heading"><h1>Gehiago</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-21" aria-label="Gehiago: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-21" hidden>Komunitatea eta zure kontuaren ezarpenak.</p>
       <div class="more-links">
         <button class="more-link" type="button" data-open-section="v-friends"><strong>Komunitatea eta lagunak</strong><span>Eskaerak eta ariketa zein entrenamenduen partekatzea</span></button>
       </div>
-      <form id="team-invite-form" class="card stack"><h2>Taldea partekatu</h2><p class="muted">Gonbidatu onartutako lagun bat talde honetara; gonbidapena onartzean taldeko datuak ikusiko ditu.</p><label>Lagunak<select id="team-invite-friend" required></select></label><button class="btn" type="submit">Taldeko gonbidapena bidali</button></form>
-      <div class="card"><h2>Itxura</h2><p class="muted">Aukeratu aplikazioaren kolore-modua.</p><div class="theme-choices" role="group" aria-label="Kolore-modua"><button class="btn secondary theme-choice" id="theme-light" type="button" data-theme-choice="light" aria-pressed="false">☀️ Modu argia</button><button class="btn secondary theme-choice" id="theme-dark" type="button" data-theme-choice="dark" aria-pressed="true">🌙 Modu iluna</button></div></div>
-      <details class="card"><summary><strong>Kontua</strong></summary>
-        <p class="muted">Taldea eta saioa kudeatu.</p>
+      <form id="team-invite-form" class="card stack"><div class="help-heading"><h2>Taldea partekatu</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-22" aria-label="Taldea partekatu: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-22" hidden>Gonbidatu onartutako lagun bat talde honetara; gonbidapena onartzean taldeko datuak ikusiko ditu.</p><label>Lagunak<select id="team-invite-friend" required></select></label><button class="btn" type="submit">Taldeko gonbidapena bidali</button></form>
+      <div class="card"><div class="help-heading"><h2>Itxura</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-23" aria-label="Itxura: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-23" hidden>Aukeratu aplikazioaren kolore-modua.</p><div class="theme-choices" role="group" aria-label="Kolore-modua"><button class="btn secondary theme-choice" id="theme-light" type="button" data-theme-choice="light" aria-pressed="false">☀️ Modu argia</button><button class="btn secondary theme-choice" id="theme-dark" type="button" data-theme-choice="dark" aria-pressed="true">🌙 Modu iluna</button></div></div>
+      <details class="card"><summary><strong>Kontua</strong><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-24" aria-label="Kontua: informazioa"><span aria-hidden="true">i</span></button></summary>
+        <p class="muted" id="help-text-24" hidden>Taldea eta saioa kudeatu.</p>
         <button class="btn secondary" id="change-team" type="button">Taldea aldatu</button><button class="btn secondary" id="logout" type="button">Saioa itxi</button>
       </details>
       <details class="card"><summary><strong>PWA instalatu</strong></summary><button class="btn" id="install" type="button" hidden>Instalatu aplikazioa</button>
@@ -750,6 +758,6 @@ textarea{min-height:84px;resize:vertical}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="app.js" defer></script>
+<script src="app.js?v=103" defer></script>
 </body>
 </html>

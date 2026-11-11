@@ -611,6 +611,18 @@ function captureBoardFrame() {
   return frame;
 }
 
+function prepareBoardForSave() {
+  // Keep the last edited position when the user saves after moving a step.
+  if (!boardState.animazioa.length) return;
+  var current = captureBoardFrame();
+  var last = boardState.animazioa[boardState.animazioa.length - 1];
+  if (JSON.stringify(current) !== JSON.stringify(last)) {
+    boardState.animazioa.push(current);
+    boardFrameIndex = boardState.animazioa.length - 1;
+    updateBoardAnimationControls();
+  }
+}
+
 function updateBoardAnimationControls() {
   var frames = boardState.animazioa;
   $("board-frames").innerHTML = '<option value="-1">Uneko arbela</option>' + frames.map(function (_, index) {
@@ -2435,6 +2447,7 @@ $("exercise-form").addEventListener("submit", async function (event) {
   data.jokalari_kopurua = numberOrNull(data.jokalari_kopurua);
   stopBoardAnimation();
   boardState.fondo = $("board-background").value;
+  prepareBoardForSave();
   data.arbela_datuak = JSON.stringify(boardState);
   button.disabled = true;
   try {
@@ -2493,7 +2506,9 @@ $("board-frame-add").addEventListener("click", function () {
   stopBoardAnimation();
   boardState.animazioa.push(captureBoardFrame());
   boardFrameIndex = boardState.animazioa.length - 1;
+  document.querySelector('[data-board-tool="move"]').click();
   updateBoardAnimationControls();
+  notify((boardFrameIndex + 1) + ". pausoa gehitu da. Mugitu elementuak hurrengo pausorako.", "success");
 });
 $("board-frames").addEventListener("change", function () {
   stopBoardAnimation();
@@ -3143,3 +3158,16 @@ if ("serviceWorker" in navigator) {
     showLogin(); notify(error.message, "error");
   }
 })();
+
+// Help buttons also work inside collapsed section summaries without toggling them.
+document.addEventListener("click", function (event) {
+  var button = event.target.closest(".info-toggle");
+  if (!button) return;
+  event.preventDefault();
+  var description = $(button.getAttribute("aria-controls"));
+  if (!description) return;
+  description.hidden = !description.hidden;
+  var details = button.closest("details");
+  if (details && !description.hidden) details.open = true;
+  button.setAttribute("aria-expanded", String(!description.hidden));
+});
