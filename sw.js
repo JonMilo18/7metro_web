@@ -1,8 +1,8 @@
 // 7metro - service worker probisionala
 // Aldaketak argitaratzean, aldatu CACHE bertsioa.
-const CACHE = "7metro-v105";
+const CACHE = "7metro-v107";
 const SHELL = ["./", "./index.html", "./manifest.json",
-  "./app.js?v=105", "./irudiak/Zelaia.png", "./irudiak/Zelai-erdia.png",
+  "./app.js?v=107", "./irudiak/Zelaia.png", "./irudiak/Zelai-erdia.png",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {

@@ -423,6 +423,11 @@ textarea{min-height:84px;resize:vertical}
 .info-toggle:hover,.info-toggle[aria-expanded="true"]{color:var(--blue);background:rgba(0,68,238,.1)}
 .help-heading+p[hidden],p[hidden]{display:none!important}
 .home-hero>div>.help-heading{width:100%}
+.session-page-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.session-page-heading>.help-heading{min-width:0}
+.session-create-button{flex:none;width:46px;min-height:46px;margin:0;border-radius:50%;padding:0;font-size:1.8rem;line-height:1}
+#session-create-panel{scroll-margin-top:18px}
+.exercise-categories{min-width:0;margin:0;padding:10px;border:1px solid var(--line);border-radius:10px}.exercise-categories legend{font-size:.9rem;font-weight:600;padding:0 4px}
 </style>
 </head>
 <body>
@@ -526,7 +531,7 @@ textarea{min-height:84px;resize:vertical}
             </div>
             <p id="board-animation-status" class="muted" role="status"></p>
           </div>
-          <details><summary><strong>Xehetasun gehiago</strong></summary><div class="stack" style="margin-top:12px"><div class="grid2"><label>Kategoria<select name="kategoria" id="exercise-category"><option value="">Kategoririk gabe</option></select></label><label>Jokalari kopurua<input name="jokalari_kopurua" type="number" min="1" max="100"></label></div><label>Deskribapena<textarea name="deskribapena"></textarea></label><label>Bideoaren esteka<input name="bideo_url" type="url"></label></div></details>
+          <details><summary><strong>Xehetasun gehiago</strong></summary><div class="stack" style="margin-top:12px"><div class="grid2"><fieldset class="exercise-categories"><legend>Kategoriak</legend><div id="exercise-category" class="checklist"></div></fieldset><label>Jokalari kopurua<input name="jokalari_kopurua" type="number" min="1" max="100"></label></div><label>Deskribapena<textarea name="deskribapena"></textarea></label><label>Bideoaren esteka<input name="bideo_url" type="url"></label></div></details>
           <button class="btn" type="submit">Gehitu ariketa</button>
         </form>
       </div>
@@ -536,10 +541,10 @@ textarea{min-height:84px;resize:vertical}
       <ul id="exercises-list" class="list"></ul>
     </section>
     <section id="v-sessions" class="on">
-      <div class="help-heading"><h1>Entrenamendua</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-8" aria-label="Entrenamendua: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-8" hidden>Antolatu saioak, aukeratu ariketak eta prestatu ariketa berriak kantxan.</p>
+      <div class="session-page-heading"><div class="help-heading"><h1>Entrenamendua</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-8" aria-label="Entrenamendua: informazioa"><span aria-hidden="true">i</span></button></div><button class="btn session-create-button" id="session-create" type="button" aria-label="Entrenamendu berria sortu" title="Entrenamendu berria sortu" aria-controls="session-create-panel" aria-expanded="false"><span aria-hidden="true">+</span></button></div><p class="sub" id="help-text-8" hidden>Antolatu saioak, aukeratu ariketak eta prestatu ariketa berriak kantxan.</p>
       <div class="group-links"><button class="btn secondary" id="open-board" type="button">Ariketa-liburutegia eta arbela</button></div>
-      <details class="card"><summary><strong>Entrenamendu berria</strong></summary>
-        <form id="session-form" class="stack" style="margin-top:14px">
+      <details class="card" id="session-create-panel"><summary><strong>Entrenamendu berria</strong></summary>
+        <form id="session-form" tabindex="-1" class="stack" style="margin-top:14px">
           <div class="grid2"><label>Data eta ordua<input id="session-date" type="datetime-local" required></label><label>Tokia<input id="session-place" value="Kiroldegia"></label></div>
           <label>Helburu taktikoa<input id="session-goal" maxlength="250"></label>
           <label>Mikrozikloa<select id="session-micro"></select></label>
@@ -772,6 +777,6 @@ textarea{min-height:84px;resize:vertical}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="app.js?v=105" defer></script>
+<script src="app.js?v=107" defer></script>
 </body>
 </html>

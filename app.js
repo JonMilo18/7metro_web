@@ -1273,13 +1273,13 @@ function renderExerciseCategories() {
     });
   });
   names.sort(function (a, b) { return a.localeCompare(b); });
-  var select = $("exercise-category");
-  if (select) {
-    var selected = select.value;
-    select.innerHTML = '<option value="">Kategoririk gabe</option>' + names.map(function (name) {
-      return '<option value="' + esc(name) + '">' + esc(name) + '</option>';
-    }).join("");
-    if (names.indexOf(selected) !== -1) select.value = selected;
+  var checklist = $("exercise-category");
+  if (checklist) {
+    var selected = Array.from(checklist.querySelectorAll("input:checked")).map(function (input) { return input.value; });
+    checklist.innerHTML = names.length ? names.map(function (name) {
+      return '<label class="checkrow"><input type="checkbox" name="kategoriak" value="' + esc(name) + '"' +
+        (selected.indexOf(name) !== -1 ? ' checked' : '') + '><span>' + esc(name) + '</span></label>';
+    }).join("") : '<span class="muted">Oraindik ez dago kategoriarik.</span>';
   }
   var listFilter = $("exercise-list-category");
   if (listFilter) {
@@ -2445,6 +2445,8 @@ $("exercise-form").addEventListener("submit", async function (event) {
   event.preventDefault();
   var form = this, button = form.querySelector('button[type="submit"]');
   var data = Object.fromEntries(new FormData(form).entries());
+  data.kategoriak = new FormData(form).getAll("kategoriak");
+  data.kategoria = data.kategoriak[0] || "";
   data.jokalari_kopurua = numberOrNull(data.jokalari_kopurua);
   stopBoardAnimation();
   boardState.fondo = $("board-background").value;
@@ -2453,7 +2455,9 @@ $("exercise-form").addEventListener("submit", async function (event) {
   button.disabled = true;
   try {
     await request(Object.assign({ action: "pwa_create_exercise", team_id: teamId }, data));
-    form.reset(); resetBoard(); await refreshAll(); notify("Ariketa gehitu da", "success");
+    form.reset();
+    $("exercise-category").querySelectorAll("input").forEach(function (input) { input.checked = false; });
+    resetBoard(); await refreshAll(); notify("Ariketa gehitu da", "success");
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
 });
@@ -2468,7 +2472,9 @@ $("exercise-category-form").addEventListener("submit", async function (event) {
     await request({ action: "pwa_create_category", team_id: teamId, izena: name });
     form.reset();
     await refreshAll();
-    $("exercise-category").value = name;
+    $("exercise-category").querySelectorAll("input").forEach(function (input) {
+      if (normalizeCategoryName(input.value) === normalizeCategoryName(name)) input.checked = true;
+    });
     notify('"' + name + '" kategoria sortu da', "success");
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
@@ -2994,7 +3000,7 @@ document.addEventListener("click", async function (event) {
     message = "Ariketa hau ezabatu nahi duzu?";
   } else if (target.hasAttribute("data-delete-exercise-category")) {
     deletion = { action: "pwa_delete_category", izena: target.dataset.deleteExerciseCategory };
-    message = '"' + target.dataset.deleteExerciseCategory + '" izeneko kategoria-erregistro guztiak ezabatu? Kategoria hori erabiltzen duten ariketak kategoriarik gabe geratuko dira.';
+    message = '"' + target.dataset.deleteExerciseCategory + '" izeneko kategoria-erregistro guztiak ezabatu? Kategoria hori ariketetatik kenduko da; beste kategoriak mantenduko dira.';
     successMessage = "Kategoria ezabatu da";
   } else if (target.hasAttribute("data-delete-match")) {
     deletion = { action: "pwa_delete_match", id: Number(target.dataset.deleteMatch) };
@@ -3179,3 +3185,14 @@ $("team-management").addEventListener("toggle", function () {
   loadFriends();
 });
 $("team-invitations-refresh").addEventListener("click", loadTeamInvitations);
+
+$("session-create").addEventListener("click", function () {
+  var panel = $("session-create-panel");
+  panel.open = true;
+  this.setAttribute("aria-expanded", "true");
+  $("session-form").focus({ preventScroll: true });
+  panel.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+});
+$("session-create-panel").addEventListener("toggle", function () {
+  $("session-create").setAttribute("aria-expanded", String(this.open));
+});
