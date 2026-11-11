@@ -191,7 +191,8 @@ function updateTeamManagementControls() {
 }
 
 async function loadTeamInvitations() {
-  var list = $("team-invitations");
+  var lists = document.querySelectorAll("[data-team-invitations]");
+  var list = { set innerHTML(value) { lists.forEach(function (element) { element.innerHTML = value; }); } };
   list.innerHTML = '<li class="empty">Gonbidapenak kargatzen…</li>';
   try {
     var result = await request({ action: "team_invitations" });
@@ -3171,3 +3172,10 @@ document.addEventListener("click", function (event) {
   if (details && !description.hidden) details.open = true;
   button.setAttribute("aria-expanded", String(!description.hidden));
 });
+
+$("team-management").addEventListener("toggle", function () {
+  if (!this.open) return;
+  loadTeamInvitations();
+  loadFriends();
+});
+$("team-invitations-refresh").addEventListener("click", loadTeamInvitations);

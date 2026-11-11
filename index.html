@@ -469,7 +469,7 @@ textarea{min-height:84px;resize:vertical}
       <div class="grid2"><button class="btn secondary" id="rename-team" type="button">Izena aldatu</button><button class="btn danger" id="delete-team" type="button">Taldea ezabatu</button></div>
       <p id="team-management-note" class="muted" hidden>Taldearen jabeak bakarrik alda edo ezaba dezake taldea.</p>
     </div>
-    <div class="card"><h2>Taldeko gonbidapenak</h2><ul id="team-invitations" class="list"></ul></div>
+    <div class="card"><h2>Taldeko gonbidapenak</h2><ul id="team-invitations" class="list" data-team-invitations></ul></div>
     <form id="team-form" class="card stack">
       <h2>Talde berria sortu</h2>
       <label>Taldearen izena<input name="name" required minlength="2" maxlength="100"></label>
@@ -615,6 +615,18 @@ textarea{min-height:84px;resize:vertical}
       <div class="toolbar"><h2>Taldeko jokalariak</h2><button class="btn secondary" type="button" data-refresh>Freskatu</button></div>
       <ul id="players-list" class="list"></ul>
       <div class="card"><div class="help-heading"><h2>Asistentzia</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-11" aria-label="Asistentzia: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-11" hidden>Aukeratu entrenamendua eta apuntatu bertaratzea, berandutzeak eta haien arrazoiak.</p><div class="grid2"><label>Entrenamendua<select id="attendance-session"></select></label><button class="btn" id="attendance-open" type="button" disabled>Asistentzia apuntatu</button></div></div>
+
+      <details class="card" id="team-management">
+        <summary><strong>Taldearen kudeaketa</strong></summary>
+        <div class="stack" style="margin-top:14px">
+          <button class="btn secondary" id="change-team" type="button">Taldea aldatu</button>
+          <form id="team-invite-form" class="stack"><div class="help-heading"><h2>Taldea partekatu</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-22" aria-label="Taldea partekatu: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-22" hidden>Gonbidatu onartutako lagun bat talde honetara; gonbidapena onartzean taldeko datuak ikusiko ditu.</p><label>Lagunak<select id="team-invite-friend" required></select></label><button class="btn" type="submit">Taldeko gonbidapena bidali</button></form>
+          <div>
+            <div class="toolbar"><h2>Talde berrien gonbidapenak</h2><button class="btn secondary" id="team-invitations-refresh" type="button">Freskatu</button></div>
+            <ul id="team-module-invitations" class="list" data-team-invitations></ul>
+          </div>
+        </div>
+      </details>
     </section>
     <section id="v-matches">
       <div class="help-heading"><h1>Lehiaketa</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-12" aria-label="Lehiaketa: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-12" hidden>Kudeatu partidak, erabili zuzeneko markagailua eta aztertu estatistikak.</p>
@@ -712,11 +724,11 @@ textarea{min-height:84px;resize:vertical}
       <div class="more-links">
         <button class="more-link" type="button" data-open-section="v-friends"><strong>Komunitatea eta lagunak</strong><span>Eskaerak eta ariketa zein entrenamenduen partekatzea</span></button>
       </div>
-      <form id="team-invite-form" class="card stack"><div class="help-heading"><h2>Taldea partekatu</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-22" aria-label="Taldea partekatu: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-22" hidden>Gonbidatu onartutako lagun bat talde honetara; gonbidapena onartzean taldeko datuak ikusiko ditu.</p><label>Lagunak<select id="team-invite-friend" required></select></label><button class="btn" type="submit">Taldeko gonbidapena bidali</button></form>
+
       <div class="card"><div class="help-heading"><h2>Itxura</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-23" aria-label="Itxura: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-23" hidden>Aukeratu aplikazioaren kolore-modua.</p><div class="theme-choices" role="group" aria-label="Kolore-modua"><button class="btn secondary theme-choice" id="theme-light" type="button" data-theme-choice="light" aria-pressed="false">☀️ Modu argia</button><button class="btn secondary theme-choice" id="theme-dark" type="button" data-theme-choice="dark" aria-pressed="true">🌙 Modu iluna</button></div></div>
       <details class="card"><summary><strong>Kontua</strong><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-24" aria-label="Kontua: informazioa"><span aria-hidden="true">i</span></button></summary>
-        <p class="muted" id="help-text-24" hidden>Taldea eta saioa kudeatu.</p>
-        <button class="btn secondary" id="change-team" type="button">Taldea aldatu</button><button class="btn secondary" id="logout" type="button">Saioa itxi</button>
+        <p class="muted" id="help-text-24" hidden>Saioa kudeatu.</p>
+        <button class="btn secondary" id="logout" type="button">Saioa itxi</button>
       </details>
       <details class="card"><summary><strong>PWA instalatu</strong></summary><button class="btn" id="install" type="button" hidden>Instalatu aplikazioa</button>
         <h2>Androiden</h2><ol class="steps"><li>Ireki PWA hau Chromen.</li><li>Sakatu menuan “Instalatu aplikazioa”.</li></ol>
@@ -758,6 +770,6 @@ textarea{min-height:84px;resize:vertical}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="app.js?v=103" defer></script>
+<script src="app.js?v=104" defer></script>
 </body>
 </html>
