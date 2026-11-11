@@ -1422,7 +1422,8 @@ function renderMatches() {
       " · " + Number(match.emaitza_geurea || 0) + " - " + Number(match.emaitza_aurkaria || 0) +
       '</strong><small>' + esc(formatDate(match)) + " · " + esc(match.lekua || "") +
       '</small></div><span class="match-actions"><button class="btn secondary" type="button" data-match-stats="' +
-      Number(match.id_partida) + '">Estatistikak</button> <button class="btn secondary" type="button" data-edit-match="' +
+      Number(match.id_partida) + '">Estatistikak</button> <button class="btn secondary" type="button" data-match-stats="' +
+      Number(match.id_partida) + '" data-match-stats-view="opponents" aria-label="Ikusi aurkariaren estatistikak">Aurkaria</button> <button class="btn secondary" type="button" data-edit-match="' +
       Number(match.id_partida) + '">Editatu</button> <button class="btn danger" type="button" data-delete-match="' +
       Number(match.id_partida) + '">Ezabatu</button></span></li>';
   }).join("") : '<li class="empty">Oraindik ez da partidarik gorde.</li>';
@@ -2121,6 +2122,7 @@ function scoreRender() {
   ["score-start", "score-period-next", "score-home-name", "score-away-name", "score-mode", "score-minutes", "score-save-date", "score-save-venue"].forEach(function (id) { $(id).disabled = locked; });
   $("score-reset").disabled = scoreSaving;
   $("score-save-match").disabled = locked;
+  $("score-opponent-stats").classList.toggle("hidden", !Number.isSafeInteger(scoreboard.savedMatchId) || scoreboard.savedMatchId < 1);
   $("score-save-match").textContent = scoreSaving ? "Gordetzen..." : scoreboard.savedMatchId ? "Partida gordeta" : "Partida hau gorde";
   $("shot-record").disabled = locked || !(shotOrigin() && shotTo);
   scoreRenderShotType();
@@ -3322,6 +3324,13 @@ $("score-save-match").addEventListener("click", async function () {
     return;
   }
   scoreboard.savedMatchId = Number(result.id) || true;
+  scoreboard.savedMatchStats = Object.keys(statsByPlayer).map(function (id) { return statsByPlayer[id]; });
+  scoreboard.savedMatchShots = savedShots;
+  scoreboard.savedMatchSnapshot = {
+    id_partida: Number(result.id), data_ordua: date, aurkaria: opponent, lekua: $("score-save-venue").value,
+    emaitza_geurea: scoreboard.home, emaitza_aurkaria: scoreboard.away,
+    estatistika_aurreratuak: JSON.stringify({ event_records: eventRecords })
+  };
   scoreboard.running = false; clearInterval(scoreTimer); scoreSaving = false;
   scoreSave(); scoreRender();
   $("score-save-status").textContent = "Gordeta · " + opponent + " · " + scoreboard.home + "–" + scoreboard.away;
@@ -3329,6 +3338,38 @@ $("score-save-match").addEventListener("click", async function () {
   notify("Partida markagailutik gorde da", "success");
   try { await refreshAll(); }
   catch (error) { notify("Partida gordeta dago, baina historiala ezin izan da freskatu: " + error.message, "error"); }
+});
+
+async function openMatchStats(matchId, view) {
+  var selected = matches.find(function (match) { return Number(match.id_partida) === Number(matchId); });
+  if (!selected && scoreboard.savedMatchSnapshot && Number(scoreboard.savedMatchSnapshot.id_partida) === Number(matchId)) {
+    selected = scoreboard.savedMatchSnapshot;
+    matches.push(selected);
+    // The create request succeeded even if the subsequent snapshot refresh failed.
+    var id = Number(selected.id_partida);
+    tables.partida_jokalariak = records("partida_jokalariak").filter(function (row) { return Number(row.id_partida) !== id; }).concat((scoreboard.savedMatchStats || []).map(function (row) { return Object.assign({}, row, { id_partida: id }); }));
+    tables.partidu_jaurtiketak = records("partidu_jaurtiketak").filter(function (row) { return Number(row.id_partida) !== id; }).concat((scoreboard.savedMatchShots || []).map(function (row) { return Object.assign({}, row, { id_partida: id }); }));
+    var sanctions = [];
+    (scoreboard.savedMatchStats || []).forEach(function (row) {
+      ["horia", "two_min", "gorria", "urdina"].forEach(function (field) {
+        for (var index = 0; index < Number(row[field] || 0); index++) sanctions.push({ id_partida: id, id_jokalaria: row.id_jokalaria, mota: field === "two_min" ? "2min" : field });
+      });
+    });
+    tables.partidu_zigorrak = records("partidu_zigorrak").filter(function (row) { return Number(row.id_partida) !== id; }).concat(sanctions);
+    renderMatches();
+  }
+  if (!selected) { notify("Ezin izan da partida aurkitu. Freskatu zerrenda.", "error"); return; }
+  if (scoreMatchMode) await scoreExitMatchMode();
+  $("stats-match").value = String(matchId);
+  $("stats-mode").value = view === "opponents" ? "opponents" : "players";
+  $("stats-period").value = "all"; $("stats-venue").value = "all";
+  $("stats-opponent").value = ""; $("stats-start").value = ""; $("stats-end").value = ""; $("stats-search").value = "";
+  selectSection("v-stats");
+}
+$("score-opponent-stats").addEventListener("click", async function () {
+  this.disabled = true;
+  try { await openMatchStats(scoreboard.savedMatchId, "opponents"); }
+  finally { this.disabled = false; }
 });
 
 $("attendance-session").addEventListener("change", function () {
@@ -3431,24 +3472,8 @@ document.addEventListener("click", async function (event) {
     return;
   }
   if (target.hasAttribute("data-match-stats")) {
-    var matchId = Number(target.dataset.matchStats);
-    var selected = matches.find(function (match) { return Number(match.id_partida) === matchId; });
-    if (!selected) {
-      $("match-detail").classList.add("hidden");
-      notify("Ezin izan da partida aurkitu. Freskatu zerrenda.", "error");
-      return;
-    }
-    selectSection("v-stats");
-    // Historiako botoiak analisi osoa partida horretara bideratzen du.
-    $("stats-match").value = String(matchId);
-    $("stats-mode").value = "players";
-    $("stats-period").value = "all";
-    $("stats-venue").value = "all";
-    $("stats-opponent").value = "";
-    $("stats-start").value = "";
-    $("stats-end").value = "";
-    $("stats-search").value = "";
-    renderStats();
+    await openMatchStats(Number(target.dataset.matchStats), target.dataset.matchStatsView);
+    return;
   }
   if (target.hasAttribute("data-close-match-stats")) {
     $("match-detail").classList.add("hidden");

@@ -821,7 +821,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
       </div></details>
       <details class="card" id="score-save-panel"><summary><strong>Partida amaitu eta gorde</strong></summary><div class="stack score-details-content">
         <div class="help-heading"><h2>Partida gorde</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-16" aria-label="Partida gorde: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-16" hidden>Emaitza, bi taldeetako jokalarien golak, jaurtiketak eta zigorrak, eta erregistratutako kokapenak partiden historialean gordeko dira.</p>
-        <div class="grid2"><label>Data eta ordua<input id="score-save-date" type="datetime-local" required></label><label>Tokia<select id="score-save-venue"><option>Etxean</option><option>Kanpoan</option></select></label></div><button class="btn" id="score-save-match" type="button">Partida hau gorde</button><p class="muted" id="score-save-status" aria-live="polite">Oraindik ez da gorde.</p>
+        <div class="grid2"><label>Data eta ordua<input id="score-save-date" type="datetime-local" required></label><label>Tokia<select id="score-save-venue"><option>Etxean</option><option>Kanpoan</option></select></label></div><button class="btn" id="score-save-match" type="button">Partida hau gorde</button><p class="muted" id="score-save-status" aria-live="polite">Oraindik ez da gorde.</p><button class="btn secondary hidden" id="score-opponent-stats" type="button">Ikusi aurkariaren estatistikak</button>
       </div></details>
       <dialog id="score-tools-dialog" class="score-mode-dialog" aria-labelledby="score-tools-title"><div class="score-mode-dialog-heading"><h2 id="score-tools-title">Partidaren aukerak</h2><button class="btn secondary" type="button" data-close-score-dialog="score-tools-dialog">Itxi</button></div><button class="btn secondary" type="button" id="score-mode-new-shot">Jaurtiketa berria kokapenarekin</button><div id="score-tools-content"></div></dialog>
       <dialog id="score-location-dialog" class="score-mode-dialog" aria-labelledby="score-location-title"><div class="score-mode-dialog-heading"><h2 id="score-location-title">Jaurtiketaren kokapena</h2><button class="btn secondary" type="button" data-close-score-dialog="score-location-dialog">Utzi</button></div><div id="score-location-content"></div></dialog>
@@ -913,6 +913,6 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="app.js?v=118" defer></script>
+<script src="app.js?v=119" defer></script>
 </body>
 </html>
