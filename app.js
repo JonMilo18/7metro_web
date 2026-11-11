@@ -937,11 +937,11 @@ function playSessionAnimation() {
 }
 
 function renderPlayers() {
-  ["score-player", "shot-player"].forEach(function (id) {
+  ["shot-player"].forEach(function (id) {
     var select = $(id);
     if (!select) return;
     var selected = select.value;
-    select.innerHTML = '<option value="">' + (id === "shot-player" ? "Jokalaria aukeratu" : "Ez zehaztu") + "</option>" + players.map(function (player) {
+    select.innerHTML = '<option value="">' + "Ez zehaztu" + "</option>" + players.map(function (player) {
       return '<option value="' + Number(player.id_jokalaria) + '">' + esc(playerName(player)) + "</option>";
     }).join("");
     select.value = selected;
@@ -1968,42 +1968,84 @@ function selectSection(id) {
 }
 
 var scoreboard = { home: 0, away: 0, seconds: 0, period: 0, running: false, events: [], lastTick: 0 };
-var scoreTimer = 0;
+var scoreTimer = 0, scoreSaving = false, scoreShotType = "normal", pendingScoreAction = null, shotTargetEvent = null;
 function scoreStorageKey() { return "7metro-scoreboard-" + (teamId || "local"); }
 function scoreRead() {
+  clearInterval(scoreTimer);
+  pendingScoreAction = null; scoreShotType = "normal";
+  if ($("score-player-dialog").open) $("score-player-dialog").close();
+  scoreClearShot();
   scoreboard = { home: 0, away: 0, seconds: 0, period: 0, running: false, events: [], lastTick: 0, savedMatchId: null };
   try {
     var saved = JSON.parse(localStorage.getItem(scoreStorageKey()) || "null");
     if (saved && typeof saved === "object") scoreboard = Object.assign(scoreboard, saved, { running: false, lastTick: 0 });
   } catch (error) { console.warn("Markagailua ezin izan da kargatu", error); }
-  var saveButton = $("score-save-match"), saveStatus = $("score-save-status");
-  if (saveButton && saveStatus) {
-    saveButton.disabled = Boolean(scoreboard.savedMatchId);
-    saveButton.textContent = scoreboard.savedMatchId ? "Partida gordeta" : "Partida hau gorde";
-    saveStatus.textContent = scoreboard.savedMatchId ? "Gordeta · partiden historiala freskatuta." : "Oraindik ez da gorde.";
-  }
+  var settings = scoreboard.settings || {};
+  $("score-home-name").value = settings.homeName || (team && team.izena) || "7metro";
+  $("score-away-name").value = settings.awayName || "Aurkaria";
+  $("score-mode").value = ["match", "manual", "countdown"].includes(settings.mode) ? settings.mode : "match";
+  $("score-minutes").value = Math.min(180, Math.max(1, Number(settings.minutes) || 30));
+  scoreSaving = false;
+  $("score-save-status").textContent = scoreboard.savedMatchId ? "Partida gordeta dago." : "Oraindik ez da gorde.";
 }
 function scoreSave() {
-  scoreboard.events = scoreboard.events.slice(-100);
+  scoreboard.settings = { homeName: $("score-home-name").value.trim(), awayName: $("score-away-name").value.trim(),
+    mode: $("score-mode").value, minutes: Math.min(180, Math.max(1, Number($("score-minutes").value) || 30)) };
   try { localStorage.setItem(scoreStorageKey(), JSON.stringify(scoreboard)); }
   catch (error) { notify("Markagailua ezin izan da gorde gailuan", "error"); }
 }
+function scoreIsLocked() { return Boolean(scoreboard.savedMatchId || scoreSaving); }
+function scoreIsGoal(type) { return type === "gol" || type === "penalti_gol"; }
+function scoreActionLabel(type) {
+  return { gol: "Gola", jaurtiketa: "Jaurtiketa huts", penalti_gol: "7 m: gola", penalti_jaurtiketa: "7 m: huts", zuzenketa: "Emaitzaren zuzenketa" }[type] || "Ekintza";
+}
+function scoreEventText(event) {
+  return event.time + " \u00b7 " + (event.side === "away" ? "Aurkaria" : "Gure taldea") + " \u00b7 " + scoreActionLabel(event.type) +
+    (event.player ? " \u00b7 " + event.player : "") + (event.shot_from && event.shot_to ? " \u00b7 Kokapenarekin" : "");
+}
+
 function scoreFormat(seconds) {
   seconds = Math.max(0, Math.floor(Number(seconds) || 0));
   return String(Math.floor(seconds / 60)).padStart(2, "0") + ":" + String(seconds % 60).padStart(2, "0");
 }
 function scoreRender() {
+  var locked = scoreIsLocked(), last = scoreboard.events[scoreboard.events.length - 1];
   $("score-home").textContent = scoreboard.home;
   $("score-away").textContent = scoreboard.away;
+  $("score-home-label").textContent = $("score-home-name").value.trim() || "Gure taldea";
+  $("score-away-label").textContent = $("score-away-name").value.trim() || "Aurkaria";
   $("score-clock").textContent = scoreFormat(scoreboard.seconds);
-  $("score-start").textContent = scoreboard.running ? "Gelditu" : "Hasi";
-  var duration = Math.max(1, Number($("score-minutes").value) || 30) * 60;
-  var mode = $("score-mode").value;
-  $("score-period").textContent = (scoreboard.period % 2 ? "2." : "1.") + " zatia · " + scoreFormat(mode === "match" ? duration : scoreboard.seconds);
+  $("score-start").textContent = scoreboard.running ? "Pausatu denbora" : "Hasi denbora";
+  $("score-live-state").textContent = scoreboard.savedMatchId ? "Partida gordeta" : scoreboard.running ? "Martxan" : "Pausatuta";
+  $("score-live-panel").classList.toggle("is-running", scoreboard.running);
+  $("score-period").textContent = (scoreboard.period + 1) + ". zatia";
+  $("score-undo").disabled = locked || !last;
+  $("score-add-location").disabled = locked || !last || last.type === "zuzenketa";
+  $("score-last-event").textContent = last ? scoreEventText(last) : "Oraindik ez dago ekintzarik.";
+  $("score-add-location").textContent = last && last.shot_from ? "Kokapena editatu" : "Kokapena gehitu";
+  $("score-event-count").textContent = scoreboard.events.length;
   $("score-events").innerHTML = scoreboard.events.length ? scoreboard.events.slice().reverse().map(function (event) {
-    var shotLabel = event.type === "gol" ? "Jaurtiketa arrunta · gola" : event.type === "jaurtiketa" ? "Jaurtiketa arrunta · huts" : event.type === "penalti_gol" ? "Penaltia · gola" : event.type === "penalti_jaurtiketa" ? "Penaltia · huts" : "";
-    return '<li class="item"><div class="item-main"><strong>' + esc(event.time) + " · " + esc(event.team) + " " + esc(event.score) + "</strong><small>" + esc(event.player || "Goleatzailea zehaztu gabe") + (shotLabel ? " · " + shotLabel : "") + (event.shot_from && event.shot_to ? " · Kantxa " + Math.round(event.shot_from[0] * 100) + "% / " + Math.round(event.shot_from[1] * 100) + "% → atea " + Math.round(event.shot_to[0] * 100) + "% / " + Math.round(event.shot_to[1] * 100) + "%" : "") + "</small></div></li>";
+    return '<li class="item"><div class="item-main"><strong>' + esc(event.score) + ' \u00b7 ' + esc(scoreActionLabel(event.type)) + '</strong><small>' + esc(scoreEventText(event)) + '</small></div></li>';
   }).join("") : '<li class="empty">Oraindik ez da gertaerarik erregistratu.</li>';
+  document.querySelectorAll("[data-quick-side], [data-score], [data-score-type]").forEach(function (button) { button.disabled = locked; });
+  ["score-start", "score-period-next", "score-home-name", "score-away-name", "score-mode", "score-minutes", "score-save-date", "score-save-venue"].forEach(function (id) { $(id).disabled = locked; });
+  $("score-reset").disabled = scoreSaving;
+  $("score-save-match").disabled = locked;
+  $("score-save-match").textContent = scoreSaving ? "Gordetzen..." : scoreboard.savedMatchId ? "Partida gordeta" : "Partida hau gorde";
+  $("shot-record").disabled = locked || !(shotFrom && shotTo);
+  scoreRenderShotType();
+}
+function scoreRenderShotType() {
+  document.querySelectorAll("[data-score-type]").forEach(function (button) {
+    button.setAttribute("aria-pressed", String(button.dataset.scoreType === scoreShotType));
+  });
+  document.querySelectorAll("[data-quick-side]").forEach(function (button) {
+    var goal = button.dataset.quickResult === "goal", penalty = scoreShotType === "penalty";
+    var label = goal ? (penalty ? "7 m: gola" : "Gola") : (penalty ? "7 m: huts" : "Jaurtiketa huts");
+    if (goal) button.querySelector("strong").textContent = label;
+    else button.textContent = label;
+    button.setAttribute("aria-label", (button.dataset.quickSide === "home" ? "Gure taldea: " : "Aurkaria: ") + label);
+  });
 }
 var shotFrom = null, shotTo = null, shotCourtImage = new Image();
 shotCourtImage.src = "irudiak/Zelai-erdia.png";
@@ -2034,7 +2076,7 @@ function drawShotCanvases() {
   ctx.strokeStyle = "#888"; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(16, h - 12); ctx.lineTo(w - 16, h - 12); ctx.stroke();
   if (shotTo) drawShotMarker(ctx, shotTo, w, h);
   $("shot-location-hint").textContent = (shotFrom ? "Kantxako jatorria aukeratuta" : "Aukeratu jatorria kantxan") + " · " + (shotTo ? "Ateko helmuga aukeratuta" : "Aukeratu helmuga atean");
-  $("shot-record").disabled = !(shotFrom && shotTo && $("shot-player").value);
+  $("shot-record").disabled = scoreIsLocked() || !(shotFrom && shotTo);
 }
 function drawShotMarker(ctx, point, w, h) {
   var x = point[0] * w, y = point[1] * h;
@@ -2048,12 +2090,52 @@ function bindShotCanvas(id, setter) {
     drawShotCanvases();
   });
 }
-function scoreAddGoal(side) {
-  scoreboard[side] = Math.max(0, scoreboard[side] + 1);
-  var name = $(side === "home" ? "score-home-name" : "score-away-name").value.trim() || (side === "home" ? "Etxekoa" : "Kanpokoa");
-  var playerSelect = $("score-player");
-  var player = playerSelect.value ? playerSelect.options[playerSelect.selectedIndex].text : "";
-  scoreboard.events.push({ time: scoreFormat(scoreboard.seconds), seconds: scoreboard.seconds, period: scoreboard.period + 1, side: side, team: name, score: scoreboard.home + "-" + scoreboard.away, player: player, playerId: playerSelect.value ? Number(playerSelect.value) : null, type: "gol" });
+function scoreSnapshot(side, type) {
+  scoreUpdate();
+  return { side: side, type: type, seconds: scoreboard.seconds, time: scoreFormat(scoreboard.seconds), period: scoreboard.period + 1 };
+}
+function scoreBeginAction(side, type) {
+  if (scoreIsLocked()) return;
+  var action = scoreSnapshot(side, type);
+  if (side === "away" || !players.length) { scoreRecordAction(action, null); return; }
+  pendingScoreAction = action;
+  $("score-player-title").textContent = scoreActionLabel(type) + " \u00b7 Jokalaria";
+  $("score-player-time").textContent = action.time + " \u00b7 " + action.period + ". zatia";
+  $("score-player-grid").innerHTML = players.slice().sort(function (a, b) {
+    return (Number(a.dortsala) || 0) - (Number(b.dortsala) || 0);
+  }).map(function (player) {
+    return '<button type="button" class="score-player-choice" data-score-player="' + Number(player.id_jokalaria) + '" aria-label="' + esc(playerName(player)) + '"><strong>' + esc(player.dortsala == null ? "\u2014" : player.dortsala) + '</strong><span>' + esc(playerName(player)) + '</span></button>';
+  }).join("");
+  $("score-player-dialog").showModal();
+}
+function scoreRecordAction(action, playerId, from, to) {
+  if (scoreIsLocked()) return;
+  var player = action.side === "home" && players.find(function (item) { return Number(item.id_jokalaria) === Number(playerId); });
+  if (scoreIsGoal(action.type)) scoreboard[action.side]++;
+  var name = $(action.side === "home" ? "score-home-name" : "score-away-name").value.trim();
+  var entry = Object.assign({}, action, { team: name || (action.side === "home" ? "Gure taldea" : "Aurkaria"),
+    playerId: player ? Number(player.id_jokalaria) : null, player: player ? playerName(player) : "", score: scoreboard.home + "-" + scoreboard.away });
+  if (from && to) { entry.shot_from = from.slice(); entry.shot_to = to.slice(); }
+  scoreboard.events.push(entry);
+  scoreShotType = "normal";
+  scoreSave(); scoreRender();
+}
+function scoreClearShot() {
+  shotTargetEvent = null; shotFrom = null; shotTo = null;
+  $("shot-context").textContent = "Jaurtiketa berria";
+  $("shot-team").disabled = false; $("shot-result").disabled = false;
+  $("shot-player").disabled = $("shot-team").value === "away";
+  $("shot-cancel-edit").hidden = true;
+  $("shot-record").textContent = "Jaurtiketa erregistratu";
+  drawShotCanvases();
+}
+function scoreUndo() {
+  if (scoreIsLocked() || !scoreboard.events.length) return;
+  var entry = scoreboard.events.pop();
+  var side = entry.side || (entry.team === $("score-home-name").value.trim() ? "home" : "away");
+  if (entry.type === "zuzenketa") scoreboard[side] = Math.max(0, scoreboard[side] - entry.delta);
+  else if (scoreIsGoal(entry.type)) scoreboard[side] = Math.max(0, scoreboard[side] - 1);
+  if (shotTargetEvent === entry) scoreClearShot();
   scoreSave(); scoreRender();
 }
 var friendsCache = { friends: [], incoming: [], outgoing: [] };
@@ -2178,74 +2260,139 @@ document.addEventListener("click", async function (event) {
 });
 function scoreUpdate() {
   if (!scoreboard.running) return;
-  var now = Date.now();
-  var elapsed = Math.floor((now - scoreboard.lastTick) / 1000);
-  if (elapsed > 0) {
-    scoreboard.seconds += $("score-mode").value === "countdown" ? -elapsed : elapsed;
-    scoreboard.seconds = Math.max(0, scoreboard.seconds);
-    scoreboard.lastTick += elapsed * 1000;
-    if ($("score-mode").value === "countdown" && scoreboard.seconds === 0) {
-      scoreboard.running = false; clearInterval(scoreTimer); notify("Denbora amaitu da", "success");
-    }
-    scoreSave(); scoreRender();
+  var now = Date.now(), elapsed = Math.floor((now - scoreboard.lastTick) / 1000);
+  if (elapsed < 1) return;
+  var mode = $("score-mode").value, duration = Math.max(1, Number($("score-minutes").value) || 30) * 60;
+  scoreboard.seconds = Math.max(0, scoreboard.seconds + (mode === "countdown" ? -elapsed : elapsed));
+  scoreboard.lastTick += elapsed * 1000;
+  if ((mode === "countdown" && scoreboard.seconds === 0) || (mode === "match" && scoreboard.seconds >= duration)) {
+    if (mode === "match") scoreboard.seconds = duration;
+    scoreboard.running = false; clearInterval(scoreTimer);
+    notify("Zatia amaitu da", "success");
   }
+  scoreSave(); scoreRender();
 }
-$("score-player").innerHTML += players.map(function (player) {
-  return '<option value="' + Number(player.id_jokalaria) + '">' + esc(playerName(player)) + "</option>";
-}).join("");
 bindShotCanvas("shot-court-canvas", function (point) { shotFrom = point; });
 bindShotCanvas("shot-goal-canvas", function (point) { shotTo = point; });
 $("shot-player").addEventListener("change", drawShotCanvases);
-$("shot-record").addEventListener("click", function () {
-  if (!shotFrom || !shotTo || !$("shot-player").value) return;
-  var side = $("shot-team").value, name = $(side === "home" ? "score-home-name" : "score-away-name").value.trim() || (side === "home" ? "Etxekoa" : "Kanpokoa");
-  var playerSelect = $("shot-player"), player = playerSelect.options[playerSelect.selectedIndex].text;
-  var result = $("shot-result").value;
-  var isGoal = result === "gol" || result === "penalti_gol";
-  if (isGoal) scoreboard[side] = Math.max(0, scoreboard[side] + 1);
-  scoreboard.events.push({ time: scoreFormat(scoreboard.seconds), seconds: scoreboard.seconds, team: name, score: scoreboard.home + "-" + scoreboard.away, player: player, side: side, type: result, playerId: Number(playerSelect.value), shot_from: shotFrom, shot_to: shotTo, period: scoreboard.period + 1 });
-  shotFrom = null; shotTo = null; scoreSave(); scoreRender(); drawShotCanvases();
-  notify(isGoal ? "Gola eta kokapenak erregistratu dira" : "Jaurtiketa eta kokapenak erregistratu dira", "success");
+$("shot-team").addEventListener("change", function () {
+  $("shot-player").disabled = this.value === "away";
+  if (this.value === "away") $("shot-player").value = "";
 });
+$("shot-record").addEventListener("click", function () {
+  if (scoreIsLocked() || !shotFrom || !shotTo) return;
+  if (shotTargetEvent) {
+    if (!scoreboard.events.includes(shotTargetEvent)) { scoreClearShot(); return; }
+    shotTargetEvent.shot_from = shotFrom.slice(); shotTargetEvent.shot_to = shotTo.slice();
+    var player = shotTargetEvent.side === "home" && players.find(function (item) { return Number(item.id_jokalaria) === Number($("shot-player").value); });
+    shotTargetEvent.playerId = player ? Number(player.id_jokalaria) : null;
+    shotTargetEvent.player = player ? playerName(player) : "";
+    scoreSave(); scoreRender();
+  } else {
+    scoreRecordAction(scoreSnapshot($("shot-team").value, $("shot-result").value), $("shot-player").value, shotFrom, shotTo);
+  }
+  scoreClearShot(); $("score-shot-panel").open = false;
+});
+$("shot-cancel-edit").addEventListener("click", scoreClearShot);
+$("score-add-location").addEventListener("click", function () {
+  var entry = scoreboard.events[scoreboard.events.length - 1];
+  if (scoreIsLocked() || !entry || entry.type === "zuzenketa") return;
+  shotTargetEvent = entry;
+  shotFrom = entry.shot_from ? entry.shot_from.slice() : null;
+  shotTo = entry.shot_to ? entry.shot_to.slice() : null;
+  $("shot-team").value = entry.side || "home"; $("shot-team").disabled = true;
+  $("shot-result").value = entry.type; $("shot-result").disabled = true;
+  $("shot-player").value = entry.playerId ? String(entry.playerId) : "";
+  $("shot-player").disabled = entry.side === "away";
+  $("shot-context").textContent = "Kokapena gehitu: " + scoreEventText(entry);
+  $("shot-record").textContent = "Kokapena gorde"; $("shot-cancel-edit").hidden = false;
+  $("score-shot-panel").open = true;
+  drawShotCanvases();
+  $("score-shot-panel").scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "start" });
+});
+document.querySelectorAll("[data-quick-side]").forEach(function (button) {
+  button.addEventListener("click", function () {
+    var goal = this.dataset.quickResult === "goal";
+    var type = scoreShotType === "penalty" ? (goal ? "penalti_gol" : "penalti_jaurtiketa") : (goal ? "gol" : "jaurtiketa");
+    scoreBeginAction(this.dataset.quickSide, type);
+  });
+});
+document.querySelectorAll("[data-score-type]").forEach(function (button) {
+  button.addEventListener("click", function () { scoreShotType = this.dataset.scoreType; scoreRenderShotType(); });
+});
+$("score-player-dialog").addEventListener("click", function (event) {
+  var button = event.target.closest("[data-score-player]");
+  if (!button || !pendingScoreAction) return;
+  scoreRecordAction(pendingScoreAction, button.dataset.scorePlayer);
+  this.close();
+});
+$("score-player-unspecified").addEventListener("click", function () {
+  if (pendingScoreAction) scoreRecordAction(pendingScoreAction, null);
+  $("score-player-dialog").close();
+});
+$("score-player-cancel").addEventListener("click", function () { $("score-player-dialog").close(); });
+$("score-player-dialog").addEventListener("close", function () { pendingScoreAction = null; });
+$("score-undo").addEventListener("click", scoreUndo);
 drawShotCanvases();
 scoreRead(); scoreRender();
 if (!$("score-save-date").value) $("score-save-date").value = localDateTime();
 document.querySelectorAll("[data-score]").forEach(function (button) {
   button.addEventListener("click", function () {
-    var side = button.dataset.score, delta = Number(button.dataset.delta);
-    scoreboard[side] = Math.max(0, scoreboard[side] + delta); scoreSave(); scoreRender();
+    if (scoreIsLocked()) return;
+    var side = this.dataset.score, delta = Number(this.dataset.delta);
+    if (scoreboard[side] + delta < 0) return;
+    var action = scoreSnapshot(side, "zuzenketa");
+    scoreboard[side] += delta;
+    scoreboard.events.push(Object.assign(action, { delta: delta, team: $(side === "home" ? "score-home-name" : "score-away-name").value,
+      score: scoreboard.home + "-" + scoreboard.away }));
+    scoreSave(); scoreRender();
   });
 });
-$("score-goal-home").addEventListener("click", function () { scoreAddGoal("home"); });
-$("score-goal-away").addEventListener("click", function () { scoreAddGoal("away"); });
 $("score-start").addEventListener("click", function () {
+  if (scoreIsLocked()) return;
+  scoreUpdate();
   if (scoreboard.running) { scoreboard.running = false; clearInterval(scoreTimer); }
   else {
-    if (!scoreboard.seconds) scoreboard.seconds = $("score-mode").value === "countdown" ? Math.max(1, Number($("score-minutes").value) || 30) * 60 : 0;
+    var duration = Math.max(1, Number($("score-minutes").value) || 30) * 60;
+    if ($("score-mode").value === "match" && scoreboard.seconds >= duration) return notify("Zatia amaitu da. Sakatu Hurrengo zatia.", "success");
+    if (!scoreboard.seconds && $("score-mode").value === "countdown") scoreboard.seconds = duration;
     scoreboard.running = true; scoreboard.lastTick = Date.now(); clearInterval(scoreTimer); scoreTimer = setInterval(scoreUpdate, 250);
   }
   scoreSave(); scoreRender();
 });
 $("score-period-next").addEventListener("click", function () {
+  if (scoreIsLocked()) return;
+  if (!confirm("Hurrengo zatia hasi? Zati honetako denbora zerora itzuliko da.")) return;
   scoreboard.running = false; clearInterval(scoreTimer); scoreboard.period += 1;
   scoreboard.seconds = $("score-mode").value === "countdown" ? Math.max(1, Number($("score-minutes").value) || 30) * 60 : 0;
   scoreSave(); scoreRender();
 });
 $("score-reset").addEventListener("click", function () {
-  scoreboard.running = false; clearInterval(scoreTimer); scoreboard = { home: 0, away: 0, seconds: 0, period: 0, running: false, events: [], lastTick: 0, savedMatchId: null };
-  scoreSave(); scoreRender(); $("score-save-match").disabled = false; $("score-save-match").textContent = "Partida hau gorde"; $("score-save-status").textContent = "Oraindik ez da gorde.";
+  if (scoreSaving) return;
+  if ((scoreboard.events.length || scoreboard.home || scoreboard.away || scoreboard.seconds) && !confirm("Partida berri bat hasi? Uneko markagailua eta gertaerak gailutik kenduko dira. Aurretik gordetako partida historian mantenduko da.")) return;
+  clearInterval(scoreTimer); scoreClearShot(); scoreShotType = "normal";
+  scoreboard = { home: 0, away: 0, seconds: 0, period: 0, running: false, events: [], lastTick: 0, savedMatchId: null };
+  scoreSave(); scoreRender(); $("score-save-status").textContent = "Oraindik ez da gorde.";
+  $("score-save-date").value = localDateTime();
 });
-$("score-clear-events").addEventListener("click", function () { scoreboard.events = []; scoreSave(); scoreRender(); });
 $("score-mode").addEventListener("change", function () { scoreboard.running = false; clearInterval(scoreTimer); scoreboard.seconds = 0; scoreSave(); scoreRender(); });
-$("score-minutes").addEventListener("change", scoreRender);
-$("score-home-name").addEventListener("change", scoreSave);
-$("score-away-name").addEventListener("change", scoreSave);
+$("score-minutes").addEventListener("change", function () {
+  this.value = Math.min(180, Math.max(1, Number(this.value) || 30));
+  scoreSave(); scoreRender();
+});
+["score-home-name", "score-away-name"].forEach(function (id) { $(id).addEventListener("change", function () { scoreSave(); scoreRender(); }); });
 $("score-fullscreen").addEventListener("click", async function () {
   try {
     if (document.fullscreenElement) await document.exitFullscreen();
     else await $("v-scoreboard").requestFullscreen();
-    $("score-fullscreen").textContent = document.fullscreenElement ? "Pantaila osotik irten" : "Pantaila osoa";
+
   } catch (error) { notify("Pantaila osoa ezin izan da aktibatu gailu honetan", "error"); }
+});
+
+document.addEventListener("fullscreenchange", function () {
+  var label = document.fullscreenElement ? "Pantaila osotik irten" : "Pantaila osoa";
+  $("score-fullscreen").setAttribute("aria-label", label);
+  $("score-fullscreen").querySelector(".score-fullscreen-label").textContent = label;
 });
 
 function setMobileMenu(open) {
@@ -2895,7 +3042,7 @@ $("match-detail").addEventListener("change", function (event) {
 
 $("score-save-match").addEventListener("click", async function () {
   var button = this;
-  if (scoreboard.savedMatchId) return notify("Markagailu hau gordeta dago. Berrabiarazi beste partida bat gordetzeko.", "error");
+  if (scoreIsLocked()) return notify("Markagailu hau gordeta dago. Berrabiarazi beste partida bat gordetzeko.", "error");
   if (!token || !teamId) return notify("Hasi saioa eta aukeratu taldea partida gordetzeko", "error");
   var opponent = $("score-away-name").value.trim();
   var date = $("score-save-date").value;
@@ -2925,7 +3072,7 @@ $("score-save-match").addEventListener("click", async function () {
       helburu_x: entry.shot_to[0], helburu_y: entry.shot_to[1]
     };
   });
-  button.disabled = true; button.textContent = "Gordetzen…";
+  scoreSaving = true; scoreRender();
   var result;
   try {
     result = await request({
@@ -2937,11 +3084,12 @@ $("score-save-match").addEventListener("click", async function () {
   } catch (error) {
     $("score-save-status").textContent = "Errorea: " + error.message;
     notify(error.message, "error");
-    button.disabled = false; button.textContent = "Partida hau gorde";
+    scoreSaving = false; scoreRender();
     return;
   }
   scoreboard.savedMatchId = Number(result.id) || true;
-  scoreSave();
+  scoreboard.running = false; clearInterval(scoreTimer); scoreSaving = false;
+  scoreSave(); scoreRender();
   $("score-save-status").textContent = "Gordeta · " + opponent + " · " + scoreboard.home + "–" + scoreboard.away;
   button.textContent = "Partida gordeta";
   notify("Partida markagailutik gorde da", "success");

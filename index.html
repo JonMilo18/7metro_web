@@ -430,6 +430,25 @@ textarea{min-height:84px;resize:vertical}
 .match-score-inputs{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:end;min-width:0}.match-score-inputs label{min-width:0}.match-score-inputs>span{padding-bottom:10px}
 .exercise-categories{min-width:0;margin:0;padding:10px;border:1px solid var(--line);border-radius:10px}.exercise-categories legend{font-size:.9rem;font-weight:600;padding:0 4px}
 .board-curve-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.board-curve-tools label{flex:1;min-width:160px;display:block}.board-curve-tools input{padding:0;min-height:44px}.board-curve-tools .btn{width:auto;margin:0}
+
+/* Match use: score and clock stay in view, frequent actions stay large. */
+#v-scoreboard{max-width:900px;margin-left:auto;margin-right:auto}
+.score-page-title{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.score-page-title>.btn{width:auto;min-height:40px;font-size:.8rem;margin:0;padding:7px 10px;flex:none}.score-page-title h1{margin:0}.score-page-title>p{flex-basis:100%;order:2}
+#score-live-panel{position:sticky;top:8px;z-index:2;padding:14px;margin:12px 0;background:var(--bg2);box-shadow:0 8px 24px #0002;border-color:rgba(0,68,238,.4)}
+.score-live-summary{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,1.2fr) minmax(0,1fr);align-items:center;gap:8px;text-align:center}
+.score-live-side{min-width:0;display:grid;gap:2px}.score-live-side>span{color:var(--muted);font-size:.82rem;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.score-live-side>strong{font-size:clamp(2.5rem,9vw,4rem);line-height:1.12;font-variant-numeric:tabular-nums}
+.score-live-time{display:grid;gap:2px}.score-live-time>span{font-size:.75rem;color:var(--muted)}#score-live-state{font-weight:750;color:var(--muted)}#score-live-panel.is-running #score-live-state{color:var(--good)}#score-clock{font-size:clamp(1.8rem,6vw,2.7rem);font-variant-numeric:tabular-nums;line-height:1.2;letter-spacing:.01em}
+.score-timer-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.score-timer-actions .btn{margin:0;min-height:46px}#score-live-panel.is-running #score-start{background:var(--bg);color:var(--ink);border-color:var(--blue);box-shadow:none}
+.score-quick-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.score-quick-heading h2{margin:0;font-size:1rem}.score-shot-type{flex:none;display:flex;padding:3px;border:1px solid var(--line);border-radius:10px;gap:3px;background:var(--bg)}.score-shot-type button{white-space:nowrap;border:0;min-height:38px;padding:5px 12px;background:transparent;border-radius:7px;color:var(--muted);font-weight:650;cursor:pointer}.score-shot-type button[aria-pressed="true"]{background:var(--blue);color:#fff}
+.score-quick-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.score-quick-team{display:grid;gap:8px;min-width:0}.score-quick-team h3{text-align:center;font-size:.9rem;color:var(--muted);margin:0 0 2px}.score-action{min-height:52px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);padding:12px 6px;font-weight:700;cursor:pointer;touch-action:manipulation}.score-action-goal{display:grid;place-content:center;gap:2px;min-height:104px;background:var(--blue);border-color:var(--blue);color:#fff}.score-action-goal>span{font-size:1.8rem;line-height:1.1}.score-action-goal>strong{font-size:1.12rem}.score-quick-opponent .score-action-goal{background:var(--bg);color:var(--ink);border-color:var(--muted)}.score-action:active{transform:scale(.97)}.score-action:disabled{opacity:.45;cursor:default}
+.score-last-action{border-top:1px solid var(--line);margin-top:16px;padding-top:12px}.score-small-label{font-size:.67rem;letter-spacing:.07em;font-weight:750;color:var(--muted)}#score-last-event{margin:4px 0 8px;min-height:1.5em;font-size:.9rem;overflow-wrap:anywhere}.score-last-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}.score-last-tools .btn{margin:0;min-height:44px;padding:8px 6px;font-size:.85rem}
+.score-details-content{margin-top:14px}.score-shot-maps{display:grid;grid-template-columns:1fr 1fr;gap:16px}.score-shot-maps h3{font-size:.9rem}.score-corrections{display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center}.score-corrections>div>span{display:block;margin-bottom:6px;font-size:.85rem;color:var(--muted)}#score-shot-panel{scroll-margin-top:220px}#score-event-count{font-weight:500;color:var(--muted);margin-left:6px}
+.score-player-dialog{width:min(560px,calc(100% - 24px));max-height:85dvh;overflow:auto;border:1px solid var(--line);border-radius:18px;padding:18px;background:var(--bg2);color:var(--ink);box-shadow:0 20px 70px #0006}.score-player-dialog::backdrop{background:#0009;backdrop-filter:blur(3px)}.score-player-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}.score-player-heading h2{margin:4px 0 14px}.score-player-heading .btn{width:auto;min-height:44px;margin:0 0 10px}.score-player-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:8px}.score-player-choice{display:grid;gap:3px;place-items:center;min-height:78px;padding:9px 5px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);cursor:pointer}.score-player-choice strong{font-size:1.5rem;line-height:1.1;color:var(--blue)}.score-player-choice span{font-size:.76rem;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.score-player-choice:hover{border-color:var(--blue);background:rgba(0,68,238,.08)}
+@media(max-width:680px){#score-live-panel{top:4px;padding:10px}.score-quick-panel{padding:12px}.score-quick-grid{gap:10px}.score-quick-heading{gap:6px}.score-shot-type button{min-height:40px;padding:5px 10px}.score-timer-actions .btn{padding:8px 6px;font-size:.9rem}.score-shot-maps{grid-template-columns:1fr}.score-live-summary{grid-template-columns:minmax(0,1fr) minmax(94px,1.2fr) minmax(0,1fr);gap:4px}.score-player-dialog{margin:auto auto max(12px,env(safe-area-inset-bottom));border-radius:18px 18px 12px 12px}}
+#score-fullscreen{display:inline-flex;align-items:center;justify-content:center;gap:6px}#score-fullscreen>span:first-child{font-size:1.2rem;line-height:1}
+@media(max-width:680px){#score-fullscreen{min-width:44px;width:44px;min-height:44px;padding:0}.score-fullscreen-label{display:none}}
+@media(max-width:360px) and (max-height:700px){.score-action-goal{min-height:88px}.score-quick-heading h2{font-size:.9rem}}
+@media(prefers-reduced-motion:reduce){.score-action:active{transform:none}}
 </style>
 </head>
 <body>
@@ -670,34 +689,51 @@ textarea{min-height:84px;resize:vertical}
       </div>
     </section>
     <section id="v-scoreboard">
+      <div class="score-page-title">
       <div class="help-heading"><h1>Markagailua</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-15" aria-label="Markagailua: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-15" hidden>Partidako denbora, emaitza eta goleatzaileen erregistro azkarra.</p>
-      <div class="card stack score-live-panel" id="score-live-panel">
-        <div class="grid2"><label>Etxeko taldea<input id="score-home-name" maxlength="60" value="7metro"></label><label>Aurkaria<input id="score-away-name" maxlength="60" value="Aurkaria"></label></div>
-        <div class="card stack"><div class="help-heading"><h2>Partida gorde</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-16" aria-label="Partida gorde: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-16" hidden>Markagailuko emaitza, jokalarien golak eta erregistratutako jaurtiketa-kokapenak partiden historialean gordeko dira.</p><div class="grid2"><label>Data eta ordua<input id="score-save-date" type="datetime-local" required></label><label>Tokia<select id="score-save-venue"><option>Etxean</option><option>Kanpoan</option></select></label></div><button class="btn" id="score-save-match" type="button">Partida hau gorde</button><p class="muted" id="score-save-status" aria-live="polite">Oraindik ez da gorde.</p></div>
-        <div class="scoreboard">
-          <div class="score-side"><div class="score-number" id="score-home">0</div><div class="score-controls"><button type="button" data-score="home" data-delta="-1" aria-label="Etxekoaren gola kendu">−</button><button type="button" data-score="home" data-delta="1" aria-label="Etxekoaren gola gehitu">+</button></div></div>
-          <strong aria-hidden="true">:</strong>
-          <div class="score-side"><div class="score-number" id="score-away">0</div><div class="score-controls"><button type="button" data-score="away" data-delta="-1" aria-label="Kanpokoaren gola kendu">−</button><button type="button" data-score="away" data-delta="1" aria-label="Kanpokoaren gola gehitu">+</button></div></div>
+        <button class="btn secondary" id="score-fullscreen" type="button" aria-label="Pantaila osoa"><span aria-hidden="true">&#9974;</span><span class="score-fullscreen-label">Pantaila osoa</span></button>
+      </div>
+      <div class="card score-live-panel" id="score-live-panel">
+        <div class="score-live-summary">
+          <div class="score-live-side"><span id="score-home-label">Gure taldea</span><strong id="score-home">0</strong></div>
+          <div class="score-live-time"><span id="score-live-state">Prest</span><strong id="score-clock">00:00</strong><span id="score-period">1. zatia</span></div>
+          <div class="score-live-side"><span id="score-away-label">Aurkaria</span><strong id="score-away">0</strong></div>
         </div>
-        <div class="score-clock" id="score-clock">00:00</div>
-        <div class="grid2"><label>Denbora mota<select id="score-mode"><option value="match">Partida (2 × 30 min)</option><option value="manual">Eskuzkoa</option><option value="countdown">Atzerako kontaketa</option></select></label><label>Minutuak<input id="score-minutes" type="number" min="1" max="180" value="30"></label></div>
-        <p class="muted" id="score-period" style="text-align:center;margin:0">1. zatia · 30:00</p>
-        <div class="score-actions"><button class="btn" id="score-start" type="button">Hasi</button><button class="btn secondary" id="score-period-next" type="button">Hurrengo zatia</button><button class="btn secondary" id="score-reset" type="button">Berrabiarazi</button></div>
-        <button class="btn secondary" id="score-fullscreen" type="button">Pantaila osoa</button>
-        <label>Goleatzailea (aukerakoa)<select id="score-player"><option value="">Ez zehaztu</option></select></label>
-        <div class="score-actions"><button class="btn secondary" id="score-goal-home" type="button">Etxeko gola</button><button class="btn secondary" id="score-goal-away" type="button">Kanpoko gola</button></div>
+        <div class="score-timer-actions"><button class="btn" id="score-start" type="button">Hasi denbora</button><button class="btn secondary" id="score-period-next" type="button">Hurrengo zatia</button></div>
       </div>
-      <div class="card stack">
-        <div class="help-heading"><h2>Jaurtiketa baten kokapena</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-17" aria-label="Jaurtiketa baten kokapena: informazioa"><span aria-hidden="true">i</span></button></div>
-        <p class="muted" id="help-text-17" hidden>Aukeratu jokalaria eta emaitza. Sakatu kantxan jaurtiketaren jatorria eta atean baloiaren helmuga.</p>
-        <div class="grid2"><label>Taldea<select id="shot-team"><option value="home">Etxekoa</option><option value="away">Kanpokoa</option></select></label><label>Jokalaria<select id="shot-player"><option value="">Jokalaria aukeratu</option></select></label></div>
-        <label>Jaurtiketa mota eta emaitza<select id="shot-result"><option value="gol">Jaurtiketa arrunta · gola</option><option value="jaurtiketa">Jaurtiketa arrunta · huts</option><option value="penalti_gol">Penaltia · gola</option><option value="penalti_jaurtiketa">Penaltia · huts</option></select></label>
-        <div class="shot-canvas-wrap"><canvas id="shot-goal-canvas" class="shot-canvas" width="600" height="400" aria-label="Sakatu baloiaren kokalekua porterian"></canvas></div>
-        <div class="shot-canvas-wrap"><canvas id="shot-court-canvas" class="shot-canvas" width="800" height="520" aria-label="Sakatu jaurtiketaren jatorria eskubaloi kantxan"></canvas></div>
-        <p class="muted" id="shot-location-hint" style="text-align:center;margin:0">Aukeratu jatorria kantxan eta helmuga atean</p>
-        <button class="btn" type="button" id="shot-record" disabled>Jaurtiketa erregistratu</button>
+      <div class="card score-quick-panel">
+        <div class="score-quick-heading"><h2>Ekintza azkarrak</h2><div class="score-shot-type" role="group" aria-label="Jaurtiketa mota"><button type="button" data-score-type="normal" aria-pressed="true">Arrunta</button><button type="button" data-score-type="penalty" aria-pressed="false">7 m</button></div></div>
+        <div class="score-quick-grid">
+          <div class="score-quick-team"><h3>Gure taldea</h3><button class="score-action score-action-goal" id="score-goal-home" type="button" data-quick-side="home" data-quick-result="goal"><span aria-hidden="true">+1</span><strong>Gola</strong></button><button class="score-action score-action-miss" id="score-miss-home" type="button" data-quick-side="home" data-quick-result="miss">Jaurtiketa huts</button></div>
+          <div class="score-quick-team score-quick-opponent"><h3>Aurkaria</h3><button class="score-action score-action-goal" id="score-goal-away" type="button" data-quick-side="away" data-quick-result="goal"><span aria-hidden="true">+1</span><strong>Gola</strong></button><button class="score-action score-action-miss" id="score-miss-away" type="button" data-quick-side="away" data-quick-result="miss">Jaurtiketa huts</button></div>
+        </div>
+        <div class="score-last-action"><span class="score-small-label">AZKEN EKINTZA</span><p id="score-last-event" role="status" aria-live="polite">Oraindik ez dago ekintzarik.</p><div class="score-last-tools"><button class="btn secondary" id="score-undo" type="button" disabled>&#8630; Desegin</button><button class="btn secondary" id="score-add-location" type="button" disabled>Kokapena gehitu</button></div></div>
       </div>
-      <div class="card"><div class="toolbar"><h2>Gertaerak</h2><button class="btn secondary" type="button" id="score-clear-events">Garbitu</button></div><ul id="score-events" class="list"></ul></div>
+      <details class="card" id="score-shot-panel">
+        <summary><strong>Jaurtiketa kokapenarekin</strong></summary>
+        <div class="stack score-details-content">
+          <div class="help-heading"><h2>Jaurtiketaren kokapena</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-17" aria-label="Jaurtiketaren kokapena: informazioa"><span aria-hidden="true">i</span></button></div>
+          <p class="muted" id="help-text-17" hidden>Azken ekintzari kokapena gehitzeko, erabili goiko botoia: ez da beste golik gehituko. Hemendik jaurtiketa berri bat ere erregistra dezakezu. Ukitu kantxa eta atea kokapenak aukeratzeko.</p>
+          <p id="shot-context" class="muted">Jaurtiketa berria</p>
+          <div class="grid2"><label>Taldea<select id="shot-team"><option value="home">Gure taldea</option><option value="away">Aurkaria</option></select></label><label>Jokalaria (aukerakoa)<select id="shot-player"><option value="">Ez zehaztu</option></select></label></div>
+          <label>Jaurtiketa mota eta emaitza<select id="shot-result"><option value="gol">Jaurtiketa arrunta &middot; gola</option><option value="jaurtiketa">Jaurtiketa arrunta &middot; huts</option><option value="penalti_gol">Penaltia &middot; gola</option><option value="penalti_jaurtiketa">Penaltia &middot; huts</option></select></label>
+          <div class="score-shot-maps"><div><h3>1. Jatorria kantxan</h3><div class="shot-canvas-wrap"><canvas id="shot-court-canvas" class="shot-canvas" width="800" height="520" aria-label="Sakatu jaurtiketaren jatorria eskubaloi kantxan"></canvas></div></div><div><h3>2. Helmuga atean</h3><div class="shot-canvas-wrap"><canvas id="shot-goal-canvas" class="shot-canvas" width="600" height="400" aria-label="Sakatu baloiaren kokalekua porterian"></canvas></div></div></div>
+          <p class="muted" id="shot-location-hint" style="text-align:center;margin:0">Aukeratu jatorria kantxan eta helmuga atean</p>
+          <button class="btn" type="button" id="shot-record" disabled>Jaurtiketa erregistratu</button><button class="btn secondary" type="button" id="shot-cancel-edit" hidden>Beste jaurtiketa bat prestatu</button>
+        </div>
+      </details>
+      <details class="card" id="score-history"><summary><strong>Gertaerak <span id="score-event-count">0</span></strong></summary><ul id="score-events" class="list"></ul></details>
+      <details class="card" id="score-settings"><summary><strong>Partidaren ezarpenak</strong></summary><div class="stack score-details-content">
+        <div class="grid2"><label>Gure taldea<input id="score-home-name" maxlength="60" value="7metro"></label><label>Aurkaria<input id="score-away-name" maxlength="60" value="Aurkaria"></label></div>
+        <div class="grid2"><label>Denbora mota<select id="score-mode"><option value="match">Partida</option><option value="manual">Eskuzkoa</option><option value="countdown">Atzerako kontaketa</option></select></label><label>Zati bakoitzaren minutuak<input id="score-minutes" type="number" min="1" max="180" value="30"></label></div>
+        <h3>Emaitza zuzendu</h3><div class="score-corrections"><div><span>Gure taldea</span><div class="score-controls"><button type="button" data-score="home" data-delta="-1" aria-label="Gure taldeari gol bat kendu">&minus;</button><button type="button" data-score="home" data-delta="1" aria-label="Gure taldeari gol bat gehitu">+</button></div></div><div><span>Aurkaria</span><div class="score-controls"><button type="button" data-score="away" data-delta="-1" aria-label="Aurkariari gol bat kendu">&minus;</button><button type="button" data-score="away" data-delta="1" aria-label="Aurkariari gol bat gehitu">+</button></div></div></div>
+        <button class="btn secondary" id="score-reset" type="button">Partida berria hasi</button>
+      </div></details>
+      <details class="card" id="score-save-panel"><summary><strong>Partida amaitu eta gorde</strong></summary><div class="stack score-details-content">
+        <div class="help-heading"><h2>Partida gorde</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-16" aria-label="Partida gorde: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-16" hidden>Emaitza, gure jokalarien golak eta jaurtiketak, eta erregistratutako kokapenak partiden historialean gordeko dira.</p>
+        <div class="grid2"><label>Data eta ordua<input id="score-save-date" type="datetime-local" required></label><label>Tokia<select id="score-save-venue"><option>Etxean</option><option>Kanpoan</option></select></label></div><button class="btn" id="score-save-match" type="button">Partida hau gorde</button><p class="muted" id="score-save-status" aria-live="polite">Oraindik ez da gorde.</p>
+      </div></details>
+      <dialog id="score-player-dialog" class="score-player-dialog" aria-labelledby="score-player-title"><div class="score-player-heading"><div><span class="score-small-label" id="score-player-time"></span><h2 id="score-player-title">Aukeratu jokalaria</h2></div><button type="button" class="btn secondary" id="score-player-cancel">Utzi</button></div><div class="score-player-grid" id="score-player-grid"></div><button class="btn secondary" type="button" id="score-player-unspecified">Jokalaria zehaztu gabe</button></dialog>
     </section>
     <section id="v-friends">
       <div class="help-heading"><h1>Lagunak</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-18" aria-label="Lagunak: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-18" hidden>Bidali eta kudeatu lagun-eskaerak; partekatu ariketak eta entrenamenduak.</p>
@@ -785,6 +821,6 @@ textarea{min-height:84px;resize:vertical}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="app.js?v=113" defer></script>
+<script src="app.js?v=114" defer></script>
 </body>
 </html>
