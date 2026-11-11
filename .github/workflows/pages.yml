@@ -28,13 +28,15 @@ jobs:
       - name: Validate JavaScript
         run: |
           node --check app.js
+          node --check i18n.js
+          node --check locales/es.js
           node --check sw.js
 
       - name: Prepare public files
         run: |
           mkdir -p _site
-          cp index.html app.js sw.js manifest.json manifest.webmanifest _site/
-          cp -R icons irudiak _site/
+          cp index.html app.js i18n.js sw.js manifest.json manifest.webmanifest _site/
+          cp -R icons irudiak locales _site/
 
       - name: Configure Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5

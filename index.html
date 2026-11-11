@@ -598,6 +598,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
     <button class="btn" type="submit">Saioa hasi</button>
   </form>
   <button class="btn secondary" id="create-account" type="button">Kontua sortu</button>
+  <label style="margin-top:20px">Hizkuntza<select id="login-language-select" data-language-select><option value="eu" lang="eu" translate="no">Euskara</option><option value="es" lang="es" translate="no">Español</option></select></label>
 </section>
 
 <dialog id="account-create-dialog" class="attendance-dialog" aria-labelledby="account-create-title">
@@ -767,8 +768,8 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
       <details class="card"><summary><strong>Jokalari berria gehitu</strong></summary>
         <form id="player-form" class="stack" style="margin-top:14px">
           <div class="grid2"><label>Izena<input name="izena" required maxlength="100"></label><label>Abizena<input name="abizena" maxlength="100"></label></div>
-          <div class="grid2"><label>Dortsala<input name="dortsala" type="number" min="0" max="999"></label><label>Posizioa<select name="posizioa"><option value="">Aukeratu</option><option>Atezaina</option><option>Lehen Lerroa</option><option>Pibotea</option><option>Extremoa</option></select></label></div>
-          <div class="grid2"><label>Egoera<select name="egoera"><option>Erabilgarri</option><option>Zalantza</option><option>Baja</option></select></label><label>Eskua<select name="eskua"><option value="">Aukeratu</option><option>Eskubia</option><option>Ezkerra</option><option>Biak</option></select></label></div>
+          <div class="grid2"><label>Dortsala<input name="dortsala" type="number" min="0" max="999"></label><label>Posizioa<select name="posizioa"><option value="">Aukeratu</option><option value="Atezaina">Atezaina</option><option value="Lehen Lerroa">Lehen Lerroa</option><option value="Pibotea">Pibotea</option><option value="Extremoa">Extremoa</option></select></label></div>
+          <div class="grid2"><label>Egoera<select name="egoera"><option value="Erabilgarri">Erabilgarri</option><option value="Zalantza">Zalantza</option><option value="Baja">Baja</option></select></label><label>Eskua<select name="eskua"><option value="">Aukeratu</option><option value="Eskubia">Eskubia</option><option value="Ezkerra">Ezkerra</option><option value="Biak">Biak</option></select></label></div>
           <div class="grid2"><label>Jaiotze-data<input name="jaiotze_data" type="date"></label><label>Altuera (cm)<input name="altuera_cm" type="number" min="100" max="250"></label></div>
           <label>Pisua (kg)<input name="pisua_kg" type="number" min="20" max="250" step="0.1"></label>
           <div class="grid2"><label>Telefonoa<input name="telefonoa" type="tel"></label><label>Emaila<input name="emaila" type="email"></label></div>
@@ -776,7 +777,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
           <button class="btn" type="submit">Gehitu jokalaria</button>
         </form>
       </details>
-      <div class="grid2"><label>Bilatu jokalaria<input id="players-search" type="search" placeholder="Izena edo dorsala"></label><label>Egoeraren arabera<select id="players-status"><option value="">Egoera guztiak</option><option>Erabilgarri</option><option>Zalantza</option><option>Baja</option></select></label></div>
+      <div class="grid2"><label>Bilatu jokalaria<input id="players-search" type="search" placeholder="Izena edo dorsala"></label><label>Egoeraren arabera<select id="players-status"><option value="">Egoera guztiak</option><option value="Erabilgarri">Erabilgarri</option><option value="Zalantza">Zalantza</option><option value="Baja">Baja</option></select></label></div>
       <div class="toolbar"><h2>Taldeko jokalariak</h2><button class="btn secondary" type="button" data-refresh>Birkargatu</button></div>
       <ul id="players-list" class="list"></ul>
       <div class="card"><div class="help-heading"><h2>Asistentzia</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-11" aria-label="Asistentzia: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-11" hidden>Aukeratu entrenamendua eta apuntatu bertaratzea, berandutzeak eta haien arrazoiak.</p><div class="grid2"><label>Entrenamendua<select id="attendance-session"></select></label><button class="btn" id="attendance-open" type="button" disabled>Asistentzia apuntatu</button></div></div>
@@ -799,7 +800,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
       <details class="card" id="match-create-panel"><summary><strong>Partida berria</strong></summary>
         <form id="match-form" tabindex="-1" class="stack" style="margin-top:14px">
           <div class="grid2"><label>Data eta ordua<input id="match-date" type="datetime-local" required></label><label>Aurkaria<input id="match-opponent" required maxlength="120"></label></div>
-          <div class="grid2"><label>Tokia<select id="match-place"><option>Etxean</option><option>Kanpoan</option></select></label><div class="match-score-inputs"><label>Gure golak<input id="match-score-home" type="number" inputmode="numeric" min="0" max="999" step="1" placeholder="0"></label><span aria-hidden="true">?</span><label>Aurkariaren golak<input id="match-score-away" type="number" inputmode="numeric" min="0" max="999" step="1" placeholder="0"></label></div></div>
+          <div class="grid2"><label>Tokia<select id="match-place"><option value="Etxean">Etxean</option><option value="Kanpoan">Kanpoan</option></select></label><div class="match-score-inputs"><label>Gure golak<input id="match-score-home" type="number" inputmode="numeric" min="0" max="999" step="1" placeholder="0"></label><span aria-hidden="true">?</span><label>Aurkariaren golak<input id="match-score-away" type="number" inputmode="numeric" min="0" max="999" step="1" placeholder="0"></label></div></div>
           <h2>Jokalariak</h2><div id="match-players"></div>
           <button class="btn" type="submit">Gorde partida</button>
         </form>
@@ -874,7 +875,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
       </div></details>
       <details class="card" id="score-save-panel"><summary><strong>Partida amaitu eta gorde</strong></summary><div class="stack score-details-content">
         <div class="help-heading"><h2>Partida gorde</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-16" aria-label="Partida gorde: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-16" hidden>Emaitza, bi taldeetako jokalarien golak, jaurtiketak eta zigorrak, eta erregistratutako kokapenak partiden historialean gordeko dira.</p>
-        <div class="grid2"><label>Data eta ordua<input id="score-save-date" type="datetime-local" required></label><label>Tokia<select id="score-save-venue"><option>Etxean</option><option>Kanpoan</option></select></label></div><button class="btn" id="score-save-match" type="button">Partida hau gorde</button><p class="muted" id="score-save-status" aria-live="polite">Oraindik ez da gorde.</p><button class="btn secondary hidden" id="score-opponent-stats" type="button">Ikusi aurkariaren estatistikak</button>
+        <div class="grid2"><label>Data eta ordua<input id="score-save-date" type="datetime-local" required></label><label>Tokia<select id="score-save-venue"><option value="Etxean">Etxean</option><option value="Kanpoan">Kanpoan</option></select></label></div><button class="btn" id="score-save-match" type="button">Partida hau gorde</button><p class="muted" id="score-save-status" aria-live="polite">Oraindik ez da gorde.</p><button class="btn secondary hidden" id="score-opponent-stats" type="button">Ikusi aurkariaren estatistikak</button>
       </div></details>
       <dialog id="score-time-dialog" class="score-time-dialog" aria-labelledby="score-time-title"><div class="score-time-heading"><h2 id="score-time-title">Denbora zuzendu</h2><button class="btn secondary" id="score-time-cancel" type="button">Utzi</button></div>
         <form id="score-time-form" class="stack"><p class="muted" id="score-time-status" role="status">Kronoa pausatuta dago.</p><div class="score-time-inputs"><label>Minutuak<input id="score-time-minutes" type="number" inputmode="numeric" min="0" max="999" step="1" required></label><label>Segundoak<input id="score-time-seconds" type="number" inputmode="numeric" min="0" max="59" step="1" required></label></div>
@@ -928,6 +929,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
       </div>
 
       <div class="card"><div class="help-heading"><h2>Itxura</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-23" aria-label="Itxura: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-23" hidden>Aukeratu aplikazioaren kolore-modua.</p><div class="theme-choices" role="group" aria-label="Kolore-modua"><button class="btn secondary theme-choice" id="theme-light" type="button" data-theme-choice="light" aria-pressed="false">☀️ Modu argia</button><button class="btn secondary theme-choice" id="theme-dark" type="button" data-theme-choice="dark" aria-pressed="true">🌙 Modu iluna</button></div></div>
+      <div class="card"><div class="help-heading"><h2>Hizkuntza</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-25" aria-label="Hizkuntza: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-25" hidden>Aukera gailu honetan gordeko da.</p><label>Aplikazioaren hizkuntza<select id="language-select" data-language-select><option value="eu" lang="eu" translate="no">Euskara</option><option value="es" lang="es" translate="no">Español</option></select></label></div>
       <details class="card"><summary><strong>Kontua</strong><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-24" aria-label="Kontua: informazioa"><span aria-hidden="true">i</span></button></summary>
         <p class="muted" id="help-text-24" hidden>Saioa kudeatu.</p>
         <button class="btn secondary" id="logout" type="button">Saioa itxi</button>
@@ -972,6 +974,8 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="app.js?v=123" defer></script>
+<script src="locales/es.js?v=124" defer></script>
+<script src="i18n.js?v=124" defer></script>
+<script src="app.js?v=124" defer></script>
 </body>
 </html>

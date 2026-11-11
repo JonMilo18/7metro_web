@@ -2,10 +2,11 @@
 
 var DEFAULT_API_URL = "https://txkjflrtoziscqcytpbc.supabase.co";
 var DEFAULT_API_KEY = "sb_publishable_R2yjFvK-Z7ezWbXVi2KqmA_dzox4-pd";
+var t = window.I18n.t;
 var $ = function (id) { return document.getElementById(id); };
 var readStore = function (key) {
   try { return localStorage.getItem(key) || ""; }
-  catch (error) { console.error("Ezin izan da tokiko biltegia irakurri", error); return ""; }
+  catch (error) { console.error(t("Ezin izan da tokiko biltegia irakurri"), error); return ""; }
 };
 // Supabase connection details are deployment configuration, not account
 // settings. Keep them internal so users cannot alter the app endpoint.
@@ -14,7 +15,7 @@ var apiKey = DEFAULT_API_KEY;
 try {
   localStorage.removeItem("7metro-supabase-url");
   localStorage.removeItem("7metro-supabase-key");
-} catch (error) { console.error("Ezin izan da konexio-ezarpen zaharrak garbitu", error); }
+} catch (error) { console.error(t("Ezin izan da konexio-ezarpen zaharrak garbitu"), error); }
 var token = readStore("7metro-supabase-token");
 var userName = readStore("7metro-username");
 var user = userName ? { izena: userName } : null, teamId = Number(readStore("7metro-team-id")) || 0, team = null;
@@ -48,7 +49,7 @@ var MICRO_TYPES = Object.keys(MICRO_TYPE_COLORS);
 
 function notify(message, type) {
   var box = $("toast");
-  box.textContent = message;
+  box.textContent = t(message);
   box.className = "notice" + (type ? " " + type : "");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(function () { box.classList.add("hidden"); }, 5000);
@@ -73,8 +74,8 @@ function loadingEnd() {
 function saveLocal(key, value) {
   try { localStorage.setItem(key, value); }
   catch (error) {
-    console.error("Ezin izan da tokiko datua gorde", error);
-    throw new Error("Ezin izan dira saio-datuak gorde nabigatzailean");
+    console.error(t("Ezin izan da tokiko datua gorde"), error);
+    throw new Error(t("Ezin izan dira saio-datuak gorde nabigatzailean"));
   }
 }
 
@@ -90,11 +91,58 @@ function setColorTheme(theme, persist) {
   });
   if (persist) {
     try { localStorage.setItem("7metro-theme", mode); }
-    catch (error) { console.error("Ezin izan da itxura gordeta utzi", error); }
+    catch (error) { console.error(t("Ezin izan da itxura gordeta utzi"), error); }
   }
 }
 
 setColorTheme(readStore("7metro-theme") || "dark", false);
+
+// Re-render interface messages in place while preserving every unfinished form.
+function languageDraft() {
+  var fields = Array.from(document.querySelectorAll("input,select,textarea")).map(function (field) {
+    var path = [], node = field;
+    while (node && !node.id) {
+      var siblings = Array.from(node.parentElement.children).filter(function (sibling) { return sibling.tagName === node.tagName; });
+      path.unshift(node.tagName.toLowerCase() + ":nth-of-type(" + (siblings.indexOf(node) + 1) + ")");
+      node = node.parentElement;
+    }
+    return { selector: "#" + CSS.escape(node.id) + (path.length ? ">" + path.join(">") : ""),
+      value: field.value, checked: field.checked, disabled: field.disabled };
+  });
+  return function () {
+    fields.forEach(function (saved) {
+      var field = document.querySelector(saved.selector);
+      if (!field) return;
+      field.value = saved.value;
+      if ("checked" in field) field.checked = saved.checked;
+      field.disabled = saved.disabled;
+    });
+  };
+}
+
+window.addEventListener("languagechange", function () {
+  var restore = languageDraft(), scrollX = window.scrollX, scrollY = window.scrollY;
+  var editor = $("match-edit-form"), editingMatch = editor && editor.dataset.matchEditId;
+  stopExerciseAnimation(); stopBoardAnimation();
+  renderPlayers(); renderExercises(); renderSessions(); renderMatches(); renderCycles(); renderDashboard();
+  renderFriends(); renderTeamInvitations();
+  if ($("v-session-detail").dataset.sessionId) renderSavedSession($("v-session-detail").dataset.sessionId);
+  if (editingMatch) renderMatchEditor(editingMatch, false);
+  if (planFormContext) openPlanForm(planFormContext.kind, planFormContext.id);
+  renderSessionBoard(); renderShotGoalZones(); updateBoardAnimationControls();
+  restore();
+  renderStats(); updateSessionTimeBar(); updateShareExerciseCount(); scoreRender(); drawShotCanvases();
+  $("score-save-status").textContent = scoreboard.savedMatchId ? t("Partida gordeta dago.") : t("Oraindik ez da gorde.");
+  $("shot-record").textContent = shotTargetEvent ? t("Kokapena gorde") : t("Jaurtiketa erregistratu");
+  $("shot-context").textContent = shotTargetEvent ? t("Kokapena gehitu: ") + scoreEventText(shotTargetEvent) : t("Jaurtiketa berria");
+  $("install-status").textContent = standalone ? t("Instalatuta erabiltzen ari zara") : t("Arakatzailetik erabiltzen ari zara");
+  $("score-fullscreen").querySelector(".score-fullscreen-label").textContent = scoreMatchMode ? t("Irten") : t("Partida modua");
+  $("score-fullscreen").setAttribute("aria-label", scoreMatchMode ? t("Partida modutik irten") : t("Pantaila osoko partida modua ireki"));
+  $("session-preview-play").textContent = t("Animazioa ikusi");
+  clearTimeout(toastTimer); $("toast").classList.add("hidden");
+  setMobileMenu($("nav").classList.contains("menu-open"));
+  window.scrollTo(scrollX, scrollY);
+});
 
 function esc(value) {
   return String(value == null ? "" : value).replace(/[&<>"']/g, function (c) {
@@ -105,8 +153,8 @@ function esc(value) {
 function endpoint() {
   var parsed;
   try { parsed = new URL(apiBase); }
-  catch (error) { throw new Error("Supabase proiektuaren URL-a ez da baliozkoa"); }
-  if (parsed.protocol !== "https:") throw new Error("Supabase proiektuaren URL-ak HTTPS erabili behar du");
+  catch (error) { throw new Error(t("Supabase proiektuaren URL-a ez da baliozkoa")); }
+  if (parsed.protocol !== "https:") throw new Error(t("Supabase proiektuaren URL-ak HTTPS erabili behar du"));
   return parsed.toString().replace(/\/+$/, "") + "/functions/v1/metro-api";
 }
 
@@ -125,12 +173,12 @@ async function requestImpl(payload, anonymous) {
       method: "POST", headers: headers, body: JSON.stringify(payload), cache: "no-store"
     });
   } catch (error) {
-    throw new Error("Ezin da Supabasera konektatu. Egiaztatu Interneteko konexioa eta proiektuaren URL-a.");
+    throw new Error(t("Ezin da Supabasera konektatu. Egiaztatu Interneteko konexioa eta proiektuaren URL-a."));
   }
   var result;
   try { result = await response.json(); }
   catch (error) {
-    if (response.ok) throw new Error("Supabasek JSON erantzun baliogabea bidali du");
+    if (response.ok) throw new Error(t("Supabasek JSON erantzun baliogabea bidali du"));
     result = {};
   }
   if (response.status === 401 && token && !anonymous) {
@@ -139,13 +187,13 @@ async function requestImpl(payload, anonymous) {
     localStorage.removeItem("7metro-supabase-token");
     localStorage.removeItem("7metro-username");
     showLogin();
-    throw new Error("Online saioa iraungi da; hasi saioa berriro");
+    throw new Error(t("Online saioa iraungi da; hasi saioa berriro"));
   }
   if (!response.ok) {
     if (payload.action === "pwa_create_match" && /usuario o contrase(?:ñ|Ã±)a no v[aá]lidos/i.test(String(result.error || ""))) {
-      throw new Error("Supabaseko metro-api zaharkituta dago eta ez du markagailutik gordetzea onartzen. Backendaren eguneraketa argitaratu behar da.");
+      throw new Error(t("Supabaseko metro-api zaharkituta dago eta ez du markagailutik gordetzea onartzen. Backendaren eguneraketa argitaratu behar da."));
     }
-    throw new Error(result.error || ("Supabase errorea (" + response.status + ")"));
+    throw new Error(I18n.serverMessage(result.error) || (t("Supabase errorea (") + response.status + ")"));
   }
   return result;
 }
@@ -172,7 +220,7 @@ function showTeamPicker() {
   $("v-login").classList.remove("on");
   $("account").textContent = user ? user.izena : "";
   $("team-select").innerHTML = teams.map(function (item) {
-    return '<option value="' + Number(item.id_taldea) + '">' + esc(item.izena) + (item._role === "owner" ? " · Jabea" : " · Kidea") + "</option>";
+    return '<option value="' + Number(item.id_taldea) + '">' + esc(item.izena) + (item._role === "owner" ? t(" · Jabea") : t(" · Kidea")) + "</option>";
   }).join("");
   loadTeamInvitations();
   if (teams.some(function (item) { return Number(item.id_taldea) === teamId; })) {
@@ -193,17 +241,28 @@ function updateTeamManagementControls() {
   $("team-management-note").hidden = !selected || isOwner;
 }
 
+var teamInvitations = null;
+
+function renderTeamInvitations() {
+  if (!teamInvitations) return;
+  document.querySelectorAll("[data-team-invitations]").forEach(function (list) {
+    var invitations = teamInvitations;
+    list.innerHTML = invitations.length ? invitations.map(function (item) {
+      var teamName = item.taldeak && item.taldeak.izena || t("Taldea");
+      return '<li class="item"><div class="item-main"><strong>' + esc(teamName) + ("</strong><small>" + esc(t("Taldean sartzeko gonbidapena")) + "</small></div><button class=\"btn secondary\" type=\"button\" data-team-invitation=\"accept\" data-id=\"") + Number(item.id) + ("\">" + esc(t("Onartu")) + "</button><button class=\"btn danger\" type=\"button\" data-team-invitation=\"reject\" data-id=\"") + Number(item.id) + ("\">" + esc(t("Baztertu")) + "</button></li>");
+    }).join("") : ("<li class=\"empty\">" + esc(t("Ez duzu talde-gonbidapenik.")) + "</li>");
+  });
+}
+
 async function loadTeamInvitations() {
   var lists = document.querySelectorAll("[data-team-invitations]");
   var list = { set innerHTML(value) { lists.forEach(function (element) { element.innerHTML = value; }); } };
-  list.innerHTML = '<li class="empty">Gonbidapenak kargatzen…</li>';
+  list.innerHTML = ("<li class=\"empty\">" + esc(t("Gonbidapenak kargatzen…")) + "</li>");
   try {
     var result = await request({ action: "team_invitations" });
     var invitations = result.invitations || [];
-    list.innerHTML = invitations.length ? invitations.map(function (item) {
-      var teamName = item.taldeak && item.taldeak.izena || "Taldea";
-      return '<li class="item"><div class="item-main"><strong>' + esc(teamName) + '</strong><small>Taldean sartzeko gonbidapena</small></div><button class="btn secondary" type="button" data-team-invitation="accept" data-id="' + Number(item.id) + '">Onartu</button><button class="btn danger" type="button" data-team-invitation="reject" data-id="' + Number(item.id) + '">Baztertu</button></li>';
-    }).join("") : '<li class="empty">Ez duzu talde-gonbidapenik.</li>';
+    teamInvitations = invitations;
+    renderTeamInvitations();
   } catch (error) {
     list.innerHTML = '<li class="notice error">' + esc(error.message) + '</li>';
   }
@@ -239,7 +298,7 @@ async function loadTeams(autoOpen) {
 
 async function openTeam(id) {
   var selected = teams.find(function (item) { return Number(item.id_taldea) === Number(id); });
-  if (!selected) throw new Error("Aukeratutako taldea ez da aurkitu");
+  if (!selected) throw new Error(t("Aukeratutako taldea ez da aurkitu"));
   team = selected;
   teamId = Number(selected.id_taldea);
   await refreshAll();
@@ -273,7 +332,7 @@ function formatDay(record) {
   var value = String(record.data_ordua || "").slice(0, 10);
   var parts = value.split("-");
   if (parts.length !== 3 || parts.some(function (part) { return !/^\d+$/.test(part); })) return value;
-  return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])).toLocaleDateString("eu-ES");
+  return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])).toLocaleDateString(I18n.locale());
 }
 
 function records(name) { return Array.isArray(tables[name]) ? tables[name] : []; }
@@ -294,7 +353,7 @@ function parseBoardData(value) {
       animazioa: Array.isArray(data.animazioa) ? data.animazioa : []
     };
   } catch (error) {
-    console.error("Ezin izan dira arbelaren datuak irakurri", error);
+    console.error(t("Ezin izan dira arbelaren datuak irakurri"), error);
     return null;
   }
 }
@@ -505,7 +564,7 @@ function loadBoardBackgrounds() {
         if (sessionView.ids.length) drawSessionBoard();
       };
       image.onerror = function (error) {
-        console.error("Ezin izan da programako kantxaren irudia kargatu: " + entry[1], error);
+        console.error(t("Ezin izan da programako kantxaren irudia kargatu: ") + entry[1], error);
       };
       image.src = entry[1];
       boardImages[entry[0]] = image;
@@ -548,7 +607,7 @@ function addBoardToken(prefix, point) {
     return match ? Math.max(value, Number(match[1])) : value;
   }, 0);
   if (highest >= max) {
-    notify("Ezin dira mota honetako elementu gehiago gehitu", "error");
+    notify(t("Ezin dira mota honetako elementu gehiago gehitu"), "error");
     return;
   }
   var tag = prefix === "baloia" ? "baloia_" + (highest + 1)
@@ -589,7 +648,7 @@ function boardPointerDown(event) {
     return;
   }
   if (tool === "text") {
-    var text = prompt("Idatzi arbelan agertuko den testua:");
+    var text = prompt(t("Idatzi arbelan agertuko den testua:"));
     if (text && text.trim()) {
       boardState.marrazkiak.push({ type: "text", coords: [point.x, point.y], text: text.trim(), fill: "#ffffff" });
       boardSelection = { kind: "drawing", index: boardState.marrazkiak.length - 1 };
@@ -660,20 +719,20 @@ function prepareBoardForSave() {
 
 function updateBoardAnimationControls() {
   var frames = boardState.animazioa;
-  $("board-frames").innerHTML = '<option value="-1">Uneko arbela</option>' + frames.map(function (_, index) {
-    return '<option value="' + index + '">' + (index + 1) + '. pausoa</option>';
+  $("board-frames").innerHTML = ("<option value=\"-1\">" + esc(t("Uneko arbela")) + "</option>") + frames.map(function (_, index) {
+    return '<option value="' + index + '">' + (index + 1) + (esc(t(". pausoa")) + "</option>");
   }).join("");
   $("board-frames").value = String(boardFrameIndex);
   $("board-frame-update").disabled = boardFrameIndex < 0;
   $("board-frame-delete").disabled = boardFrameIndex < 0;
   $("board-animation-play").disabled = frames.length < 2;
-  $("board-animation-status").textContent = frames.length + " pauso gordeta. Animazioa sortzeko gutxienez 2 behar dira.";
+  $("board-animation-status").textContent = frames.length + t(" pauso gordeta. Animazioa sortzeko gutxienez 2 behar dira.");
 }
 
 function stopBoardAnimation() {
   cancelAnimationFrame(boardAnimationRaf);
   boardAnimationRaf = 0;
-  $("board-animation-play").textContent = "Animazioa ikusi";
+  $("board-animation-play").textContent = t("Animazioa ikusi");
   redrawBoard();
 }
 
@@ -682,7 +741,7 @@ function playBoardAnimation() {
   if (boardState.animazioa.length < 2) return;
   boardPointer = null;
   var started;
-  $("board-animation-play").textContent = "Gelditu";
+  $("board-animation-play").textContent = t("Gelditu");
   function animate(timestamp) {
     if (started == null) started = timestamp;
     var elapsed = (timestamp - started) / 650;
@@ -774,16 +833,16 @@ function stopExerciseAnimation(finalState) {
     canvas.height = animation.height;
     if (animation.container) animation.container.classList.remove("animation-playing");
     if (animation.button) {
-      animation.button.textContent = "Animazioa ikusi";
-      animation.button.setAttribute("aria-label", "Animazioa ikusi");
+      animation.button.textContent = t("Animazioa ikusi");
+      animation.button.setAttribute("aria-label", t("Animazioa ikusi"));
     }
     if (animation.board) drawBoard(canvas, finalState || animation.board, null);
   }
   previewAnimation = null;
   previewAnimationFrame = 0;
   document.querySelectorAll("[data-play-exercise]").forEach(function (button) {
-    button.textContent = "Animazioa ikusi";
-    button.setAttribute("aria-label", "Animazioa ikusi");
+    button.textContent = t("Animazioa ikusi");
+    button.setAttribute("aria-label", t("Animazioa ikusi"));
   });
 }
 
@@ -792,7 +851,7 @@ function playExerciseAnimation(id, targetCanvas, targetButton) {
   var board = exercise && parseBoardData(exercise.arbela_datuak);
   var canvas = targetCanvas || document.querySelector('[data-board-preview="' + Number(id) + '"]');
   if (!board || board.animazioa.length < 2 || !canvas) {
-    notify("Ariketa honek ez du erreproduzitzeko animaziorik", "error");
+    notify(t("Ariketa honek ez du erreproduzitzeko animaziorik"), "error");
     return;
   }
   stopExerciseAnimation();
@@ -804,8 +863,8 @@ function playExerciseAnimation(id, targetCanvas, targetButton) {
   canvas.width = 800;
   canvas.height = 500;
   if (button) {
-    button.textContent = "Gelditu";
-    button.setAttribute("aria-label", "Animazioa gelditu");
+    button.textContent = t("Gelditu");
+    button.setAttribute("aria-label", t("Animazioa gelditu"));
   }
   drawBoard(canvas, animationFrameState(board.animazioa[0], board.fondo), null);
 
@@ -858,15 +917,15 @@ function stopSessionAnimation() {
   if (sessionView.raf) cancelAnimationFrame(sessionView.raf);
   sessionView.raf = 0;
   var button = $("session-play");
-  button.textContent = "Animazioa ikusi";
-  button.setAttribute("aria-label", "Animazioa ikusi");
+  button.textContent = t("Animazioa ikusi");
+  button.setAttribute("aria-label", t("Animazioa ikusi"));
   if (sessionView.ids.length) drawSessionBoard();
 }
 
 function renderSessionBoard() {
   stopSessionAnimation();
   var current = currentSessionBoard();
-  $("session-view-title").textContent = current.exercise ? current.exercise.izena : "Saioa osatzen";
+  $("session-view-title").textContent = current.exercise ? current.exercise.izena : t("Saioa osatzen");
   $("session-view-position").textContent = sessionView.ids.length
     ? (sessionView.index + 1) + " / " + sessionView.ids.length : "";
   $("session-prev").disabled = sessionView.index <= 0;
@@ -895,17 +954,17 @@ function openSessionExercisePreview(id) {
   id = Number(id);
   var exercise = exercises.find(function (item) { return Number(item.id_ariketa) === id; });
   var board = exercise && parseBoardData(exercise.arbela_datuak);
-  if (!exercise || !board) return notify("Ariketa honek ez dauka arbelarik gordeta", "error");
+  if (!exercise || !board) return notify(t("Ariketa honek ez dauka arbelarik gordeta"), "error");
   stopExerciseAnimation();
   var canvas = $("session-preview-canvas"), play = $("session-preview-play");
   canvas.width = 800;
   canvas.height = 500;
   drawBoard(canvas, board, null);
   $("session-preview-title").textContent = exercise.izena;
-  $("session-preview-caption").textContent = exercise.deskribapena || exercise.kategoria || "Ariketaren aurrebista";
+  $("session-preview-caption").textContent = exercise.deskribapena || exercise.kategoria || t("Ariketaren aurrebista");
   play.dataset.exerciseId = String(id);
-  play.textContent = "Animazioa ikusi";
-  play.setAttribute("aria-label", "Animazioa ikusi: " + exercise.izena);
+  play.textContent = t("Animazioa ikusi");
+  play.setAttribute("aria-label", t("Animazioa ikusi: ") + exercise.izena);
   play.classList.toggle("hidden", board.animazioa.length < 2);
   var dialog = $("session-preview-dialog");
   if (!dialog.open) dialog.showModal();
@@ -915,13 +974,13 @@ function playSessionAnimation() {
   var current = currentSessionBoard();
   var board = current.board, canvas = $("session-board");
   if (!board || board.animazioa.length < 2) {
-    notify("Ariketa honek ez du erreproduzitzeko animaziorik", "error");
+    notify(t("Ariketa honek ez du erreproduzitzeko animaziorik"), "error");
     return;
   }
   stopSessionAnimation();
   var button = $("session-play");
-  button.textContent = "Gelditu";
-  button.setAttribute("aria-label", "Animazioa gelditu");
+  button.textContent = t("Gelditu");
+  button.setAttribute("aria-label", t("Animazioa gelditu"));
   var state = { frame: 0, started: null }, frameDuration = 650;
   drawBoard(canvas, animationFrameState(board.animazioa[0], board.fondo), null);
   var animate = function (timestamp) {
@@ -958,20 +1017,20 @@ function renderPlayers() {
     }).length;
     var attendancePercent = attendanceTotal ? Math.round(attendancePresent / attendanceTotal * 100) : null;
     var attendanceMarkup = attendanceTotal
-      ? '<div class="player-attendance" aria-label="Asistentzia: %' + attendancePercent + ', ' + attendancePresent + ' ' + attendanceTotal + ' saiotik">' +
-        '<span class="player-attendance-label">Asistentzia</span><strong>%' + attendancePercent + '</strong>' +
+      ? ("<div class=\"player-attendance\" aria-label=\"" + esc(t("Asistentzia: %"))) + attendancePercent + ', ' + attendancePresent + ' ' + attendanceTotal + esc(t(' saiotik')) + '">' +
+        ("<span class=\"player-attendance-label\">" + esc(t("Asistentzia")) + "</span><strong>%") + attendancePercent + '</strong>' +
         '<span class="player-attendance-bar" aria-hidden="true"><i style="width:' + attendancePercent + '%"></i></span>' +
-        '<small>' + attendancePresent + '/' + attendanceTotal + ' saio</small></div>'
-      : '<div class="player-attendance player-attendance-empty"><span class="player-attendance-label">Asistentzia</span><small>Erregistrorik ez</small></div>';
+        '<small>' + attendancePresent + '/' + attendanceTotal + (esc(t(" saio")) + "</small></div>")
+      : ("<div class=\"player-attendance player-attendance-empty\"><span class=\"player-attendance-label\">" + esc(t("Asistentzia")) + "</span><small>" + esc(t("Erregistrorik ez")) + "</small></div>");
     return '<li class="item"><div class="item-main"><strong>' +
       (player.dortsala != null ? "#" + esc(player.dortsala) + " " : "") + esc(playerName(player)) +
-      '</strong><small>' + esc(player.posizioa || "Posiziorik gabe") + " · " +
-      esc(player.egoera || "") + '</small>' + attendanceMarkup + '</div><button class="btn danger" type="button" data-delete-player="' +
-      Number(player.id_jokalaria) + '">Ezabatu</button></li>';
-  }).join("") : '<li class="empty">' + (players.length ? "Ez da jokalaririk aurkitu iragazki horiekin." : "Ez dago jokalaririk. Gehitu lehenengo jokalaria.") + '</li>';
+      '</strong><small>' + esc(t(player.posizioa) || t("Posiziorik gabe")) + " · " +
+      esc(t(player.egoera) || "") + '</small>' + attendanceMarkup + '</div><button class="btn danger" type="button" data-delete-player="' +
+      Number(player.id_jokalaria) + ("\">" + esc(t("Ezabatu")) + "</button></li>");
+  }).join("") : '<li class="empty">' + (players.length ? t("Ez da jokalaririk aurkitu iragazki horiekin.") : t("Ez dago jokalaririk. Gehitu lehenengo jokalaria.")) + '</li>';
 
-  var fields = [["Gol", "golak"], ["Jaurtiketa", "jaurtiketak"], ["Horia", "horia"],
-    ["2 min", "two_min"], ["Gorria", "gorria"], ["Urdina", "urdina"]];
+  var fields = [[t("Gol"), "golak"], [t("Jaurtiketa"), "jaurtiketak"], [t("Horia"), "horia"],
+    ["2 min", "two_min"], [t("Gorria"), "gorria"], [t("Urdina"), "urdina"]];
   $("match-players").innerHTML = players.length ? players.map(function (player) {
     var id = Number(player.id_jokalaria), name = esc(playerName(player));
     return '<div class="match-player"><div class="match-player-head">' +
@@ -980,20 +1039,24 @@ function renderPlayers() {
         return '<label>' + field[0] + '<input type="number" min="0" max="999" value="0" aria-label="' +
           name + " " + field[0] + '" data-stat="' + field[1] + '" data-player="' + id + '"></label>';
       }).join("") + "</div></div>";
-  }).join("") : '<p class="empty">Gehitu jokalariak partidako estatistikak jasotzeko.</p>';
+  }).join("") : ("<p class=\"empty\">" + esc(t("Gehitu jokalariak partidako estatistikak jasotzeko.")) + "</p>");
 
   $("attendance-list").innerHTML = players.length ? players.map(function (player) {
     var id = Number(player.id_jokalaria), name = esc(playerName(player));
     return '<div class="attendance-row"><label class="checkrow"><input type="checkbox" data-att-player="' +
       id + '" checked><span>' + (player.dortsala != null ? "#" + esc(player.dortsala) + " " : "") +
-      name + '</span></label><label>Berandu (min)<input type="number" min="0" max="999" value="0" data-late="' +
-      id + '"></label><label>Atzerapen mota<select data-late-type="' + id +
-      '"><option value="">Ez dago</option><option>Justifikatua</option><option>Justifikatu gabea</option></select></label></div>';
-  }).join("") : '<p class="empty">Ez dago jokalaririk.</p>';
+      name + ("</span></label><label>" + esc(t("Berandu (min)")) + "<input type=\"number\" min=\"0\" max=\"999\" value=\"0\" data-late=\"") +
+      id + ("\"></label><label>" + esc(t("Atzerapen mota")) + "<select data-late-type=\"") + id +
+      ("\"><option value=\"\">" + esc(t("Ez dago")) + "</option><option value=\"Justifikatua\">" + esc(t("Justifikatua")) + "</option><option value=\"Justifikatu gabea\">" + esc(t("Justifikatu gabea")) + "</option></select></label></div>");
+  }).join("") : ("<p class=\"empty\">" + esc(t("Ez dago jokalaririk.")) + "</p>");
 }
 
 function sessionExerciseById(id) {
   return exercises.find(function (item) { return Number(item.id_ariketa) === Number(id); });
+}
+
+function sessionGroupLabel(name) {
+  return ["Beroketa", "Zati nagusia", "Bukaera"].includes(name) ? t(name) : name;
 }
 
 function normalizeCategoryName(value) {
@@ -1088,7 +1151,7 @@ function updateSessionTimeBar() {
   var warn = $("session-time-warn");
   if (warn) {
     if (over) {
-      warn.textContent = "Denbora gaindituta: " + (used - total) + " min gehiago. Gehitu ditzakezu, baina egiaztatu denbora.";
+      warn.textContent = t("Denbora gaindituta: ") + (used - total) + t(" min gehiago. Gehitu ditzakezu, baina egiaztatu denbora.");
       warn.classList.add("show");
     } else {
       warn.textContent = "";
@@ -1124,7 +1187,7 @@ function renderSessionPicker() {
     : "";
   var filter = $("session-category");
   if (filter) {
-    filter.innerHTML = '<option value="">Kategoria guztiak</option>';
+    filter.innerHTML = ("<option value=\"\">" + esc(t("Kategoria guztiak")) + "</option>");
     categories.forEach(function (name) {
       var option = document.createElement("option");
       option.value = name;
@@ -1143,24 +1206,24 @@ function renderSessionPicker() {
     var categoryNames = exerciseCategoryNames(exercise);
     return '<li class="session-slot"><span class="slot-name">' + esc(exercise.izena) +
       ' <small class="muted">' + esc(categoryNames.join(", ")) + "</small></span>" +
-      '<button class="btn secondary" type="button" data-session-view="' + id + '">Arbela</button>' +
-      '<button class="btn" type="button" data-session-add="' + id + '">Gehitu</button></li>';
+      '<button class="btn secondary" type="button" data-session-view="' + id + ("\">" + esc(t("Arbela")) + "</button>") +
+      '<button class="btn" type="button" data-session-add="' + id + ("\">" + esc(t("Gehitu")) + "</button></li>");
   }).join("") : '<li class="empty">' + (sessionCategoryFilter
-    ? "Ez dago ariketarik kategoria honetan." : "Ez dago ariketarik liburutegian.") + "</li>";
+    ? t("Ez dago ariketarik kategoria honetan.") : t("Ez dago ariketarik liburutegian.")) + "</li>";
   var groupLabel = $("session-current-group");
-  if (groupLabel) groupLabel.textContent = "Hurrengo ariketak: " + (activeSessionGroup ? activeSessionGroup.name : "Tarterik gabe");
+  if (groupLabel) groupLabel.textContent = t("Hurrengo ariketak: ") + (activeSessionGroup ? sessionGroupLabel(activeSessionGroup.name) : t("Tarterik gabe"));
   $("session-selected").innerHTML = sessionSelection.length ? sessionSelection.map(function (entry) {
-    if (entry.is_separator) return '<li class="session-group-row" data-session-drop-group="' + esc(entry.group_id) + '"><strong>' + esc(entry.taldea) +
-      '</strong><button class="slot-remove" type="button" data-session-remove-group="' + esc(entry.group_id) + '" aria-label="Kendu tartea">×</button></li>';
+    if (entry.is_separator) return '<li class="session-group-row" data-session-drop-group="' + esc(entry.group_id) + '"><strong>' + esc(sessionGroupLabel(entry.taldea)) +
+      '</strong><button class="slot-remove" type="button" data-session-remove-group="' + esc(entry.group_id) + ("\" aria-label=\"" + esc(t("Kendu tartea")) + "\">" + esc(t("×")) + "</button></li>");
     var exercise = sessionExerciseById(entry.id_ariketa), id = Number(entry.id_ariketa);
     if (!exercise) return "";
-    return '<li class="session-slot" data-session-drop-exercise="' + id + '"><button class="session-drag-handle" type="button" data-session-drag-handle aria-label="Arrastatu ordena aldatzeko: ' + esc(exercise.izena) + '" title="Arrastatu ordena aldatzeko">&#8942;&#8942;</button><span class="slot-name">' + esc(exercise.izena) +
+    return '<li class="session-slot" data-session-drop-exercise="' + id + ("\"><button class=\"session-drag-handle\" type=\"button\" data-session-drag-handle aria-label=\"" + esc(t("Arrastatu ordena aldatzeko: "))) + esc(exercise.izena) + ("\" title=\"" + esc(t("Arrastatu ordena aldatzeko")) + "\">&#8942;&#8942;</button><span class=\"slot-name\">") + esc(exercise.izena) +
       '</span><input type="number" min="0" max="999" value="' + Number(entry.iraupena_minutuak) +
-      '" data-session-minutes="' + id + '" aria-label="Minutuak: ' + esc(exercise.izena) + '">' +
-      '<label class="session-exercise-notes-field">Oharrak<textarea class="session-exercise-notes" rows="2" maxlength="3000" data-session-notes="' + id + '" aria-label="Oharrak: ' + esc(exercise.izena) + '" placeholder="Idatzi ariketa honetarako oharrak">' + esc(entry.aldaerak || "") + '</textarea></label>' +
+      '" data-session-minutes="' + id + ("\" aria-label=\"" + esc(t("Minutuak: "))) + esc(exercise.izena) + '">' +
+      ("<label class=\"session-exercise-notes-field\">" + esc(t("Oharrak")) + "<textarea class=\"session-exercise-notes\" rows=\"2\" maxlength=\"3000\" data-session-notes=\"") + id + ("\" aria-label=\"" + esc(t("Oharrak: "))) + esc(exercise.izena) + ("\" placeholder=\"" + esc(t("Idatzi ariketa honetarako oharrak")) + "\">") + esc(entry.aldaerak || "") + '</textarea></label>' +
       '<button class="slot-remove" type="button" data-session-remove="' + id +
-      '" aria-label="Kendu ariketa">✕</button></li>';
-  }).join("") : '<li class="empty">Gehitu ariketak ezkerraldetik.</li>';
+      ("\" aria-label=\"" + esc(t("Kendu ariketa")) + "\">✕</button></li>");
+  }).join("") : ("<li class=\"empty\">" + esc(t("Gehitu ariketak ezkerraldetik.")) + "</li>");
   updateSessionTimeBar();
 }
 
@@ -1177,7 +1240,7 @@ function addSessionExercise(id) {
 
 function addSessionGroup(name) {
   name = String(name || "").trim();
-  if (!name) { notify("Idatzi tartearen izena", "error"); return; }
+  if (!name) { notify(t("Idatzi tartearen izena"), "error"); return; }
   var id = "group-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
   sessionSelection.push({ is_separator: true, taldea: name, group_id: id });
   activeSessionGroup = { id: id, name: name };
@@ -1194,7 +1257,7 @@ function removeSessionGroup(id) {
   });
   if (activeSessionGroup && activeSessionGroup.id === id) activeSessionGroup = null;
   renderSessionPicker();
-  if (name) notify('"' + name + '" tartea kendu da', "success");
+  if (name) notify('"' + name + t("\" tartea kendu da"), "success");
 }
 
 function removeSessionExercise(id) {
@@ -1263,13 +1326,13 @@ function renderExercises() {
       '</strong><small>' + esc(exerciseCategoryNames(exercise).join(", ")) +
       (exercise.deskribapena ? " · " + esc(exercise.deskribapena) : "") +
       '</small></div>' + (board ? '<canvas class="exercise-board-preview" width="336" height="210" data-board-preview="' +
-      Number(exercise.id_ariketa) + '" aria-label="Arbelaren aurrebista: ' + esc(exercise.izena) + '"></canvas>' : '<span class="exercise-board-placeholder" aria-hidden="true"></span>') +
+      Number(exercise.id_ariketa) + ("\" aria-label=\"" + esc(t("Arbelaren aurrebista: "))) + esc(exercise.izena) + '"></canvas>' : '<span class="exercise-board-placeholder" aria-hidden="true"></span>') +
       '<div class="exercise-actions">' + (hasAnimation
         ? '<button class="btn secondary" type="button" data-play-exercise="' + Number(exercise.id_ariketa) +
-          '" aria-label="Animazioa ikusi">Animazioa ikusi</button>' : "") +
+          ("\" aria-label=\"" + esc(t("Animazioa ikusi")) + "\">" + esc(t("Animazioa ikusi")) + "</button>") : "") +
       '<button class="btn danger" type="button" data-delete-exercise="' +
-      Number(exercise.id_ariketa) + '">Ezabatu</button></div></li>';
-  }).join("") : '<li class="empty">' + (categoryFilter ? 'Ez dago ariketarik kategoria honetan.' : 'Ariketa-liburutegia hutsik dago.') + '</li>';
+      Number(exercise.id_ariketa) + ("\">" + esc(t("Ezabatu")) + "</button></div></li>");
+  }).join("") : '<li class="empty">' + (categoryFilter ? t("Ez dago ariketarik kategoria honetan.") : t("Ariketa-liburutegia hutsik dago.")) + '</li>';
   document.querySelectorAll("[data-board-preview]").forEach(function (canvas) {
     var exercise = exercises.find(function (item) {
       return Number(item.id_ariketa) === Number(canvas.dataset.boardPreview);
@@ -1309,12 +1372,12 @@ function renderExerciseCategories() {
     checklist.innerHTML = names.length ? names.map(function (name) {
       return '<label class="checkrow"><input type="checkbox" name="kategoriak" value="' + esc(name) + '"' +
         (selected.indexOf(name) !== -1 ? ' checked' : '') + '><span>' + esc(name) + '</span></label>';
-    }).join("") : '<span class="muted">Oraindik ez dago kategoriarik.</span>';
+    }).join("") : ("<span class=\"muted\">" + esc(t("Oraindik ez dago kategoriarik.")) + "</span>");
   }
   var listFilter = $("exercise-list-category");
   if (listFilter) {
     var selectedFilter = listFilter.value;
-    listFilter.innerHTML = '<option value="">Kategoria guztiak</option>' + names.map(function (name) {
+    listFilter.innerHTML = ("<option value=\"\">" + esc(t("Kategoria guztiak")) + "</option>") + names.map(function (name) {
       return '<option value="' + esc(name) + '">' + esc(name) + '</option>';
     }).join("");
     listFilter.value = names.find(function (name) {
@@ -1324,13 +1387,14 @@ function renderExerciseCategories() {
   var list = $("exercise-category-list");
   if (list) list.innerHTML = categories.length ? categories.map(function (category) {
     return '<li class="item"><div class="item-main"><strong>' + esc(category.izena) + '</strong></div>' +
-      '<button class="btn danger" type="button" data-delete-exercise-category="' + esc(category.izena) + '">Ezabatu</button></li>';
-  }).join("") : '<li class="empty">Oraindik ez dago kategoriarik. Sortu kategoria liburutegian erabiltzeko.</li>';
+      '<button class="btn danger" type="button" data-delete-exercise-category="' + esc(category.izena) + ("\">" + esc(t("Ezabatu")) + "</button></li>");
+  }).join("") : ("<li class=\"empty\">" + esc(t("Oraindik ez dago kategoriarik. Sortu kategoria liburutegian erabiltzeko.")) + "</li>");
 }
 
 function renderSavedSession(sessionId) {
   var session = sessions.find(function (item) { return Number(item.id_saio) === Number(sessionId); });
   if (!session) return false;
+  $("v-session-detail").dataset.sessionId = String(sessionId);
   var micro = records("mikrozikloak").find(function (item) {
     return Number(item.id_mikroziklo) === Number(session.id_mikroziklo);
   });
@@ -1343,23 +1407,23 @@ function renderSavedSession(sessionId) {
     return total + (item.id_ariketa == null ? 0 : Number(item.iraupena_minutuak || 0));
   }, 0);
   var exerciseCount = details.filter(function (item) { return item.id_ariketa != null; }).length;
-  var meta = [formatDay(session), session.lekua || "", exerciseCount + " ariketa"].filter(Boolean);
-  $("saved-session-title").textContent = session.helburu_taktikoa || "Entrenamendua";
+  var meta = [formatDay(session), session.lekua || "", exerciseCount + t(" ariketa")].filter(Boolean);
+  $("saved-session-title").textContent = session.helburu_taktikoa || t("Entrenamendua");
   $("saved-session-meta").textContent = meta.join(" · ");
-  $("saved-session-goal").textContent = session.helburu_taktikoa || "Helburu taktikorik gabe";
-  $("saved-session-cycle").textContent = micro ? "Mikrozikloa · " + (micro.mota || "Mikrozikloa") : "Ez dago mikroziklo bati lotuta";
+  $("saved-session-goal").textContent = session.helburu_taktikoa || t("Helburu taktikorik gabe");
+  $("saved-session-cycle").textContent = micro ? t("Mikrozikloa · ") + (t(micro.mota) || t("Mikrozikloa")) : t("Ez dago mikroziklo bati lotuta");
   $("saved-session-total").textContent = totalMinutes + " min";
   var previewBoards = [], renderedExerciseIndex = 0, lastGroup = null;
   var savedMarkup = details.map(function (detail, index) {
     if (detail.id_ariketa == null) {
       var separatorName = String(detail.taldea || "").trim();
       lastGroup = separatorName || null;
-      return separatorName ? '<div class="training-session-group"><span>' + esc(separatorName) + '</span></div>' : "";
+      return separatorName ? '<div class="training-session-group"><span>' + esc(sessionGroupLabel(separatorName)) + '</span></div>' : "";
     }
     var detailGroup = String(detail.taldea || "").trim();
     var heading = "";
     if (detailGroup && detailGroup !== lastGroup) {
-      heading = '<div class="training-session-group"><span>' + esc(detailGroup) + '</span></div>';
+      heading = '<div class="training-session-group"><span>' + esc(sessionGroupLabel(detailGroup)) + '</span></div>';
     }
     lastGroup = detailGroup || null;
     var step = ++renderedExerciseIndex;
@@ -1367,20 +1431,20 @@ function renderSavedSession(sessionId) {
     var board = exercise && parseBoardData(exercise.arbela_datuak);
     var hasAnimation = board && board.animazioa.length > 1;
     if (board) previewBoards.push({ index: index, data: board });
-    var title = exercise ? exercise.izena : "Ariketa ez dago eskuragarri";
+    var title = exercise ? exercise.izena : t("Ariketa ez dago eskuragarri");
     return heading + '<article class="training-exercise-card"><div class="training-exercise-head"><span class="training-step">' +
       step + '</span><div><h3>' + esc(title) + '</h3><div class="training-exercise-meta">' +
       (exercise && exercise.kategoria ? esc(exercise.kategoria) + " · " : "") +
-      Number(detail.iraupena_minutuak || 0) + ' min</div></div></div>' +
-      (board ? '<canvas class="training-exercise-preview" width="800" height="500" data-training-preview="' + index + '" aria-label="' + esc(title) + ' ariketa-arbela"></canvas>' : "") +
+      Number(detail.iraupena_minutuak || 0) + (esc(t(" min")) + "</div></div></div>") +
+      (board ? '<canvas class="training-exercise-preview" width="800" height="500" data-training-preview="' + index + '" aria-label="' + esc(title) + esc(t(' ariketa-arbela')) + '"></canvas>' : "") +
       (exercise && exercise.deskribapena ? '<p class="training-exercise-description">' + esc(exercise.deskribapena) + '</p>' : "") +
-      (detail.aldaerak ? '<p class="training-exercise-notes"><strong>Oharrak:</strong> ' + esc(detail.aldaerak) + '</p>' : "") +
+      (detail.aldaerak ? ("<p class=\"training-exercise-notes\"><strong>" + esc(t("Oharrak:")) + "</strong> ") + esc(detail.aldaerak) + '</p>' : "") +
       (board ? '<div class="training-exercise-actions">' +
-        (hasAnimation ? '<button class="btn secondary" type="button" data-play-training-animation="' + Number(detail.id_ariketa) + '" aria-label="Ariketa txartelean animazioa ikusi">Animazioa ikusi</button>' : "") +
-        '<button class="btn secondary" type="button" data-training-board="' + Number(detail.id_ariketa) + '" data-training-session="' + Number(sessionId) + '">Arbela handitu</button></div>' : "") +
+        (hasAnimation ? '<button class="btn secondary" type="button" data-play-training-animation="' + Number(detail.id_ariketa) + ("\" aria-label=\"" + esc(t("Ariketa txartelean animazioa ikusi")) + "\">" + esc(t("Animazioa ikusi")) + "</button>") : "") +
+        '<button class="btn secondary" type="button" data-training-board="' + Number(detail.id_ariketa) + '" data-training-session="' + Number(sessionId) + ("\">" + esc(t("Arbela handitu")) + "</button></div>") : "") +
       '</article>';
   }).join("");
-  $("saved-session-exercises").innerHTML = savedMarkup || '<div class="card empty">Saio honek ez dauka lotutako ariketarik.</div>';
+  $("saved-session-exercises").innerHTML = savedMarkup || ("<div class=\"card empty\">" + esc(t("Saio honek ez dauka lotutako ariketarik.")) + "</div>");
   previewBoards.forEach(function (preview) {
     var canvas = document.querySelector('[data-training-preview="' + preview.index + '"]');
     if (canvas) drawBoard(canvas, preview.data, null);
@@ -1404,11 +1468,11 @@ function renderSessions() {
       (session.helburu_taktikoa ? " · " + esc(session.helburu_taktikoa) : "") +
       (names.length ? " · " + esc(names.join(", ")) : "") +
       '</small></div><div class="session-actions"><button class="btn secondary" type="button" data-view-session="' +
-      Number(session.id_saio) + '">Ikusi</button><button class="btn secondary" type="button" data-attendance-session="' +
-      Number(session.id_saio) + '">Asistentzia</button></div></li>';
-  }).join("") : '<li class="empty">Oraindik ez da entrenamendurik gorde.</li>';
+      Number(session.id_saio) + ("\">" + esc(t("Ikusi")) + "</button><button class=\"btn secondary\" type=\"button\" data-attendance-session=\"") +
+      Number(session.id_saio) + ("\">" + esc(t("Asistentzia")) + "</button></div></li>");
+  }).join("") : ("<li class=\"empty\">" + esc(t("Oraindik ez da entrenamendurik gorde.")) + "</li>");
   var select = $("attendance-session"), prior = select.value;
-  select.innerHTML = '<option value="">Aukeratu entrenamendua</option>' + sessions.map(function (session) {
+  select.innerHTML = ("<option value=\"\">" + esc(t("Aukeratu entrenamendua")) + "</option>") + sessions.map(function (session) {
     return '<option value="' + Number(session.id_saio) + '">' + esc(formatDay(session)) +
       " · " + esc(session.lekua || "") + "</option>";
   }).join("");
@@ -1418,31 +1482,31 @@ function renderSessions() {
 
 function renderMatches() {
   $("matches-list").innerHTML = matches.length ? matches.map(function (match) {
-    return '<li class="item"><div class="item-main"><strong>' + esc(match.aurkaria || "Aurkaria") +
+    return '<li class="item"><div class="item-main"><strong>' + esc(match.aurkaria || t("Aurkaria")) +
       " · " + Number(match.emaitza_geurea || 0) + " - " + Number(match.emaitza_aurkaria || 0) +
-      '</strong><small>' + esc(formatDate(match)) + " · " + esc(match.lekua || "") +
+      '</strong><small>' + esc(formatDate(match)) + " · " + esc(t(match.lekua) || "") +
       '</small></div><span class="match-actions"><button class="btn secondary" type="button" data-match-stats="' +
-      Number(match.id_partida) + '">Estatistikak</button> <button class="btn secondary" type="button" data-match-stats="' +
-      Number(match.id_partida) + '" data-match-stats-view="opponents" aria-label="Ikusi aurkariaren estatistikak">Aurkaria</button> <button class="btn secondary" type="button" data-edit-match="' +
-      Number(match.id_partida) + '">Editatu</button> <button class="btn danger" type="button" data-delete-match="' +
-      Number(match.id_partida) + '">Ezabatu</button></span></li>';
-  }).join("") : '<li class="empty">Oraindik ez da partidarik gorde.</li>';
+      Number(match.id_partida) + ("\">" + esc(t("Estatistikak")) + "</button> <button class=\"btn secondary\" type=\"button\" data-match-stats=\"") +
+      Number(match.id_partida) + ("\" data-match-stats-view=\"opponents\" aria-label=\"" + esc(t("Ikusi aurkariaren estatistikak")) + "\">" + esc(t("Aurkaria")) + "</button> <button class=\"btn secondary\" type=\"button\" data-edit-match=\"") +
+      Number(match.id_partida) + ("\">" + esc(t("Editatu")) + "</button> <button class=\"btn danger\" type=\"button\" data-delete-match=\"") +
+      Number(match.id_partida) + ("\">" + esc(t("Ezabatu")) + "</button></span></li>");
+  }).join("") : ("<li class=\"empty\">" + esc(t("Oraindik ez da partidarik gorde.")) + "</li>");
   var statsMatch = $("stats-match"), priorStatsMatch = statsMatch.value;
-  statsMatch.innerHTML = '<option value="">Partida guztiak</option>' + matches.map(function (match) {
-    return '<option value="' + Number(match.id_partida) + '">' + esc(formatDate(match) + " · " + (match.aurkaria || "Aurkaria")) + '</option>';
+  statsMatch.innerHTML = ("<option value=\"\">" + esc(t("Partida guztiak")) + "</option>") + matches.map(function (match) {
+    return '<option value="' + Number(match.id_partida) + '">' + esc(formatDate(match) + " · " + (match.aurkaria || t("Aurkaria"))) + '</option>';
   }).join("");
   if (matches.some(function (match) { return String(match.id_partida) === priorStatsMatch; })) statsMatch.value = priorStatsMatch;
   var opponentSelect = $("stats-opponent"), priorOpponent = opponentSelect.value;
-  var opponentNames = Array.from(new Set(matches.map(function (match) { return String(match.aurkaria || "Aurkaria"); }))).sort();
-  opponentSelect.innerHTML = '<option value="">Aurkari guztiak</option>' + opponentNames.map(function (name) { return '<option value="' + esc(name) + '">' + esc(name) + '</option>'; }).join("");
+  var opponentNames = Array.from(new Set(matches.map(function (match) { return String(match.aurkaria || t("Aurkaria")); }))).sort();
+  opponentSelect.innerHTML = ("<option value=\"\">" + esc(t("Aurkari guztiak")) + "</option>") + opponentNames.map(function (name) { return '<option value="' + esc(name) + '">' + esc(name) + '</option>'; }).join("");
   if (opponentNames.indexOf(priorOpponent) !== -1) opponentSelect.value = priorOpponent;
 }
 
-function renderMatchEditor(matchId) {
+function renderMatchEditor(matchId, scroll) {
   var match = matches.find(function (item) { return Number(item.id_partida) === Number(matchId); });
   if (!match) {
     $("match-detail").classList.add("hidden");
-    notify("Ezin izan da partida aurkitu. Birkargatu zerrenda.", "error");
+    notify(t("Ezin izan da partida aurkitu. Birkargatu zerrenda."), "error");
     return;
   }
   var playerRows = records("partida_jokalariak").filter(function (row) {
@@ -1451,18 +1515,18 @@ function renderMatchEditor(matchId) {
   var sanctions = records("partidu_zigorrak").filter(function (row) {
     return Number(row.id_partida) === Number(matchId);
   });
-  var fields = [["Gol", "golak", 999], ["Jaurtiketa", "jaurtiketak", 999],
-    ["Horia", "horia", 100], ["2 min", "two_min", 100],
-    ["Gorria", "gorria", 100], ["Urdina", "urdina", 100]];
+  var fields = [[t("Gol"), "golak", 999], [t("Jaurtiketa"), "jaurtiketak", 999],
+    [t("Horia"), "horia", 100], ["2 min", "two_min", 100],
+    [t("Gorria"), "gorria", 100], [t("Urdina"), "urdina", 100]];
   $("match-detail").innerHTML =
     '<form id="match-edit-form" class="stack" data-match-edit-id="' + Number(matchId) + '">' +
-    '<div class="toolbar"><div><h2>' + esc(match.aurkaria || "Aurkaria") +
-    ' · partida editatzen</h2><p class="muted">' + esc(formatDate(match)) +
-    " · " + esc(match.lekua || "") + '</p></div><button class="btn secondary" type="button" data-close-match-stats>Itxi</button></div>' +
-    '<div class="grid2"><label>Gure emaitza<input type="number" min="0" max="999" required data-match-score="home" value="' +
-    Number(match.emaitza_geurea || 0) + '"></label><label>Aurkariaren emaitza<input type="number" min="0" max="999" required data-match-score="away" value="' +
+    '<div class="toolbar"><div><h2>' + esc(match.aurkaria || t("Aurkaria")) +
+    (esc(t(" · partida editatzen")) + "</h2><p class=\"muted\">") + esc(formatDate(match)) +
+    " · " + esc(t(match.lekua) || "") + ("</p></div><button class=\"btn secondary\" type=\"button\" data-close-match-stats>" + esc(t("Itxi")) + "</button></div>") +
+    ("<div class=\"grid2\"><label>" + esc(t("Gure emaitza")) + "<input type=\"number\" min=\"0\" max=\"999\" required data-match-score=\"home\" value=\"") +
+    Number(match.emaitza_geurea || 0) + ("\"></label><label>" + esc(t("Aurkariaren emaitza")) + "<input type=\"number\" min=\"0\" max=\"999\" required data-match-score=\"away\" value=\"") +
     Number(match.emaitza_aurkaria || 0) + '"></label></div>' +
-    '<h3>Jokalari bakoitzaren estatistikak</h3>' +
+    ("<h3>" + esc(t("Jokalari bakoitzaren estatistikak")) + "</h3>") +
     (players.map(function (player) {
       var playerId = Number(player.id_jokalaria);
       var row = playerRows.find(function (item) { return Number(item.id_jokalaria) === playerId; });
@@ -1470,7 +1534,7 @@ function renderMatchEditor(matchId) {
       var name = (player.dortsala != null ? "#" + player.dortsala + " " : "") + playerName(player);
       return '<div class="match-player"><label class="checkrow match-player-head"><input type="checkbox" data-edit-played="' +
         playerId + '"' + (row ? " checked" : "") + '><span>' + esc(name) +
-        ' · Partidara joan da</span></label><div class="player-stats">' + fields.map(function (field) {
+        (esc(t(" · Partidara joan da")) + "</span></label><div class=\"player-stats\">") + fields.map(function (field) {
           var value = field[1] === "golak" || field[1] === "jaurtiketak"
             ? Number(row && row[field[1]] || 0)
             : playerSanctions.filter(function (item) {
@@ -1480,12 +1544,12 @@ function renderMatchEditor(matchId) {
             '" required value="' + value + '" data-edit-stat="' + field[1] +
             '" data-edit-player="' + playerId + '"' + (row ? "" : " disabled") + '></label>';
         }).join("") + '</div></div>';
-    }).join("") || '<p class="empty">Ez dago jokalaririk.</p>') +
-    '<p class="muted">Jaurtiketen kokapen zehatzak ez dira aldatuko.</p>' +
-    '<div class="grid2"><button class="btn" type="submit">Aldaketak gorde</button><button class="btn secondary" type="button" data-close-match-stats>Utzi</button></div>' +
+    }).join("") || ("<p class=\"empty\">" + esc(t("Ez dago jokalaririk.")) + "</p>")) +
+    ("<p class=\"muted\">" + esc(t("Jaurtiketen kokapen zehatzak ez dira aldatuko.")) + "</p>") +
+    ("<div class=\"grid2\"><button class=\"btn\" type=\"submit\">" + esc(t("Aldaketak gorde")) + "</button><button class=\"btn secondary\" type=\"button\" data-close-match-stats>" + esc(t("Utzi")) + "</button></div>") +
     '</form>';
   $("match-detail").classList.remove("hidden");
-  $("match-detail").scrollIntoView({ behavior: "smooth", block: "start" });
+  if (scroll !== false) $("match-detail").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderDashboard() {
@@ -1494,10 +1558,8 @@ function renderDashboard() {
   var dashboardDate = function (value) {
     var date = new Date(value);
     if (Number.isNaN(date.getTime())) return String(value || "");
-    var weekdays = ["igandea", "astelehena", "asteartea", "asteazkena", "osteguna", "ostirala", "larunbata"];
-    var months = ["urtarrilaren", "otsailaren", "martxoaren", "apirilaren", "maiatzaren", "ekainaren", "uztailaren", "abuztuaren", "irailaren", "urriaren", "azaroaren", "abenduaren"];
-    var time = String(date.getHours()).padStart(2, "0") + ":" + String(date.getMinutes()).padStart(2, "0");
-    return weekdays[date.getDay()] + ", " + date.getFullYear() + "ko " + months[date.getMonth()] + " " + date.getDate() + "a · " + time;
+    return date.toLocaleDateString(I18n.locale(), { weekday: "long", year: "numeric", month: "long", day: "numeric" }) +
+      " · " + date.toLocaleTimeString(I18n.locale(), { hour: "2-digit", minute: "2-digit" });
   };
   var byDateDesc = function (a, b) { return new Date(b.data_ordua) - new Date(a.data_ordua); };
   var latestSession = sessions.filter(function (item) {
@@ -1514,17 +1576,17 @@ function renderDashboard() {
   }).sort(function (a, b) { return new Date(a.data_ordua) - new Date(b.data_ordua); });
   var latestMatch = pastMatches[0], nextMatch = upcomingMatches[0];
   var userName = user && user.izena && user.izena !== "Online" ? user.izena.trim() : "";
-  $("home-title").textContent = "Ongi etorri" + (userName ? ", " + userName : "");
-  $("home-subtitle").textContent = "Zure taldearen azken jarduerak eta hurrengo erronka.";
+  $("home-title").textContent = t("Ongi etorri") + (userName ? ", " + userName : "");
+  $("home-subtitle").textContent = t("Zure taldearen azken jarduerak eta hurrengo erronka.");
   $("home-session-content").innerHTML = latestSession
-    ? '<h2>' + esc(latestSession.helburu_taktikoa || "Entrenamendua") + '</h2><p>' + esc(latestSession.lekua || "Tokia zehaztu gabe") + '</p><div class="home-card-date"><i></i>' + esc(dashboardDate(latestSession.data_ordua)) + '</div><button class="btn secondary" type="button" data-view-session="' + Number(latestSession.id_saio) + '">Entrenamendua ikusi</button>'
-    : '<h2>Ez dago aurreko entrenamendurik</h2><p>Gordetako azken entrenamendua hemen azalduko da.</p><button class="btn secondary" type="button" data-open-section="v-sessions">Entrenamenduetara joan</button>';
+    ? '<h2>' + esc(latestSession.helburu_taktikoa || t("Entrenamendua")) + '</h2><p>' + esc(latestSession.lekua || t("Tokia zehaztu gabe")) + '</p><div class="home-card-date"><i></i>' + esc(dashboardDate(latestSession.data_ordua)) + '</div><button class="btn secondary" type="button" data-view-session="' + Number(latestSession.id_saio) + ("\">" + esc(t("Entrenamendua ikusi")) + "</button>")
+    : ("<h2>" + esc(t("Ez dago aurreko entrenamendurik")) + "</h2><p>" + esc(t("Gordetako azken entrenamendua hemen azalduko da.")) + "</p><button class=\"btn secondary\" type=\"button\" data-open-section=\"v-sessions\">" + esc(t("Entrenamenduetara joan")) + "</button>");
   $("home-match-content").innerHTML = latestMatch
-    ? '<h2>' + esc(latestMatch.aurkaria || "Aurkaria") + '</h2><p>' + esc(dashboardDate(latestMatch.data_ordua)) + '</p><div class="home-card-date"><i></i>' + Number(latestMatch.emaitza_geurea || 0) + ' – ' + Number(latestMatch.emaitza_aurkaria || 0) + '</div><button class="btn secondary" type="button" data-match-stats="' + Number(latestMatch.id_partida) + '">Partidako estatistikak</button>'
-    : '<h2>Ez dago aurreko partidarik</h2><p>Gordetako azken partidaren emaitza eta estatistikak hemen azalduko dira.</p><button class="btn secondary" type="button" data-open-section="v-matches">Partidak ikusi</button>';
+    ? '<h2>' + esc(latestMatch.aurkaria || t("Aurkaria")) + '</h2><p>' + esc(dashboardDate(latestMatch.data_ordua)) + '</p><div class="home-card-date"><i></i>' + Number(latestMatch.emaitza_geurea || 0) + ' – ' + Number(latestMatch.emaitza_aurkaria || 0) + '</div><button class="btn secondary" type="button" data-match-stats="' + Number(latestMatch.id_partida) + ("\">" + esc(t("Partidako estatistikak")) + "</button>")
+    : ("<h2>" + esc(t("Ez dago aurreko partidarik")) + "</h2><p>" + esc(t("Gordetako azken partidaren emaitza eta estatistikak hemen azalduko dira.")) + "</p><button class=\"btn secondary\" type=\"button\" data-open-section=\"v-matches\">" + esc(t("Partidak ikusi")) + "</button>");
   $("home-next-match-content").innerHTML = nextMatch
-    ? '<h2>' + esc(nextMatch.aurkaria || "Aurkaria") + '</h2><p>' + esc(nextMatch.lekua || "Tokia zehaztu gabe") + '</p><div class="home-card-date"><i></i>' + esc(dashboardDate(nextMatch.data_ordua)) + '</div><button class="btn secondary" type="button" data-open-section="v-matches">Partidaren xehetasunak</button>'
-    : '<h2>Ez dago hurrengo partidarik</h2><p>Programatzen duzunean, data eta ordua hemen agertuko dira.</p><button class="btn secondary" type="button" data-open-section="v-matches">Partida berria gehitu</button>';
+    ? '<h2>' + esc(nextMatch.aurkaria || t("Aurkaria")) + '</h2><p>' + esc(nextMatch.lekua || t("Tokia zehaztu gabe")) + '</p><div class="home-card-date"><i></i>' + esc(dashboardDate(nextMatch.data_ordua)) + ("</div><button class=\"btn secondary\" type=\"button\" data-open-section=\"v-matches\">" + esc(t("Partidaren xehetasunak")) + "</button>")
+    : ("<h2>" + esc(t("Ez dago hurrengo partidarik")) + "</h2><p>" + esc(t("Programatzen duzunean, data eta ordua hemen agertuko dira.")) + "</p><button class=\"btn secondary\" type=\"button\" data-open-section=\"v-matches\">" + esc(t("Partida berria gehitu")) + "</button>");
 }
 
 function matchEventRecords(match) {
@@ -1542,7 +1604,7 @@ function renderOpponentIndividuals(selectedMatches, query) {
     matchEventRecords(match).filter(function (event) { return event.taldea === "aurkaria"; }).forEach(function (event) {
       var opponent = event.aurkaria;
       if (!opponent || !scoreOpponentLabel(opponent) || !(scoreIsShot(event.type) || scoreIsSanction(event.type))) return;
-      var teamName = String(match.aurkaria || "Aurkaria");
+      var teamName = String(match.aurkaria || t("Aurkaria"));
       var key = teamName.trim().toLocaleLowerCase() + "|" + scoreOpponentKey(opponent);
       if (!groups.has(key)) groups.set(key, { team: teamName, player: opponent, goals: 0, shots: 0, penaltyGoals: 0, penaltyShots: 0, sanctions: { horia: 0, "2min": 0, gorria: 0, urdina: 0 } });
       var row = groups.get(key);
@@ -1557,11 +1619,11 @@ function renderOpponentIndividuals(selectedMatches, query) {
     return (row.team + " " + scoreOpponentLabel(row.player)).toLocaleLowerCase().includes(query);
   }).sort(function (a, b) { return a.team.localeCompare(b.team) || (Number(a.player.zenbakia) || 0) - (Number(b.player.zenbakia) || 0); });
   $("stats-opponent-players").innerHTML = rows.length ? rows.map(function (row) {
-    var details = row.goals + " gol / " + row.shots + " jaurtiketa" + (row.shots ? " (%" + Math.round(row.goals / row.shots * 100) + ")" : "") +
+    var details = row.goals + t(" gol / ") + row.shots + t(" jaurtiketa") + (row.shots ? " (%" + Math.round(row.goals / row.shots * 100) + ")" : "") +
       " \u00b7 7 m: " + row.penaltyGoals + "/" + row.penaltyShots;
     Object.keys(row.sanctions).forEach(function (type) { if (row.sanctions[type]) details += " \u00b7 " + scoreActionLabel(type) + ": " + row.sanctions[type]; });
     return '<li class="item"><div class="item-main"><strong>' + esc(scoreOpponentLabel(row.player)) + '</strong><small>' + esc(row.team) + ' \u00b7 ' + esc(details) + '</small></div></li>';
-  }).join("") : '<li class="empty">Ez dago aurkarien banakako estatistikarik iragazki hauekin.</li>';
+  }).join("") : ("<li class=\"empty\">" + esc(t("Ez dago aurkarien banakako estatistikarik iragazki hauekin.")) + "</li>");
 }
 
 function renderStats() {
@@ -1577,7 +1639,7 @@ function renderStats() {
     var d = new Date(m.data_ordua), place = String(m.lekua || "").toLocaleLowerCase();
     if (cutoff && d < cutoff || start && d < start || end && d > end) return false;
     if (venue === "home" && !/(etxe|home)/.test(place) || venue === "away" && !/(kanpo|away)/.test(place)) return false;
-    if (opponent && String(m.aurkaria || "Aurkaria") !== opponent) return false;
+    if (opponent && String(m.aurkaria || t("Aurkaria")) !== opponent) return false;
     if (selectedMatch && Number(m.id_partida) !== selectedMatch) return false;
     return true;
   });
@@ -1609,8 +1671,8 @@ function renderStats() {
   var draws = filteredMatches.filter(function (m) { return Number(m.emaitza_geurea || 0) === Number(m.emaitza_aurkaria || 0); }).length;
   var penalties = (mode === "opponents" ? opponentStatsShots : mapShots).filter(isPenalty), penaltyGoals = goalCount(penalties);
   var metric = function (name, value, detail) { return '<div class="card"><strong>' + esc(value) + '</strong><div>' + esc(name) + '</div><small class="muted">' + esc(detail || "") + '</small></div>'; };
-  $("stats-summary").innerHTML = mode === "opponents" ? [metric("Partidak", filteredMatches.length, "Aurkariak: " + Object.keys(Object.fromEntries(filteredMatches.map(function (m) { return [m.aurkaria || "Aurkaria", true]; }))).length), metric("Aurkariaren golak", against, (filteredMatches.length ? (against / filteredMatches.length).toFixed(1) : "0.0") + " partidako"), metric("Jaurtiketen eraginkortasuna", opponentStatsShots.length ? Math.round(goalCount(opponentStatsShots) / opponentStatsShots.length * 100) + "%" : "—", goalCount(opponentStatsShots) + " gol / " + opponentStatsShots.length + " jaurtiketa"), metric("Gure golak", totalGoals, "Aurkariaren aurkako emaitza"), metric("Penaltiak", penalties.length, penaltyGoals + " gol · " + (penalties.length ? Math.round(penaltyGoals / penalties.length * 100) : 0) + "%"), metric("Zigorrak", opponentEvents.filter(function (event) { return scoreIsSanction(event.type); }).length, "Partida hauetan jasota")].join("") : [metric("Partidak", filteredMatches.length, wins + " garaipen · " + draws + " berdinketa · " + (filteredMatches.length - wins - draws) + " porrot"), metric("Golak", totalGoals, (filteredMatches.length ? (totalGoals / filteredMatches.length).toFixed(1) : "0.0") + " partidako"), metric("Jaurtiketen eraginkortasuna", ownShots.length ? Math.round(goalCount(ownShots) / ownShots.length * 100) + "%" : "—", goalCount(ownShots) + " gol / " + ownShots.length + " jaurtiketa"), metric("Aurkariaren golak", against, (filteredMatches.length ? (against / filteredMatches.length).toFixed(1) : "0.0") + " partidako"), metric("Penaltiak", penalties.length, penaltyGoals + " gol · " + (penalties.length ? Math.round(penaltyGoals / penalties.length * 100) : 0) + "%"), metric("Zigorrak", sanctions.length, sanctions.filter(function (s) { return s.mota === "2min"; }).length + " bi minutuko")].join("");
-  $("stats-heading").textContent = mode === "team" ? "Taldearen laburpena" : mode === "players" ? "Jokalari estatistikak" : "Aurkari estatistikak";
+  $("stats-summary").innerHTML = mode === "opponents" ? [metric(t("Partidak"), filteredMatches.length, t("Aurkariak: ") + Object.keys(Object.fromEntries(filteredMatches.map(function (m) { return [m.aurkaria || t("Aurkaria"), true]; }))).length), metric(t("Aurkariaren golak"), against, (filteredMatches.length ? (against / filteredMatches.length).toFixed(1) : "0.0") + t(" partidako")), metric(t("Jaurtiketen eraginkortasuna"), opponentStatsShots.length ? Math.round(goalCount(opponentStatsShots) / opponentStatsShots.length * 100) + "%" : "—", goalCount(opponentStatsShots) + t(" gol / ") + opponentStatsShots.length + t(" jaurtiketa")), metric(t("Gure golak"), totalGoals, t("Aurkariaren aurkako emaitza")), metric(t("Penaltiak"), penalties.length, penaltyGoals + t(" gol · ") + (penalties.length ? Math.round(penaltyGoals / penalties.length * 100) : 0) + "%"), metric(t("Zigorrak"), opponentEvents.filter(function (event) { return scoreIsSanction(event.type); }).length, t("Partida hauetan jasota"))].join("") : [metric(t("Partidak"), filteredMatches.length, wins + t(" garaipen · ") + draws + t(" berdinketa · ") + (filteredMatches.length - wins - draws) + t(" porrot")), metric(t("Golak"), totalGoals, (filteredMatches.length ? (totalGoals / filteredMatches.length).toFixed(1) : "0.0") + t(" partidako")), metric(t("Jaurtiketen eraginkortasuna"), ownShots.length ? Math.round(goalCount(ownShots) / ownShots.length * 100) + "%" : "—", goalCount(ownShots) + t(" gol / ") + ownShots.length + t(" jaurtiketa")), metric(t("Aurkariaren golak"), against, (filteredMatches.length ? (against / filteredMatches.length).toFixed(1) : "0.0") + t(" partidako")), metric(t("Penaltiak"), penalties.length, penaltyGoals + t(" gol · ") + (penalties.length ? Math.round(penaltyGoals / penalties.length * 100) : 0) + "%"), metric(t("Zigorrak"), sanctions.length, sanctions.filter(function (s) { return s.mota === "2min"; }).length + t(" bi minutuko"))].join("");
+  $("stats-heading").textContent = mode === "team" ? t("Taldearen laburpena") : mode === "players" ? t("Jokalari estatistikak") : t("Aurkari estatistikak");
   $("stats-team-panel").classList.toggle("hidden", mode !== "team");
   $("stats-player-panel").classList.toggle("hidden", mode !== "players");
   $("stats-opponent-panel").classList.toggle("hidden", mode !== "opponents");
@@ -1624,25 +1686,25 @@ function renderStats() {
     var matchCount = new Set(rows.map(function (r) { return Number(r.id_partida); })).size;
     return { label: label, goals: totalG, shots: totalS, normalGoals: Math.max(0, totalG - pg), normalShots: Math.max(0, totalS - pshot), penaltyGoals: pg, penaltyShots: pshot, appearances: matchCount, yellow: ps.filter(function (s) { return s.mota === "horia"; }).length, two: ps.filter(function (s) { return s.mota === "2min"; }).length, red: ps.filter(function (s) { return s.mota === "gorria"; }).length, blue: ps.filter(function (s) { return s.mota === "urdina"; }).length };
   }).filter(function (s) { return (s.goals || s.shots || s.yellow || s.two || s.red || s.blue) && s.label.toLocaleLowerCase().includes(query); });
-  $("stats-list").innerHTML = playerStats.length ? playerStats.map(function (s) { var pct = s.shots ? Math.round(s.goals / s.shots * 100) : 0, normalPct = s.normalShots ? Math.round(s.normalGoals / s.normalShots * 100) : 0, penaltyPct = s.penaltyShots ? Math.round(s.penaltyGoals / s.penaltyShots * 100) : 0; return '<li class="item"><div class="item-main"><strong>' + esc(s.label) + '</strong><small>' + s.appearances + ' partida · Guztira: ' + s.goals + '/' + s.shots + ' (%' + pct + ') · Jaurtiketa arruntak: ' + s.normalGoals + '/' + s.normalShots + ' (%' + normalPct + ') · Penaltiak: ' + s.penaltyGoals + '/' + s.penaltyShots + ' (%' + penaltyPct + ')</small></div><span class="muted">🟨 ' + s.yellow + ' · 2\' ' + s.two + ' · 🟥 ' + s.red + ' · 🔵 ' + s.blue + '</span></li>'; }).join("") : '<li class="empty">Ez dago iragazki hauekin bat datorren jokalari daturik.</li>';
+  $("stats-list").innerHTML = playerStats.length ? playerStats.map(function (s) { var pct = s.shots ? Math.round(s.goals / s.shots * 100) : 0, normalPct = s.normalShots ? Math.round(s.normalGoals / s.normalShots * 100) : 0, penaltyPct = s.penaltyShots ? Math.round(s.penaltyGoals / s.penaltyShots * 100) : 0; return '<li class="item"><div class="item-main"><strong>' + esc(s.label) + '</strong><small>' + s.appearances + t(" partida · Guztira: ") + s.goals + '/' + s.shots + ' (%' + pct + t(") · Jaurtiketa arruntak: ") + s.normalGoals + '/' + s.normalShots + ' (%' + normalPct + t(") · Penaltiak: ") + s.penaltyGoals + '/' + s.penaltyShots + ' (%' + penaltyPct + ')</small></div><span class="muted">🟨 ' + s.yellow + ' · 2\' ' + s.two + ' · 🟥 ' + s.red + ' · 🔵 ' + s.blue + '</span></li>'; }).join("") : ("<li class=\"empty\">" + esc(t("Ez dago iragazki hauekin bat datorren jokalari daturik.")) + "</li>");
   $("stats-players-visual").innerHTML = playerStats.length ? playerStats.map(function (s) {
     var pct = s.shots ? Math.round(s.goals / s.shots * 100) : 0;
     var normalPct = s.normalShots ? Math.round(s.normalGoals / s.normalShots * 100) : 0;
     var penaltyPct = s.penaltyShots ? Math.round(s.penaltyGoals / s.penaltyShots * 100) : 0;
-    return '<article class="player-visual-card"><div class="pv-head"><div class="pv-name"><strong>' + esc(s.label) + '</strong><small>' + s.appearances + ' partida</small></div><div><div class="efficiency-ring" style="--efficiency:' + pct + '%" role="img" aria-label="Eraginkortasuna %' + pct + '"><span>' + pct + '%</span></div><div class="efficiency-label">eraginkortasuna</div></div></div><div class="pv-metrics"><div class="pv-metric"><strong>' + s.goals + '</strong><small>Golak</small></div><div class="pv-metric"><strong>' + s.shots + '</strong><small>Jaurtiketak</small></div><div class="pv-metric"><strong>' + s.appearances + '</strong><small>Partidak</small></div></div><div class="pv-section-title">Jaurtiketen banaketa</div><div class="pv-breakdown"><strong>Arruntak</strong><span>' + s.normalGoals + ' / ' + s.normalShots + ' · %' + normalPct + '</span><div class="pv-bar"><i style="width:' + normalPct + '%"></i></div></div><div class="pv-breakdown"><strong>Penaltiak</strong><span>' + s.penaltyGoals + ' / ' + s.penaltyShots + ' · %' + penaltyPct + '</span><div class="pv-bar"><i style="width:' + penaltyPct + '%"></i></div></div><div class="pv-sanctions"><span>🟨 ' + s.yellow + '</span><span>2\' ' + s.two + '</span><span>🟥 ' + s.red + '</span><span>🔵 ' + s.blue + '</span></div></article>';
-  }).join("") : '<div class="empty">Ez dago iragazki hauekin bat datorren jokalari estatistikarik.</div>';
+    return '<article class="player-visual-card"><div class="pv-head"><div class="pv-name"><strong>' + esc(s.label) + '</strong><small>' + s.appearances + (esc(t(" partida")) + "</small></div><div><div class=\"efficiency-ring\" style=\"--efficiency:") + pct + ("%\" role=\"img\" aria-label=\"" + esc(t("Eraginkortasuna %"))) + pct + '"><span>' + pct + ("%</span></div><div class=\"efficiency-label\">" + esc(t("eraginkortasuna")) + "</div></div></div><div class=\"pv-metrics\"><div class=\"pv-metric\"><strong>") + s.goals + ("</strong><small>" + esc(t("Golak")) + "</small></div><div class=\"pv-metric\"><strong>") + s.shots + ("</strong><small>" + esc(t("Jaurtiketak")) + "</small></div><div class=\"pv-metric\"><strong>") + s.appearances + ("</strong><small>" + esc(t("Partidak")) + "</small></div></div><div class=\"pv-section-title\">" + esc(t("Jaurtiketen banaketa")) + "</div><div class=\"pv-breakdown\"><strong>" + esc(t("Arruntak")) + "</strong><span>") + s.normalGoals + ' / ' + s.normalShots + ' · %' + normalPct + '</span><div class="pv-bar"><i style="width:' + normalPct + ("%\"></i></div></div><div class=\"pv-breakdown\"><strong>" + esc(t("Penaltiak")) + "</strong><span>") + s.penaltyGoals + ' / ' + s.penaltyShots + ' · %' + penaltyPct + '</span><div class="pv-bar"><i style="width:' + penaltyPct + '%"></i></div></div><div class="pv-sanctions"><span>🟨 ' + s.yellow + '</span><span>2\' ' + s.two + '</span><span>🟥 ' + s.red + '</span><span>🔵 ' + s.blue + '</span></div></article>';
+  }).join("") : ("<div class=\"empty\">" + esc(t("Ez dago iragazki hauekin bat datorren jokalari estatistikarik.")) + "</div>");
   var rivalMap = {};
-  filteredMatches.forEach(function (m) { var name = m.aurkaria || "Aurkaria", x = rivalMap[name] || (rivalMap[name] = { matches: 0, gf: 0, ga: 0 }); x.matches++; x.gf += Number(m.emaitza_geurea || 0); x.ga += Number(m.emaitza_aurkaria || 0); });
-  $("stats-opponent-list").innerHTML = Object.keys(rivalMap).sort().map(function (name) { var x = rivalMap[name], rivalIds = new Set(filteredMatches.filter(function (m) { return String(m.aurkaria || "Aurkaria") === name; }).map(function (m) { return Number(m.id_partida); })), rs = opponentStatsShots.filter(function (s) { return rivalIds.has(Number(s.id_partida)); }); return '<li class="item"><div class="item-main"><strong>' + esc(name) + '</strong><small>' + x.matches + ' partida · Emaitzak ' + x.gf + '-' + x.ga + ' · Aurkariaren jaurtiketak: ' + (rs.length ? rs.length + ' (' + goalCount(rs) + ' gol, %' + Math.round(goalCount(rs) / rs.length * 100) + ')' : 'daturik gabe') + '</small></div></li>'; }).join("") || '<li class="empty">Ez dago aurkari daturik.</li>';
+  filteredMatches.forEach(function (m) { var name = m.aurkaria || t("Aurkaria"), x = rivalMap[name] || (rivalMap[name] = { matches: 0, gf: 0, ga: 0 }); x.matches++; x.gf += Number(m.emaitza_geurea || 0); x.ga += Number(m.emaitza_aurkaria || 0); });
+  $("stats-opponent-list").innerHTML = Object.keys(rivalMap).sort().map(function (name) { var x = rivalMap[name], rivalIds = new Set(filteredMatches.filter(function (m) { return String(m.aurkaria || t("Aurkaria")) === name; }).map(function (m) { return Number(m.id_partida); })), rs = opponentStatsShots.filter(function (s) { return rivalIds.has(Number(s.id_partida)); }); return '<li class="item"><div class="item-main"><strong>' + esc(name) + '</strong><small>' + x.matches + t(" partida · Emaitzak ") + x.gf + '-' + x.ga + t(" · Aurkariaren jaurtiketak: ") + (rs.length ? rs.length + ' (' + goalCount(rs) + t(" gol, %") + Math.round(goalCount(rs) / rs.length * 100) + ')' : t("daturik gabe")) + '</small></div></li>'; }).join("") || ("<li class=\"empty\">" + esc(t("Ez dago aurkari daturik.")) + "</li>");
   var buckets = [0, 0, 0, 0, 0, 0, 0], bucketGoals = [0, 0, 0, 0, 0, 0, 0], labels = ["0–9", "10–19", "20–29", "30–39", "40–49", "50–59", "60+"];
   mapShots.forEach(function (s) { var minute = Number(s.minutua || 0), i = Math.min(6, Math.floor(minute / 10)); buckets[i]++; if (isGoal(s)) bucketGoals[i]++; });
-  $("stats-period-chart").innerHTML = labels.map(function (label, i) { return '<div class="card"><strong>' + label + " min</strong><small> · " + bucketGoals[i] + " gol / " + buckets[i] + " jaurtiketa" + (buckets[i] ? " · %" + Math.round(bucketGoals[i] / buckets[i] * 100) : "") + '</small><div style="height:8px;background:var(--line);border-radius:8px;margin-top:8px"><div style="width:' + (buckets[i] ? Math.max(3, bucketGoals[i] / buckets[i] * 100) : 0) + '%;height:100%;background:var(--blue);border-radius:8px"></div></div></div>'; }).join("");
+  $("stats-period-chart").innerHTML = labels.map(function (label, i) { return '<div class="card"><strong>' + label + (esc(t(" min")) + "</strong><small> · ") + bucketGoals[i] + t(" gol / ") + buckets[i] + t(" jaurtiketa") + (buckets[i] ? " · %" + Math.round(bucketGoals[i] / buckets[i] * 100) : "") + '</small><div style="height:8px;background:var(--line);border-radius:8px;margin-top:8px"><div style="width:' + (buckets[i] ? Math.max(3, bucketGoals[i] / buckets[i] * 100) : 0) + '%;height:100%;background:var(--blue);border-radius:8px"></div></div></div>'; }).join("");
   renderOpponentIndividuals(filteredMatches, query);
-  var zoneList = function (list, fieldX, fieldY, data, mapId, type) { var counts = {}, points = []; data.forEach(function (s) { var x = Number(s[fieldX]), y = Number(s[fieldY]); if (!Number.isFinite(x) || !Number.isFinite(y)) return; var col = x < .35 ? "Ezkerreko" : x < .65 ? "Erdiko" : "Eskuinako", row = type === "origin" ? "" : (y < .333 ? "Goikoa" : y < .667 ? "Erdikoa" : "Behekoa"), key = type === "origin" ? (y < .377 ? (x < .35 ? "Ezkerreko extremoa" : x < .65 ? "Pibotea" : "Eskubiko extremoa") : (x < .35 ? "Ezkerreko laterala" : x < .65 ? "Zentrala" : "Eskubiko laterala")) : row + " · " + col, z = counts[key] || (counts[key] = { n: 0, g: 0 }); z.n++; if (isGoal(s)) z.g++; points.push({ x: x, y: y, goal: isGoal(s) }); }); var keys = Object.keys(counts).sort(); $(list).innerHTML = keys.length ? keys.map(function (k) { var z = counts[k]; return '<li class="item"><strong>' + esc(k) + '</strong><span>' + z.g + '/' + z.n + ' gol (' + Math.round(z.g / z.n * 100) + '%)</span></li>'; }).join("") : '<li class="empty">Ez dago koordenatudun jaurtiketarik.</li>'; var svg = type === "origin" ? '<svg viewBox="0 0 800 520" role="img" aria-label="Jaurtiketen jatorria zelaiaren irudian"><image href="./irudiak/Zelai-erdia.png" x="0" y="0" width="800" height="520" preserveAspectRatio="none" transform="rotate(180 400 260)"/>' : '<svg viewBox="0 0 360 210" role="img" aria-label="Atearen helburu mapa"><rect width="360" height="210" fill="#26324a"/><path d="M10 10H350V200H10Z M123 10V200 M237 10V200 M10 73H350 M10 137H350" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="2"/>';
+  var zoneList = function (list, fieldX, fieldY, data, mapId, type) { var counts = {}, points = []; data.forEach(function (s) { var x = Number(s[fieldX]), y = Number(s[fieldY]); if (!Number.isFinite(x) || !Number.isFinite(y)) return; var col = x < .35 ? t("Ezkerreko") : x < .65 ? t("Erdiko") : t("Eskuinako"), row = type === "origin" ? "" : (y < .333 ? t("Goikoa") : y < .667 ? t("Erdikoa") : t("Behekoa")), key = type === "origin" ? (y < .377 ? (x < .35 ? t("Ezkerreko extremoa") : x < .65 ? t("Pibotea") : t("Eskubiko extremoa")) : (x < .35 ? t("Ezkerreko laterala") : x < .65 ? t("Zentrala") : t("Eskubiko laterala"))) : row + " · " + col, z = counts[key] || (counts[key] = { n: 0, g: 0 }); z.n++; if (isGoal(s)) z.g++; points.push({ x: x, y: y, goal: isGoal(s) }); }); var keys = Object.keys(counts).sort(); $(list).innerHTML = keys.length ? keys.map(function (k) { var z = counts[k]; return '<li class="item"><strong>' + esc(k) + '</strong><span>' + z.g + '/' + z.n + t(" gol (") + Math.round(z.g / z.n * 100) + '%)</span></li>'; }).join("") : ("<li class=\"empty\">" + esc(t("Ez dago koordenatudun jaurtiketarik.")) + "</li>"); var svg = type === "origin" ? ("<svg viewBox=\"0 0 800 520\" role=\"img\" aria-label=\"" + esc(t("Jaurtiketen jatorria zelaiaren irudian")) + "\"><image href=\"./irudiak/Zelai-erdia.png\" x=\"0\" y=\"0\" width=\"800\" height=\"520\" preserveAspectRatio=\"none\" transform=\"rotate(180 400 260)\"/>") : ("<svg viewBox=\"0 0 360 210\" role=\"img\" aria-label=\"" + esc(t("Atearen helburu mapa")) + "\"><rect width=\"360\" height=\"210\" fill=\"#26324a\"/><path d=\"M10 10H350V200H10Z M123 10V200 M237 10V200 M10 73H350 M10 137H350\" fill=\"none\" stroke=\"#fff\" stroke-opacity=\".8\" stroke-width=\"2\"/>");
     var circles = points.map(function (p) { var px = type === "origin" ? Math.max(10, Math.min(790, p.x * 800)) : 18 + Math.max(0, Math.min(1, p.x)) * 324, py = type === "origin" ? Math.max(10, Math.min(510, p.y * 520)) : 18 + Math.max(0, Math.min(1, p.y)) * 174; return '<circle cx="' + px.toFixed(1) + '" cy="' + py.toFixed(1) + '" r="' + (type === "origin" ? "12" : "5") + '" fill="' + (p.goal ? "#20d67a" : "#ff5263") + '" fill-opacity=".88" stroke="#fff" stroke-width="2"/>'; }).join("");
     $(mapId).innerHTML = svg + circles + '</svg>'; };
   zoneList("stats-origin-zones", "jatorri_x", "jatorri_y", mapShots, "stats-court-map", "origin"); zoneList("stats-goal-zones", "helburu_x", "helburu_y", mapShots, "stats-goal-map", "goal");
-  $("stats-penalties").innerHTML = penalties.length ? '<li class="item"><strong>' + penalties.length + ' penalti</strong><span>' + penaltyGoals + ' gol · ' + (penalties.length - penaltyGoals) + ' huts · %' + Math.round(penaltyGoals / penalties.length * 100) + ' eraginkortasuna</span></li>' : '<li class="empty">Ez dago penalti jaurtiketen erregistrorik.</li>';
+  $("stats-penalties").innerHTML = penalties.length ? '<li class="item"><strong>' + penalties.length + (esc(t(" penalti")) + "</strong><span>") + penaltyGoals + t(" gol · ") + (penalties.length - penaltyGoals) + t(" huts · %") + Math.round(penaltyGoals / penalties.length * 100) + (esc(t(" eraginkortasuna")) + "</span></li>") : ("<li class=\"empty\">" + esc(t("Ez dago penalti jaurtiketen erregistrorik.")) + "</li>");
 }
 
 function planPad(value) { return String(value).padStart(2, "0"); }
@@ -1708,7 +1770,7 @@ function planMicroList() {
     var mota = micro.mota || "Karga";
     return {
       id: Number(micro.id_mikroziklo), macroId: macroId,
-      makroIzena: macroById[macroId] ? macroById[macroId].izena : "Makroziklorik gabe",
+      makroIzena: macroById[macroId] ? macroById[macroId].izena : t("Makroziklorik gabe"),
       aste: micro.aste_zenbakia, mota: mota,
       start: planDayNumber(micro.hasiera_data), end: planDayNumber(micro.amaiera_data),
       color: MICRO_TYPE_COLORS[mota] || MICRO_TYPE_COLORS.Egokitzapena
@@ -1736,25 +1798,25 @@ function planDayHtml(day, base, todayKey, spans, microList) {
   var classes = "plan-day" + (day.getMonth() === base.getMonth() ? "" : " out") +
     (key === todayKey ? " today" : "");
   var html = '<div class="' + classes + '" data-plan-day="' + key + '">' +
-    '<span class="plan-day-num">' + (key === todayKey ? "Gaur · " : "") + day.getDate() + "</span>";
+    '<span class="plan-day-num">' + (key === todayKey ? t("Gaur · ") : "") + day.getDate() + "</span>";
   var dayMacros = spans.filter(function (span) {
     return planKey(span.start) <= key && key <= planKey(span.end);
   });
   dayMacros.slice(0, 2).forEach(function (span) {
     var label = (key === planKey(span.start) || day.getDay() === 1 || day.getDate() === 1) ? span.izena : "";
     html += '<button type="button" class="plan-macro' + (label ? "" : " empty") + '" style="background:' + span.color +
-      '" data-plan-macro="' + span.id + '" title="' + esc(span.izena) + '" aria-label="Editatu makrozikloa: ' + esc(span.izena) + '">' + esc(label) + "</button>";
+      '" data-plan-macro="' + span.id + '" title="' + esc(span.izena) + ("\" aria-label=\"" + esc(t("Editatu makrozikloa: "))) + esc(span.izena) + '">' + esc(label) + "</button>";
   });
-  if (dayMacros.length > 2) html += '<span class="plan-more">+' + (dayMacros.length - 2) + " makro</span>";
+  if (dayMacros.length > 2) html += '<span class="plan-more">+' + (dayMacros.length - 2) + (esc(t(" makro")) + "</span>");
   var dayMicros = microList.filter(function (micro) {
     return planKey(micro.start) <= key && key <= planKey(micro.end);
   });
   dayMicros.slice(0, 3).forEach(function (micro) {
-    var text = micro.makroIzena + " | A" + (micro.aste == null ? "" : micro.aste) + " " + micro.mota;
+    var text = micro.makroIzena + t(" | A") + (micro.aste == null ? "" : micro.aste) + " " + t(micro.mota);
     html += '<button type="button" class="plan-micro" style="background:' + micro.color +
       '" data-plan-micro="' + micro.id + '" title="' + esc(text) + '">' + esc(text) + "</button>";
   });
-  if (dayMicros.length > 3) html += '<span class="plan-more">+' + (dayMicros.length - 3) + " gehiago</span>";
+  if (dayMicros.length > 3) html += '<span class="plan-more">+' + (dayMicros.length - 3) + (esc(t(" gehiago")) + "</span>");
   var dayMatches = records("partidak").filter(function (match) {
     return String(match.data_ordua || "").slice(0, 10) === key;
   });
@@ -1762,20 +1824,20 @@ function planDayHtml(day, base, todayKey, spans, microList) {
     var played = key <= todayKey && (Number(match.emaitza_geurea || 0) || Number(match.emaitza_aurkaria || 0));
     var text = played
       ? match.aurkaria + " (" + Number(match.emaitza_geurea || 0) + "-" + Number(match.emaitza_aurkaria || 0) + ")"
-      : match.aurkaria + " (jolasteko)";
-    html += '<button type="button" class="plan-event match" data-match-stats="' + Number(match.id_partida) + '" title="Partidako estatistikak ikusi: ' + esc(text) + '">' + esc(text) + "</button>";
+      : match.aurkaria + t(" (jolasteko)");
+    html += '<button type="button" class="plan-event match" data-match-stats="' + Number(match.id_partida) + ("\" title=\"" + esc(t("Partidako estatistikak ikusi: "))) + esc(text) + '">' + esc(text) + "</button>";
   });
   records("saioak").filter(function (session) {
     return String(session.data_ordua || "").slice(0, 10) === key;
   }).slice(0, 2).forEach(function (session) {
-    var text = session.helburu_taktikoa || "Entrenamendua";
-    html += '<button type="button" class="plan-event session" data-view-session="' + Number(session.id_saio) + '" title="Entrenamendua ikusi: ' + esc(text) + '">' + esc(text) + "</button>";
+    var text = session.helburu_taktikoa || t("Entrenamendua");
+    html += '<button type="button" class="plan-event session" data-view-session="' + Number(session.id_saio) + ("\" title=\"" + esc(t("Entrenamendua ikusi: "))) + esc(text) + '">' + esc(text) + "</button>";
   });
   records("txapelketak").filter(function (cup) {
     return String(cup.data_ordua || "").slice(0, 10) === key;
   }).slice(0, 2).forEach(function (cup) {
-    var text = (cup.izena || "Txapelketa") + (cup.kategoria ? " [" + cup.kategoria + "]" : "");
-    html += '<button type="button" class="plan-event cup" data-view-cup="' + Number(cup.id_txapelketa) + '" title="Txapelketaren xehetasunak ikusi: ' + esc(text) + '">' + esc(text) + "</button>";
+    var text = (cup.izena || t("Txapelketa")) + (cup.kategoria ? " [" + cup.kategoria + "]" : "");
+    html += '<button type="button" class="plan-event cup" data-view-cup="' + Number(cup.id_txapelketa) + ("\" title=\"" + esc(t("Txapelketaren xehetasunak ikusi: "))) + esc(text) + '">' + esc(text) + "</button>";
   });
   return html + "</div>";
 }
@@ -1788,7 +1850,7 @@ function renderPlanning() {
     button.setAttribute("aria-pressed", String(button.dataset.planView === planView));
   });
   var base = planMonth;
-  $("plan-month").textContent = PLAN_MONTHS[base.getMonth()] + " " + base.getFullYear();
+  $("plan-month").textContent = t(PLAN_MONTHS[base.getMonth()]) + " " + base.getFullYear();
   var spans = planMacroSpans();
   var microList = planMicroList();
   var monthStart = new Date(base.getFullYear(), base.getMonth(), 1);
@@ -1799,9 +1861,9 @@ function renderPlanning() {
   var macroLegend = legendItems.length ? legendItems.map(function (span) {
     return '<span><i style="background:' + span.color + '"></i>' + esc(span.izena) +
       " (" + planShort(span.start) + " - " + planShort(span.end) + ")</span>";
-  }).join("") : '<span class="muted">Ez dago makroziklorik hilabete honetan.</span>';
+  }).join("") : ("<span class=\"muted\">" + esc(t("Ez dago makroziklorik hilabete honetan.")) + "</span>");
   var microLegend = MICRO_TYPES.map(function (type) {
-    return '<span class="plan-legend-type"><i style="background:' + MICRO_TYPE_COLORS[type] + '"></i>Mikro · ' + esc(type) + '</span>';
+    return '<span class="plan-legend-type"><i style="background:' + MICRO_TYPE_COLORS[type] + ("\"></i>" + esc(t("Mikro · "))) + esc(t(type)) + '</span>';
   }).join("");
   $("plan-legend").innerHTML = macroLegend + microLegend;
   var todayKey = planKey(new Date());
@@ -1816,17 +1878,17 @@ function renderPlanning() {
     if (!date || date.getFullYear() !== base.getFullYear() || date.getMonth() !== base.getMonth()) return;
     agenda.push({ date: date, kind: kind, title: title, detail: detail || "", actionAttr: actionAttr || "", actionId: actionId || 0 });
   }
-  records("saioak").forEach(function (item) { addAgenda(item.data_ordua, "Entrenamendua", item.helburu_taktikoa || "Entrenamendua", formatDay(item), "data-view-session", item.id_saio); });
-  records("partidak").forEach(function (item) { addAgenda(item.data_ordua, "Partida", item.aurkaria || "Aurkaria", formatDate(item), "data-match-stats", item.id_partida); });
-  records("txapelketak").forEach(function (item) { addAgenda(item.data_ordua, "Txapelketa", item.izena || "Txapelketa", [item.kategoria, item.lekua].filter(Boolean).join(" · "), "data-view-cup", item.id_txapelketa); });
-  records("mikrozikloak").forEach(function (item) { addAgenda(item.hasiera_data, "Mikrozikloaren hasiera", item.mota || "Mikrozikloa", "Amaiera: " + (item.amaiera_data || "—"), "data-plan-micro", item.id_mikroziklo); });
-  records("makrozikloak").forEach(function (item) { addAgenda(item.hasiera_data, "Makrozikloaren hasiera", item.izena || "Makrozikloa", "Amaiera: " + (item.amaiera_data || "—"), "data-plan-macro", item.id_makro); });
+  records("saioak").forEach(function (item) { addAgenda(item.data_ordua, t("Entrenamendua"), item.helburu_taktikoa || t("Entrenamendua"), formatDay(item), "data-view-session", item.id_saio); });
+  records("partidak").forEach(function (item) { addAgenda(item.data_ordua, t("Partida"), item.aurkaria || t("Aurkaria"), formatDate(item), "data-match-stats", item.id_partida); });
+  records("txapelketak").forEach(function (item) { addAgenda(item.data_ordua, t("Txapelketa"), item.izena || t("Txapelketa"), [item.kategoria, item.lekua].filter(Boolean).join(" · "), "data-view-cup", item.id_txapelketa); });
+  records("mikrozikloak").forEach(function (item) { addAgenda(item.hasiera_data, t("Mikrozikloaren hasiera"), t(item.mota) || t("Mikrozikloa"), t("Amaiera: ") + (item.amaiera_data || "—"), "data-plan-micro", item.id_mikroziklo); });
+  records("makrozikloak").forEach(function (item) { addAgenda(item.hasiera_data, t("Makrozikloaren hasiera"), item.izena || t("Makrozikloa"), t("Amaiera: ") + (item.amaiera_data || "—"), "data-plan-macro", item.id_makro); });
   agenda.sort(function (a, b) { return a.date - b.date || a.kind.localeCompare(b.kind); });
   $("plan-agenda").innerHTML = agenda.length ? agenda.map(function (item) {
-    var dateLabel = item.date.toLocaleDateString("eu-ES", { weekday: "short" });
+    var dateLabel = item.date.toLocaleDateString(I18n.locale(), { weekday: "short" });
     var itemAction = item.actionAttr ? ' data-agenda-action="' + item.actionAttr + '" data-agenda-id="' + Number(item.actionId) + '" role="button" tabindex="0"' : "";
     return '<li class="item"' + itemAction + '><span class="agenda-date">' + dateLabel + '<br>' + item.date.getDate() + '</span><div class="agenda-detail"><span class="agenda-kind">' + esc(item.kind) + '</span><strong>' + esc(item.title) + '</strong><small class="muted">' + esc(item.detail) + '</small></div>' + (item.actionAttr ? '<span class="agenda-open" aria-hidden="true">›</span>' : '') + '</li>';
-  }).join("") : '<li class="empty">Hilabete honetan ez dago jarduerarik.</li>';
+  }).join("") : ("<li class=\"empty\">" + esc(t("Hilabete honetan ez dago jarduerarik.")) + "</li>");
 }
 
 function planTypeOptions(current) {
@@ -1834,7 +1896,7 @@ function planTypeOptions(current) {
   if (!names.length) names = MICRO_TYPES.slice();
   if (current && names.indexOf(current) === -1) names = names.concat([current]);
   return names.map(function (name) {
-    return '<option value="' + esc(name) + '"' + (name === current ? " selected" : "") + ">" + esc(name) + "</option>";
+    return '<option value="' + esc(name) + '"' + (name === current ? " selected" : "") + ">" + esc(t(name)) + "</option>";
   }).join("");
 }
 
@@ -1855,36 +1917,36 @@ function openPlanForm(kind, id) {
       ? records("makrozikloak").find(function (item) { return Number(item.id_makro) === id; })
       : records("mikrozikloak").find(function (item) { return Number(item.id_mikroziklo) === id; });
   }
-  $("plan-modal-title").textContent = (record ? "Editatu " : "Sortu ") + (isMacro ? "makrozikloa" : "mikrozikloa");
+  $("plan-modal-title").textContent = t((record ? "Editatu " : "Sortu ") + (isMacro ? "makrozikloa" : "mikrozikloa"));
   var fields = "";
   if (isMacro) {
-    fields += '<label>Izena<input name="izena" required maxlength="120" value="' +
+    fields += ("<label>" + esc(t("Izena")) + "<input name=\"izena\" required maxlength=\"120\" value=\"") +
       esc(record ? record.izena : "") + '"></label>';
-    fields += '<div class="grid2"><label>Hasiera<input name="hasiera_data" type="date" value="' +
+    fields += ("<div class=\"grid2\"><label>" + esc(t("Hasiera")) + "<input name=\"hasiera_data\" type=\"date\" value=\"") +
       esc(record ? planInput(record.hasiera_data) : planDefaultStart()) +
-      '"></label><label>Amaiera<input name="amaiera_data" type="date" value="' +
+      ("\"></label><label>" + esc(t("Amaiera")) + "<input name=\"amaiera_data\" type=\"date\" value=\"") +
       esc(record ? planInput(record.amaiera_data) : planDefaultEnd()) + '"></label></div>';
   } else {
-    var options = '<option value="">Makroziklorik gabe</option>' + planMacroList().map(function (macro) {
+    var options = ("<option value=\"\">" + esc(t("Makroziklorik gabe")) + "</option>") + planMacroList().map(function (macro) {
       return '<option value="' + Number(macro.id_makro) + '"' +
         (record && Number(record.id_makro) === Number(macro.id_makro) ? " selected" : "") +
         ">" + esc(macro.izena) + "</option>";
     }).join("");
-    fields += "<label>Makrozikloa<select name=\"id_makro\">" + options + "</select></label>";
-    fields += '<div class="grid2"><label>Hasiera<input name="hasiera_data" type="date" required value="' +
+    fields += ("<label>" + esc(t("Makrozikloa")) + "<select name=\"id_makro\">") + options + "</select></label>";
+    fields += ("<div class=\"grid2\"><label>" + esc(t("Hasiera")) + "<input name=\"hasiera_data\" type=\"date\" required value=\"") +
       esc(record ? planInput(record.hasiera_data) : planDefaultStart()) +
-      '"></label><label>Amaiera<input name="amaiera_data" type="date" required value="' +
+      ("\"></label><label>" + esc(t("Amaiera")) + "<input name=\"amaiera_data\" type=\"date\" required value=\"") +
       esc(record ? planInput(record.amaiera_data) : planDefaultEnd()) + '"></label></div>';
-    fields += '<div class="grid2"><label>Mota<select name="mota">' +
+    fields += ("<div class=\"grid2\"><label>" + esc(t("Mota")) + "<select name=\"mota\">") +
       planTypeOptions(record ? record.mota : "Karga") +
-      '</select></label><label>Aste-zenbakia<input name="aste_zenbakia" type="number" min="1" max="53" value="' +
+      ("</select></label><label>" + esc(t("Aste-zenbakia")) + "<input name=\"aste_zenbakia\" type=\"number\" min=\"1\" max=\"53\" value=\"") +
       esc(record && record.aste_zenbakia != null ? record.aste_zenbakia : "") + '"></label></div>';
-    fields += '<label>Helburu nagusia<input name="helburu_nagusia" maxlength="250" value="' +
+    fields += ("<label>" + esc(t("Helburu nagusia")) + "<input name=\"helburu_nagusia\" maxlength=\"250\" value=\"") +
       esc(record ? record.helburu_nagusia : "") + '"></label>';
   }
-  fields += '<div class="modal-actions"><button class="btn" type="submit">Gorde</button>' +
-    '<button class="btn secondary" type="button" data-plan-cancel>Ezeztatu</button>' +
-    (record ? '<button class="btn danger" type="button" data-plan-delete>Ezabatu</button>' : "") + "</div>";
+  fields += ("<div class=\"modal-actions\"><button class=\"btn\" type=\"submit\">" + esc(t("Gorde")) + "</button>") +
+    ("<button class=\"btn secondary\" type=\"button\" data-plan-cancel>" + esc(t("Ezeztatu")) + "</button>") +
+    (record ? ("<button class=\"btn danger\" type=\"button\" data-plan-delete>" + esc(t("Ezabatu")) + "</button>") : "") + "</div>";
   $("plan-form").innerHTML = fields;
   $("plan-modal").classList.remove("hidden");
   var first = $("plan-form").querySelector("input,select");
@@ -1931,18 +1993,18 @@ function renderCycles() {
     return '<li class="item"><div class="item-main"><strong>' + esc(macro.izena) +
       '</strong><small>' + esc(macro.hasiera_data || "") +
       (macro.amaiera_data ? " – " + esc(macro.amaiera_data) : "") + "</small></div></li>";
-  }).join("") : '<li class="empty">Ez dago makroziklorik.</li>';
-  $("session-micro").innerHTML = '<option value="">Mikroziklorik gabe</option>' + micros.map(function (micro) {
-    return '<option value="' + Number(micro.id_mikroziklo) + '">' + esc(micro.mota || "Mikrozikloa") +
+  }).join("") : ("<li class=\"empty\">" + esc(t("Ez dago makroziklorik.")) + "</li>");
+  $("session-micro").innerHTML = ("<option value=\"\">" + esc(t("Mikroziklorik gabe")) + "</option>") + micros.map(function (micro) {
+    return '<option value="' + Number(micro.id_mikroziklo) + '">' + esc(t(micro.mota) || t("Mikrozikloa")) +
       " · " + esc(micro.hasiera_data || "") + "</option>";
   }).join("");
   $("micros-list").innerHTML = micros.length ? micros.map(function (micro) {
-    return '<li class="item"><div class="item-main"><strong>' + esc(micro.mota || "Mikrozikloa") +
-      (micro.aste_zenbakia ? " · " + esc(micro.aste_zenbakia) + ". astea" : "") +
+    return '<li class="item"><div class="item-main"><strong>' + esc(t(micro.mota) || t("Mikrozikloa")) +
+      (micro.aste_zenbakia ? " · " + esc(micro.aste_zenbakia) + t(". astea") : "") +
       '</strong><small>' + esc(micro.hasiera_data || "") + " – " + esc(micro.amaiera_data || "") +
       (micro.helburu_nagusia ? " · " + esc(micro.helburu_nagusia) : "") +
       "</small></div></li>";
-  }).join("") : '<li class="empty">Ez dago mikroziklorik.</li>';
+  }).join("") : ("<li class=\"empty\">" + esc(t("Ez dago mikroziklorik.")) + "</li>");
   renderPlanning();
 }
 
@@ -1964,7 +2026,7 @@ function renderAttendance(sessionId) {
 
 function openAttendanceDialog(sessionId) {
   var id = Number(sessionId);
-  if (!id) return notify("Aukeratu entrenamendua lehenik", "error");
+  if (!id) return notify(t("Aukeratu entrenamendua lehenik"), "error");
   $("attendance-session").value = String(id);
   renderAttendance(id);
   var dialog = $("attendance-dialog");
@@ -2027,21 +2089,21 @@ function scoreRead() {
   try {
     var saved = JSON.parse(localStorage.getItem(scoreStorageKey()) || "null");
     if (saved && typeof saved === "object") scoreboard = Object.assign(scoreboard, saved, { running: false, lastTick: 0 });
-  } catch (error) { console.warn("Markagailua ezin izan da kargatu", error); }
+  } catch (error) { console.warn(t("Markagailua ezin izan da kargatu"), error); }
   var settings = scoreboard.settings || {};
   $("score-home-name").value = settings.homeName || (team && team.izena) || "7metro";
-  $("score-away-name").value = settings.awayName || "Aurkaria";
+  $("score-away-name").value = settings.awayName || t("Aurkaria");
   $("score-mode").value = ["match", "manual", "countdown"].includes(settings.mode) ? settings.mode : "match";
   $("score-minutes").value = Math.min(180, Math.max(1, Number(settings.minutes) || 30));
   scoreSaving = false;
   renderShotPlayers();
-  $("score-save-status").textContent = scoreboard.savedMatchId ? "Partida gordeta dago." : "Oraindik ez da gorde.";
+  $("score-save-status").textContent = scoreboard.savedMatchId ? t("Partida gordeta dago.") : t("Oraindik ez da gorde.");
 }
 function scoreSave() {
   scoreboard.settings = { homeName: $("score-home-name").value.trim(), awayName: $("score-away-name").value.trim(),
     mode: $("score-mode").value, minutes: Math.min(180, Math.max(1, Number($("score-minutes").value) || 30)) };
   try { localStorage.setItem(scoreStorageKey(), JSON.stringify(scoreboard)); }
-  catch (error) { notify("Markagailua ezin izan da gorde gailuan", "error"); }
+  catch (error) { notify(t("Markagailua ezin izan da gorde gailuan"), "error"); }
 }
 function scoreIsLocked() { return Boolean(scoreboard.savedMatchId || scoreSaving); }
 function scoreIsSanction(type) { return ["horia", "2min", "gorria", "urdina"].includes(type); }
@@ -2049,7 +2111,7 @@ function scoreIsShot(type) { return ["gol", "jaurtiketa", "penalti_gol", "penalt
 function scoreRenderSanctions() {
   document.querySelectorAll("[data-score-sanction]").forEach(function (button) {
     button.disabled = scoreIsLocked() || (scoreSanctionSide === "home" && !players.length);
-    button.setAttribute("aria-label", (scoreSanctionSide === "away" ? "Aurkaria: " : "Gure taldea: ") + scoreActionLabel(button.dataset.scoreSanction));
+    button.setAttribute("aria-label", (scoreSanctionSide === "away" ? t("Aurkaria: ") : t("Gure taldea: ")) + scoreActionLabel(button.dataset.scoreSanction));
   });
   document.querySelectorAll("[data-sanction-side]").forEach(function (button) {
     button.disabled = scoreIsLocked();
@@ -2058,7 +2120,7 @@ function scoreRenderSanctions() {
   $("score-sanction-note").hidden = scoreSanctionSide === "away" || Boolean(players.length);
 }
 function scoreOpponentLabel(player) {
-  if (!player) return "Jokalaria zehaztu gabe";
+  if (!player) return t("Jokalaria zehaztu gabe");
   var number = String(player.zenbakia == null ? "" : player.zenbakia).trim();
   return [(number ? "#" + number : ""), player.izena || ""].filter(Boolean).join(" ");
 }
@@ -2078,7 +2140,7 @@ function renderShotPlayers() {
   var select = $("shot-player"), selected = select.value, away = $("shot-team").value === "away";
   var rows = away ? scoreOpponents() : players;
   select.disabled = false;
-  select.innerHTML = '<option value="">Ez zehaztu</option>' + rows.map(function (player, index) {
+  select.innerHTML = ("<option value=\"\">" + esc(t("Ez zehaztu")) + "</option>") + rows.map(function (player, index) {
     return '<option value="' + (away ? "opp:" + index : Number(player.id_jokalaria)) + '">' + esc(away ? scoreOpponentLabel(player) : playerName(player)) + '</option>';
   }).join("");
   select.value = selected;
@@ -2090,11 +2152,11 @@ function shotSelectedOpponent() {
 }
 function scoreIsGoal(type) { return type === "gol" || type === "penalti_gol"; }
 function scoreActionLabel(type) {
-  return { gol: "Gola", jaurtiketa: "Jaurtiketa huts", penalti_gol: "7 m: gola", penalti_jaurtiketa: "7 m: huts", zuzenketa: "Emaitzaren zuzenketa", horia: "Txartel horia", "2min": "2 minutuko zigorra", gorria: "Txartel gorria", urdina: "Txartel urdina" }[type] || "Ekintza";
+  return { gol: t("Gola"), jaurtiketa: t("Jaurtiketa huts"), penalti_gol: t("7 m: gola"), penalti_jaurtiketa: t("7 m: huts"), zuzenketa: t("Emaitzaren zuzenketa"), horia: t("Txartel horia"), "2min": t("2 minutuko zigorra"), gorria: t("Txartel gorria"), urdina: t("Txartel urdina") }[type] || t("Ekintza");
 }
 function scoreEventText(event) {
-  return event.time + " \u00b7 " + (event.side === "away" ? "Aurkaria" : "Gure taldea") + " \u00b7 " + scoreActionLabel(event.type) +
-    (event.player ? " \u00b7 " + event.player : "") + (event.shot_from && event.shot_to ? " \u00b7 Kokapenarekin" : "");
+  return event.time + " \u00b7 " + (event.side === "away" ? t("Aurkaria") : t("Gure taldea")) + " \u00b7 " + scoreActionLabel(event.type) +
+    (event.player ? " \u00b7 " + event.player : "") + (event.shot_from && event.shot_to ? t(" · Kokapenarekin") : "");
 }
 
 function scoreFormat(seconds) {
@@ -2105,27 +2167,27 @@ function scoreRender() {
   var locked = scoreIsLocked(), last = scoreboard.events[scoreboard.events.length - 1];
   $("score-home").textContent = scoreboard.home;
   $("score-away").textContent = scoreboard.away;
-  $("score-home-label").textContent = $("score-home-name").value.trim() || "Gure taldea";
-  $("score-away-label").textContent = $("score-away-name").value.trim() || "Aurkaria";
+  $("score-home-label").textContent = $("score-home-name").value.trim() || t("Gure taldea");
+  $("score-away-label").textContent = $("score-away-name").value.trim() || t("Aurkaria");
   $("score-clock").textContent = scoreFormat(scoreboard.seconds);
-  $("score-start").textContent = scoreboard.running ? "Pausatu denbora" : "Hasi denbora";
-  $("score-live-state").textContent = scoreboard.savedMatchId ? "Partida gordeta" : scoreboard.running ? "Martxan" : "Pausatuta";
+  $("score-start").textContent = scoreboard.running ? t("Pausatu denbora") : t("Hasi denbora");
+  $("score-live-state").textContent = scoreboard.savedMatchId ? t("Partida gordeta") : scoreboard.running ? t("Martxan") : t("Pausatuta");
   $("score-live-panel").classList.toggle("is-running", scoreboard.running);
-  $("score-period").textContent = (scoreboard.period + 1) + ". zatia";
+  $("score-period").textContent = (scoreboard.period + 1) + t(". zatia");
   $("score-undo").disabled = locked || !last;
   $("score-add-location").disabled = locked || !last || !scoreIsShot(last.type);
-  $("score-last-event").textContent = last ? scoreEventText(last) : "Oraindik ez dago ekintzarik.";
-  $("score-add-location").textContent = last && last.shot_from ? "Kokapena editatu" : "Kokapena gehitu";
+  $("score-last-event").textContent = last ? scoreEventText(last) : t("Oraindik ez dago ekintzarik.");
+  $("score-add-location").textContent = last && last.shot_from ? t("Kokapena editatu") : t("Kokapena gehitu");
   $("score-event-count").textContent = scoreboard.events.length;
   $("score-events").innerHTML = scoreboard.events.length ? scoreboard.events.slice().reverse().map(function (event) {
     return '<li class="item"><div class="item-main"><strong>' + esc(event.score) + ' \u00b7 ' + esc(scoreActionLabel(event.type)) + '</strong><small>' + esc(scoreEventText(event)) + '</small></div></li>';
-  }).join("") : '<li class="empty">Oraindik ez da gertaerarik erregistratu.</li>';
+  }).join("") : ("<li class=\"empty\">" + esc(t("Oraindik ez da gertaerarik erregistratu.")) + "</li>");
   document.querySelectorAll("[data-quick-side], [data-score], [data-score-type]").forEach(function (button) { button.disabled = locked; });
   ["score-start", "score-clock-edit", "score-period-next", "score-home-name", "score-away-name", "score-mode", "score-minutes", "score-save-date", "score-save-venue"].forEach(function (id) { $(id).disabled = locked; });
   $("score-reset").disabled = scoreSaving;
   $("score-save-match").disabled = locked;
   $("score-opponent-stats").classList.toggle("hidden", !Number.isSafeInteger(scoreboard.savedMatchId) || scoreboard.savedMatchId < 1);
-  $("score-save-match").textContent = scoreSaving ? "Gordetzen..." : scoreboard.savedMatchId ? "Partida gordeta" : "Partida hau gorde";
+  $("score-save-match").textContent = scoreSaving ? t("Gordetzen...") : scoreboard.savedMatchId ? t("Partida gordeta") : t("Partida hau gorde");
   $("shot-record").disabled = locked || !(shotOrigin() && shotTo);
   scoreRenderShotType();
   scoreRenderSanctions();
@@ -2136,10 +2198,10 @@ function scoreRenderShotType() {
   });
   document.querySelectorAll("[data-quick-side]").forEach(function (button) {
     var goal = button.dataset.quickResult === "goal", penalty = scoreShotType === "penalty";
-    var label = goal ? (penalty ? "7 m: gola" : "Gola") : (penalty ? "7 m: huts" : "Jaurtiketa huts");
+    var label = goal ? (penalty ? t("7 m: gola") : t("Gola")) : (penalty ? t("7 m: huts") : t("Jaurtiketa huts"));
     if (goal) button.querySelector("strong").textContent = label;
     else button.textContent = label;
-    button.setAttribute("aria-label", (button.dataset.quickSide === "home" ? "Gure taldea: " : "Aurkaria: ") + label);
+    button.setAttribute("aria-label", (button.dataset.quickSide === "home" ? t("Gure taldea: ") : t("Aurkaria: ")) + label);
   });
 }
 var scoreLocationStep = "court", scoreLocationExact = false;
@@ -2161,7 +2223,7 @@ function drawShotCanvases() {
   $("shot-result").dataset.penalty = String(penalty);
   $("shot-court-panel").hidden = penalty;
   $("score-shot-maps").classList.toggle("is-penalty", penalty);
-  $("shot-goal-title").textContent = penalty ? "Helmuga atean" : "2. Helmuga atean";
+  $("shot-goal-title").textContent = penalty ? t("Helmuga atean") : t("2. Helmuga atean");
   var ctx = court.getContext("2d"), w = court.width, h = court.height;
   ctx.clearRect(0, 0, w, h); ctx.fillStyle = "#4a7c4f"; ctx.fillRect(0, 0, w, h);
   if (shotCourtImage.complete && shotCourtImage.naturalWidth) {
@@ -2184,9 +2246,9 @@ function drawShotCanvases() {
   ctx.strokeStyle = "#fff"; ctx.lineWidth = 8; ctx.beginPath(); ctx.moveTo(12, h - 12); ctx.lineTo(12, 12); ctx.lineTo(w - 12, 12); ctx.lineTo(w - 12, h - 12); ctx.stroke();
   ctx.strokeStyle = "#888"; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(16, h - 12); ctx.lineTo(w - 16, h - 12); ctx.stroke();
   if (shotTo) drawShotMarker(ctx, shotTo, w, h);
-  var destinationHint = shotTo ? "Ateko helmuga aukeratuta" : "Aukeratu helmuga atean";
+  var destinationHint = shotTo ? t("Ateko helmuga aukeratuta") : t("Aukeratu helmuga atean");
   $("shot-location-hint").textContent = penalty ? destinationHint :
-    (shotFrom ? "Kantxako jatorria aukeratuta" : "Aukeratu jatorria kantxan") + " \u00b7 " + destinationHint;
+    (shotFrom ? t("Kantxako jatorria aukeratuta") : t("Aukeratu jatorria kantxan")) + " \u00b7 " + destinationHint;
   $("shot-record").disabled = scoreIsLocked() || !(shotOrigin() && shotTo);
   renderQuickLocation();
 }
@@ -2198,9 +2260,9 @@ function drawShotMarker(ctx, point, w, h) {
 function quickLocationActive() { return $("score-location-dialog").classList.contains("quick-location"); }
 function renderQuickLocation() {
   var quick = quickLocationActive(), penalty = shotIsPenalty();
-  var side = $("shot-team").value === "away" ? "Aurkaria" : "Gure taldea";
+  var side = $("shot-team").value === "away" ? t("Aurkaria") : t("Gure taldea");
   var player = $("shot-player").selectedOptions[0];
-  $("shot-fields-summary").textContent = [side, scoreActionLabel($("shot-result").value), player && $("shot-player").value ? player.textContent : "Jokalaria zehaztu gabe"].join(" \u00b7 ");
+  $("shot-fields-summary").textContent = [side, scoreActionLabel($("shot-result").value), player && $("shot-player").value ? player.textContent : t("Jokalaria zehaztu gabe")].join(" \u00b7 ");
   if (!quick) { $("shot-court-panel").hidden = penalty; $("shot-goal-panel").hidden = false; return; }
   if (penalty) scoreLocationStep = "goal";
   else if (scoreLocationStep === "goal" && !shotOrigin()) scoreLocationStep = "court";
@@ -2213,13 +2275,13 @@ function renderQuickLocation() {
     button.classList.toggle("hidden", court && penalty);
     button.disabled = court ? penalty : !shotOrigin();
     button.setAttribute("aria-pressed", String(button.dataset.locationStep === scoreLocationStep));
-    if (!court) button.textContent = penalty ? "7 m: Atea" : "2. Atea";
+    if (!court) button.textContent = penalty ? t("7 m: Atea") : t("2. Atea");
   });
   $("shot-exact-toggle").classList.toggle("hidden", scoreLocationStep !== "goal");
   $("shot-exact-toggle").setAttribute("aria-pressed", String(scoreLocationExact));
-  $("shot-exact-toggle").textContent = scoreLocationExact ? "9 zonak" : "Puntu zehatza";
-  $("shot-quick-instruction").textContent = scoreLocationStep === "court" ? "Ukitu kantxan nondik jaurti duen" :
-    scoreLocationExact ? "Ukitu ateko puntua gordetzeko" : "Ukitu ateko zona gordetzeko";
+  $("shot-exact-toggle").textContent = scoreLocationExact ? t("9 zonak") : t("Puntu zehatza");
+  $("shot-quick-instruction").textContent = scoreLocationStep === "court" ? t("Ukitu kantxan nondik jaurti duen") :
+    scoreLocationExact ? t("Ukitu ateko puntua gordetzeko") : t("Ukitu ateko zona gordetzeko");
   document.querySelectorAll("[data-shot-zone]").forEach(function (button) {
     var index = Number(button.dataset.shotZone);
     var selected = shotTo && Math.min(2, Math.floor(shotTo[1] * 3)) * 3 + Math.min(2, Math.floor(shotTo[0] * 3)) === index;
@@ -2259,20 +2321,20 @@ function scoreSnapshot(side, type) {
 }
 function scoreBeginAction(side, type) {
   if (scoreIsLocked()) return;
-  if (scoreIsSanction(type) && side === "home" && !players.length) return notify("Gehitu jokalariak Taldea atalean zigorra esleitzeko", "error");
+  if (scoreIsSanction(type) && side === "home" && !players.length) return notify(t("Gehitu jokalariak Taldea atalean zigorra esleitzeko"), "error");
   var action = scoreSnapshot(side, type), away = side === "away";
   $("score-player-unspecified").classList.toggle("hidden", scoreIsSanction(type));
   $("score-opponent-add").classList.toggle("hidden", !away);
   $("score-opponent-form").reset(); $("score-opponent-error").hidden = true;
   if (!away && !players.length) { scoreRecordAction(action, null); return; }
   pendingScoreAction = action;
-  $("score-player-title").textContent = scoreActionLabel(type) + " \u00b7 " + (away ? "Aurkariaren jokalaria" : "Jokalaria");
-  $("score-player-time").textContent = action.time + " \u00b7 " + action.period + ". zatia";
+  $("score-player-title").textContent = scoreActionLabel(type) + " \u00b7 " + (away ? t("Aurkariaren jokalaria") : t("Jokalaria"));
+  $("score-player-time").textContent = action.time + " \u00b7 " + action.period + t(". zatia");
   var roster = away ? scoreOpponents() : players.slice().sort(function (a, b) { return (Number(a.dortsala) || 0) - (Number(b.dortsala) || 0); });
   $("score-opponent-add").open = away && !roster.length;
   $("score-player-grid").innerHTML = roster.map(function (player, index) {
     var number = away ? player.zenbakia : player.dortsala, label = away ? scoreOpponentLabel(player) : playerName(player);
-    return '<button type="button" class="score-player-choice" ' + (away ? 'data-score-opponent="' + index : 'data-score-player="' + Number(player.id_jokalaria)) + '" aria-label="' + esc(label) + '"><strong>' + esc(number == null || number === "" ? "\u2014" : number) + '</strong><span>' + esc(away ? player.izena || "Aurkaria" : playerName(player)) + '</span></button>';
+    return '<button type="button" class="score-player-choice" ' + (away ? 'data-score-opponent="' + index : 'data-score-player="' + Number(player.id_jokalaria)) + '" aria-label="' + esc(label) + '"><strong>' + esc(number == null || number === "" ? "\u2014" : number) + '</strong><span>' + esc(away ? player.izena || t("Aurkaria") : playerName(player)) + '</span></button>';
   }).join("");
   $("score-player-dialog").showModal();
 }
@@ -2292,11 +2354,11 @@ function scoreRecordAction(action, playerId, from, to, opponentPlayer) {
 }
 function scoreClearShot() {
   shotTargetEvent = null; shotFrom = null; shotTo = null;
-  $("shot-context").textContent = "Jaurtiketa berria";
+  $("shot-context").textContent = t("Jaurtiketa berria");
   $("shot-team").disabled = false; $("shot-result").disabled = false;
   renderShotPlayers();
   $("shot-cancel-edit").hidden = true;
-  $("shot-record").textContent = "Jaurtiketa erregistratu";
+  $("shot-record").textContent = t("Jaurtiketa erregistratu");
   drawShotCanvases();
 }
 function scoreUndo() {
@@ -2309,13 +2371,13 @@ function scoreUndo() {
   scoreSave(); scoreRender();
 }
 var friendsCache = { friends: [], incoming: [], outgoing: [] };
-var friendExercises = [], friendTrainings = [], friendSharedExercises = [];
+var friendExercises = [], friendTrainings = [], friendSharedExercises = [], friendSharedTrainings = [];
 function setFriendOptions(id, rows, placeholder) {
   var select = $(id);
   var prior = select.value;
   select.innerHTML = '<option value="">' + esc(placeholder) + '</option>' + rows.map(function (row) {
     return '<option value="' + Number(row.user_id || row.id_ariketa || row.id_saio) + '">' +
-      esc(row.username || row.izena || ((row.data_ordua || "Entrenamendua") + " · " + (row.helburu_taktikoa || ""))) + '</option>';
+      esc(row.username || row.izena || ((row.data_ordua || t("Entrenamendua")) + " · " + (row.helburu_taktikoa || ""))) + '</option>';
   }).join("");
   if (rows.some(function (row) { return String(row.user_id || row.id_ariketa || row.id_saio) === prior; })) select.value = prior;
 }
@@ -2323,8 +2385,8 @@ function renderShareExerciseOptions() {
   var list = $("share-exercise-items");
   if (!list) return;
   list.innerHTML = friendExercises.length ? friendExercises.map(function (exercise) {
-    return '<label class="checkrow"><input type="checkbox" data-share-exercise="' + Number(exercise.id_ariketa) + '"><span>' + esc(exercise.izena || "Ariketa") + '</span></label>';
-  }).join("") : '<div class="empty">Ez dago partekatzeko ariketarik.</div>';
+    return '<label class="checkrow"><input type="checkbox" data-share-exercise="' + Number(exercise.id_ariketa) + '"><span>' + esc(exercise.izena || t("Ariketa")) + '</span></label>';
+  }).join("") : ("<div class=\"empty\">" + esc(t("Ez dago partekatzeko ariketarik.")) + "</div>");
   updateShareExerciseCount();
 }
 function selectedShareExerciseIds() {
@@ -2333,10 +2395,32 @@ function selectedShareExerciseIds() {
 }
 function updateShareExerciseCount() {
   var count = $("share-exercise-count");
-  if (count) count.textContent = selectedShareExerciseIds().length + " hautatuta";
+  if (count) count.textContent = selectedShareExerciseIds().length + t(" hautatuta");
+}
+function renderFriends() {
+  var sharedExercises = friendSharedExercises, sharedTrainings = friendSharedTrainings;
+    $("friend-incoming").innerHTML = friendsCache.incoming.length ? friendsCache.incoming.map(function (item) {
+      return '<li class="item"><div class="item-main"><strong>' + esc(item.username) + ("</strong><small>" + esc(t("Lagun-eskaera")) + "</small></div><button class=\"btn secondary\" data-friend-action=\"friend_accept\" data-id=\"") + Number(item.id) + ("\">" + esc(t("Onartu")) + "</button><button class=\"btn danger\" data-friend-action=\"friend_reject\" data-id=\"") + Number(item.id) + ("\">" + esc(t("Baztertu")) + "</button></li>");
+    }).join("") : ("<li class=\"empty\">" + esc(t("Ez dago sarrerako eskaerarik.")) + "</li>");
+    $("friends-list").innerHTML = friendsCache.friends.length ? friendsCache.friends.map(function (item) {
+      return '<li class="item"><div class="item-main"><strong>' + esc(item.username) + ("</strong><small>" + esc(t("Lagun")) + "</small></div><button class=\"btn danger\" data-friend-action=\"friend_remove\" data-id=\"") + Number(item.id) + ("\">" + esc(t("Laguna kendu")) + "</button></li>");
+    }).join("") : ("<li class=\"empty\">" + esc(t("Onartutako lagunik ez duzu oraindik.")) + "</li>");
+    $("friend-outgoing").innerHTML = friendsCache.outgoing.length ? '<li class="notice">' + friendsCache.outgoing.map(function (item) { return esc(item.username) + t(" — eskaera bidalita"); }).join(" · ") + '</li>' : '';
+    $("friend-shared-exercises").innerHTML = sharedExercises.length ? sharedExercises.map(function (item) {
+      return '<li class="item"><div class="item-main"><strong>' + esc(item.izena) + '</strong><small>' + esc(item.shared_by_username || t("Lagun batek partekatua")) + (item.is_saved ? t(" · Nire ariketetan gordeta") : '') + '</small></div>' + (item.is_saved ? '' : '<button class="btn secondary" data-save-shared-exercise="' + Number(item.id_ariketa) + ("\">" + esc(t("Nire ariketetara gehitu")) + "</button>")) + '<button class="btn secondary" data-show-shared-exercise="' + Number(item.id_ariketa) + ("\">" + esc(t("Xehetasunak")) + "</button></li>");
+    }).join("") : ("<li class=\"empty\">" + esc(t("Oraindik ez dizute ariketarik partekatu.")) + "</li>");
+    $("friend-shared-trainings").innerHTML = sharedTrainings.length ? sharedTrainings.map(function (item) {
+      var details = (item.details || []).map(function (detail) { return detail.exercise ? (detail.ordena || "") + ". " + detail.exercise.izena + " · " + (detail.iraupena_minutuak || 0) + " min" : detail.taldea || ""; }).filter(Boolean).join("\n");
+      return '<li class="item"><div class="item-main"><strong>' + esc(item.helburu_taktikoa || t("Entrenamendua")) + '</strong><small>' + esc(formatDay(item) + " · " + (item.shared_by_username || t("Lagun batek partekatua"))) + '</small><small>' + esc(details || t("Ez dago ariketa xehetasunik")) + '</small></div></li>';
+    }).join("") : ("<li class=\"empty\">" + esc(t("Oraindik ez dizute entrenamendurik partekatu.")) + "</li>");
+    setFriendOptions("share-exercise-friend", friendsCache.friends, t("Aukeratu laguna"));
+    setFriendOptions("share-training-friend", friendsCache.friends, t("Aukeratu laguna"));
+    setFriendOptions("team-invite-friend", friendsCache.friends, t("Aukeratu gonbidatzeko laguna"));
+    renderShareExerciseOptions();
+    setFriendOptions("share-training-item", friendTrainings, t("Aukeratu entrenamendua"));
 }
 async function loadFriends() {
-  [$("friend-incoming"), $("friends-list"), $("friend-outgoing"), $("friend-shared-exercises"), $("friend-shared-trainings")].forEach(function (el) { el.innerHTML = '<li class="empty">Kargatzen…</li>'; });
+  [$("friend-incoming"), $("friends-list"), $("friend-outgoing"), $("friend-shared-exercises"), $("friend-shared-trainings")].forEach(function (el) { el.innerHTML = ("<li class=\"empty\">" + esc(t("Kargatzen…")) + "</li>"); });
   try {
     var results = await Promise.all([
       request({ action: "friends_list" }), request({ action: "my_exercises" }),
@@ -2348,25 +2432,8 @@ async function loadFriends() {
     friendTrainings = results[2].trainings || [];
     var sharedExercises = results[3].exercises || [], sharedTrainings = results[4].trainings || [];
     friendSharedExercises = sharedExercises;
-    $("friend-incoming").innerHTML = friendsCache.incoming.length ? friendsCache.incoming.map(function (item) {
-      return '<li class="item"><div class="item-main"><strong>' + esc(item.username) + '</strong><small>Lagun-eskaera</small></div><button class="btn secondary" data-friend-action="friend_accept" data-id="' + Number(item.id) + '">Onartu</button><button class="btn danger" data-friend-action="friend_reject" data-id="' + Number(item.id) + '">Baztertu</button></li>';
-    }).join("") : '<li class="empty">Ez dago sarrerako eskaerarik.</li>';
-    $("friends-list").innerHTML = friendsCache.friends.length ? friendsCache.friends.map(function (item) {
-      return '<li class="item"><div class="item-main"><strong>' + esc(item.username) + '</strong><small>Lagun</small></div><button class="btn danger" data-friend-action="friend_remove" data-id="' + Number(item.id) + '">Laguna kendu</button></li>';
-    }).join("") : '<li class="empty">Onartutako lagunik ez duzu oraindik.</li>';
-    $("friend-outgoing").innerHTML = friendsCache.outgoing.length ? '<li class="notice">' + friendsCache.outgoing.map(function (item) { return esc(item.username) + ' — eskaera bidalita'; }).join(" · ") + '</li>' : '';
-    $("friend-shared-exercises").innerHTML = sharedExercises.length ? sharedExercises.map(function (item) {
-      return '<li class="item"><div class="item-main"><strong>' + esc(item.izena) + '</strong><small>' + esc(item.shared_by_username || "Lagun batek partekatua") + (item.is_saved ? ' · Nire ariketetan gordeta' : '') + '</small></div>' + (item.is_saved ? '' : '<button class="btn secondary" data-save-shared-exercise="' + Number(item.id_ariketa) + '">Nire ariketetara gehitu</button>') + '<button class="btn secondary" data-show-shared-exercise="' + Number(item.id_ariketa) + '">Xehetasunak</button></li>';
-    }).join("") : '<li class="empty">Oraindik ez dizute ariketarik partekatu.</li>';
-    $("friend-shared-trainings").innerHTML = sharedTrainings.length ? sharedTrainings.map(function (item) {
-      var details = (item.details || []).map(function (detail) { return detail.exercise ? (detail.ordena || "") + ". " + detail.exercise.izena + " · " + (detail.iraupena_minutuak || 0) + " min" : detail.taldea || ""; }).filter(Boolean).join("\n");
-      return '<li class="item"><div class="item-main"><strong>' + esc(item.helburu_taktikoa || "Entrenamendua") + '</strong><small>' + esc(formatDay(item) + " · " + (item.shared_by_username || "Lagun batek partekatua")) + '</small><small>' + esc(details || "Ez dago ariketa xehetasunik") + '</small></div></li>';
-    }).join("") : '<li class="empty">Oraindik ez dizute entrenamendurik partekatu.</li>';
-    setFriendOptions("share-exercise-friend", friendsCache.friends, "Aukeratu laguna");
-    setFriendOptions("share-training-friend", friendsCache.friends, "Aukeratu laguna");
-    setFriendOptions("team-invite-friend", friendsCache.friends, "Aukeratu gonbidatzeko laguna");
-    renderShareExerciseOptions();
-    setFriendOptions("share-training-item", friendTrainings, "Aukeratu entrenamendua");
+    friendSharedTrainings = sharedTrainings;
+    renderFriends();
   } catch (error) {
     [$("friend-incoming"), $("friends-list")].forEach(function (el) { el.innerHTML = '<li class="notice error">' + esc(error.message) + '</li>'; });
     notify(error.message, "error");
@@ -2376,19 +2443,19 @@ $("friend-form").addEventListener("submit", async function (event) {
   event.preventDefault();
   try {
     await request({ action: "friend_add", username: $("friend-username").value.trim().toLowerCase() });
-    $("friend-username").value = ""; notify("Lagun-eskaera bidali da", "success"); await loadFriends();
+    $("friend-username").value = ""; notify(t("Lagun-eskaera bidali da"), "success"); await loadFriends();
   } catch (error) { notify(error.message, "error"); }
 });
 $("friends-refresh").addEventListener("click", function () { loadFriends(); });
 $("friend-share-exercise").addEventListener("submit", async function (event) {
   event.preventDefault();
   var exerciseIds = selectedShareExerciseIds();
-  if (!exerciseIds.length) return notify("Hautatu gutxienez ariketa bat", "error");
-  if (exerciseIds.length > 100) return notify("Gehienez 100 ariketa parteka ditzakezu aldi bakoitzean", "error");
+  if (!exerciseIds.length) return notify(t("Hautatu gutxienez ariketa bat"), "error");
+  if (exerciseIds.length > 100) return notify(t("Gehienez 100 ariketa parteka ditzakezu aldi bakoitzean"), "error");
   try {
     var result = await request({ action: "exercise_share_many", friend_id: Number($("share-exercise-friend").value), exercise_ids: exerciseIds });
     var shared = Number(result.shared_count) || 0, existing = Number(result.already_shared_count) || 0;
-    notify(shared ? shared + " ariketa partekatu dira" + (existing ? "; " + existing + " aurretik partekatuta zeuden" : "") : "Aukeratutako ariketak lagun horrekin partekatuta zeuden jada", "success");
+    notify(shared ? shared + t(" ariketa partekatu dira") + (existing ? "; " + existing + t(" aurretik partekatuta zeuden") : "") : t("Aukeratutako ariketak lagun horrekin partekatuta zeuden jada"), "success");
     await loadFriends();
   } catch (error) { notify(error.message, "error"); }
 });
@@ -2397,7 +2464,7 @@ $("share-exercise-select-all").addEventListener("click", function () {
   var boxes = Array.from(document.querySelectorAll('#share-exercise-items [data-share-exercise]'));
   boxes.forEach(function (box, index) { box.checked = index < 100; });
   updateShareExerciseCount();
-  if (boxes.length > 100) notify("Lehenengo 100 ariketak hautatu dira; partekatu gainerakoak beste bidalketa batean", "error");
+  if (boxes.length > 100) notify(t("Lehenengo 100 ariketak hautatu dira; partekatu gainerakoak beste bidalketa batean"), "error");
 });
 $("share-exercise-clear").addEventListener("click", function () {
   document.querySelectorAll('#share-exercise-items [data-share-exercise]').forEach(function (box) { box.checked = false; });
@@ -2407,7 +2474,7 @@ $("friend-share-training").addEventListener("submit", async function (event) {
   event.preventDefault();
   try {
     await request({ action: "training_share", friend_id: Number($("share-training-friend").value), training_id: Number($("share-training-item").value) });
-    notify("Entrenamendua lagunarekin partekatu da", "success"); await loadFriends();
+    notify(t("Entrenamendua lagunarekin partekatu da"), "success"); await loadFriends();
   } catch (error) { notify(error.message, "error"); }
 });
 document.addEventListener("click", async function (event) {
@@ -2416,13 +2483,13 @@ document.addEventListener("click", async function (event) {
   try {
     if (target.dataset.friendAction) {
       await request({ action: target.dataset.friendAction, request_id: Number(target.dataset.id) });
-      notify(target.dataset.friendAction === "friend_accept" ? "Lagun-eskaera onartu da" : "Eskaera eguneratu da", "success");
+      notify(target.dataset.friendAction === "friend_accept" ? t("Lagun-eskaera onartu da") : t("Eskaera eguneratu da"), "success");
     } else if (target.dataset.saveSharedExercise) {
       await request({ action: "exercise_save", exercise_id: Number(target.dataset.saveSharedExercise) });
-      notify("Ariketa zure zerrendara gehitu da", "success");
+      notify(t("Ariketa zure zerrendara gehitu da"), "success");
     } else {
       var exercise = friendSharedExercises.find(function (item) { return Number(item.id_ariketa) === Number(target.dataset.showSharedExercise); });
-      if (exercise) alert([exercise.izena, exercise.shared_by_username ? "Nork partekatu du: " + exercise.shared_by_username : "", exercise.deskribapena || "", exercise.jokalari_kopurua ? "Jokalari kopurua: " + exercise.jokalari_kopurua : "", exercise.bideo_url || ""].filter(Boolean).join("\n\n"));
+      if (exercise) alert([exercise.izena, exercise.shared_by_username ? t("Nork partekatu du: ") + exercise.shared_by_username : "", exercise.deskribapena || "", exercise.jokalari_kopurua ? t("Jokalari kopurua: ") + exercise.jokalari_kopurua : "", exercise.bideo_url || ""].filter(Boolean).join("\n\n"));
       return;
     }
     await loadFriends();
@@ -2438,15 +2505,18 @@ function scoreUpdate() {
   if ((mode === "countdown" && scoreboard.seconds === 0) || (mode === "match" && scoreboard.seconds >= duration)) {
     if (mode === "match") scoreboard.seconds = duration;
     scoreboard.running = false; clearInterval(scoreTimer);
-    notify("Zatia amaitu da", "success");
+    notify(t("Zatia amaitu da"), "success");
   }
   scoreSave(); scoreRender();
 }
-$("shot-goal-zones").innerHTML = ["Goian", "Erdian", "Behean"].map(function (row, y) {
-  return ["Ezkerra", "Erdia", "Eskuina"].map(function (column, x) {
+function renderShotGoalZones() {
+  $("shot-goal-zones").innerHTML = [t("Goian"), t("Erdian"), t("Behean")].map(function (row, y) {
+  return [t("Ezkerra"), t("Erdia"), t("Eskuina")].map(function (column, x) {
     return '<button class="shot-goal-zone" type="button" data-shot-zone="' + (y * 3 + x) + '" aria-pressed="false" aria-label="' + row + ': ' + column + '"><span>' + row + '</span><strong>' + column + '</strong></button>';
   }).join("");
 }).join("");
+}
+renderShotGoalZones();
 $("shot-goal-zones").addEventListener("click", function (event) {
   var button = event.target.closest("[data-shot-zone]");
   if (!button || !quickLocationActive() || scoreIsLocked() || !shotOrigin()) return;
@@ -2500,8 +2570,8 @@ $("score-add-location").addEventListener("click", function () {
   renderShotPlayers();
   var opponentIndex = entry.aurkaria ? scoreOpponents().findIndex(function (player) { return scoreOpponentKey(player) === scoreOpponentKey(entry.aurkaria); }) : -1;
   $("shot-player").value = entry.side === "away" ? (opponentIndex >= 0 ? "opp:" + opponentIndex : "") : entry.playerId ? String(entry.playerId) : "";
-  $("shot-context").textContent = "Kokapena gehitu: " + scoreEventText(entry);
-  $("shot-record").textContent = "Kokapena gorde"; $("shot-cancel-edit").hidden = false;
+  $("shot-context").textContent = t("Kokapena gehitu: ") + scoreEventText(entry);
+  $("shot-record").textContent = t("Kokapena gorde"); $("shot-cancel-edit").hidden = false;
   $("score-shot-panel").open = true;
   drawShotCanvases();
   if (scoreMatchMode) { setupQuickLocation(); $("score-location-dialog").showModal(); }
@@ -2542,7 +2612,7 @@ $("score-opponent-form").addEventListener("submit", function (event) {
   event.preventDefault();
   if (!pendingScoreAction || pendingScoreAction.side !== "away" || scoreIsLocked()) return;
   var number = $("score-opponent-number").value.trim(), name = $("score-opponent-name").value.trim();
-  if (!number && !name) { $("score-opponent-error").textContent = "Idatzi dortsala edo izena."; $("score-opponent-error").hidden = false; return; }
+  if (!number && !name) { $("score-opponent-error").textContent = t("Idatzi dortsala edo izena."); $("score-opponent-error").hidden = false; return; }
   if (number && (!/^\d{1,3}$/.test(number) || Number(number) > 999)) return;
   var player = { zenbakia: number ? String(Number(number)) : "", izena: name };
   var roster = scoreOpponents(), existing = roster.find(function (item) { return scoreOpponentKey(item) === scoreOpponentKey(player); });
@@ -2583,7 +2653,7 @@ function scoreTimeCanRun(seconds) {
 function scoreRenderTimeDraft() {
   var draft = scoreTimeDraft(), canRun = draft !== null && draft <= scoreTimeLimit() && scoreTimeCanRun(draft);
   $("score-time-resume").disabled = !canRun;
-  $("score-time-status").textContent = "Kronoa pausatuta dago." + (draft !== null && draft <= scoreTimeLimit() && !scoreTimeCanRun(draft) ? " Zatiaren amaiera." : "");
+  $("score-time-status").textContent = t("Kronoa pausatuta dago.") + (draft !== null && draft <= scoreTimeLimit() && !scoreTimeCanRun(draft) ? t(" Zatiaren amaiera.") : "");
 }
 function scoreSetTimeDraft(seconds) {
   $("score-time-minutes").value = String(Math.floor(seconds / 60));
@@ -2625,7 +2695,7 @@ $("score-time-form").addEventListener("submit", function (event) {
   if (scoreIsLocked() || !scoreTimeEditState || scoreTimeEditState.board !== scoreboard) return;
   var draft = scoreTimeDraft();
   if (draft === null || draft > scoreTimeLimit()) {
-    $("score-time-error").textContent = "Idatzi 0:00 eta " + scoreFormat(scoreTimeLimit()) + " arteko denbora.";
+    $("score-time-error").textContent = t("Idatzi 0:00 eta {time} arteko denbora.", { time: scoreFormat(scoreTimeLimit()) });
     $("score-time-error").hidden = false;
     return;
   }
@@ -2653,7 +2723,7 @@ $("score-start").addEventListener("click", function () {
   if (scoreboard.running) { scoreboard.running = false; clearInterval(scoreTimer); }
   else {
     var duration = Math.max(1, Number($("score-minutes").value) || 30) * 60;
-    if ($("score-mode").value === "match" && scoreboard.seconds >= duration) return notify("Zatia amaitu da. Sakatu Hurrengo zatia.", "success");
+    if ($("score-mode").value === "match" && scoreboard.seconds >= duration) return notify(t("Zatia amaitu da. Sakatu Hurrengo zatia."), "success");
     if (!scoreboard.seconds && $("score-mode").value === "countdown") scoreboard.seconds = duration;
     scoreboard.running = true; scoreboard.lastTick = Date.now(); clearInterval(scoreTimer); scoreTimer = setInterval(scoreUpdate, 250);
   }
@@ -2661,17 +2731,17 @@ $("score-start").addEventListener("click", function () {
 });
 $("score-period-next").addEventListener("click", function () {
   if (scoreIsLocked()) return;
-  if (!confirm("Hurrengo zatia hasi? Zati honetako denbora zerora itzuliko da.")) return;
+  if (!confirm(t("Hurrengo zatia hasi? Zati honetako denbora zerora itzuliko da."))) return;
   scoreboard.running = false; clearInterval(scoreTimer); scoreboard.period += 1;
   scoreboard.seconds = $("score-mode").value === "countdown" ? Math.max(1, Number($("score-minutes").value) || 30) * 60 : 0;
   scoreSave(); scoreRender();
 });
 $("score-reset").addEventListener("click", function () {
   if (scoreSaving) return;
-  if ((scoreboard.events.length || scoreboard.home || scoreboard.away || scoreboard.seconds) && !confirm("Partida berri bat hasi? Uneko markagailua eta gertaerak gailutik kenduko dira. Aurretik gordetako partida historian mantenduko da.")) return;
+  if ((scoreboard.events.length || scoreboard.home || scoreboard.away || scoreboard.seconds) && !confirm(t("Partida berri bat hasi? Uneko markagailua eta gertaerak gailutik kenduko dira. Aurretik gordetako partida historian mantenduko da."))) return;
   clearInterval(scoreTimer); scoreClearShot(); scoreShotType = "normal";
   scoreboard = { home: 0, away: 0, seconds: 0, period: 0, running: false, events: [], lastTick: 0, savedMatchId: null };
-  scoreSave(); scoreRender(); $("score-save-status").textContent = "Oraindik ez da gorde.";
+  scoreSave(); scoreRender(); $("score-save-status").textContent = t("Oraindik ez da gorde.");
   $("score-save-date").value = localDateTime();
 });
 $("score-mode").addEventListener("change", function () { scoreboard.running = false; clearInterval(scoreTimer); scoreboard.seconds = 0; scoreSave(); scoreRender(); });
@@ -2706,8 +2776,8 @@ async function scoreEnterMatchMode() {
   ["score-history", "score-settings", "score-save-panel"].forEach(function (id) { scoreMoveModePanel(id, $("score-tools-content")); });
   scoreMoveModePanel("score-shot-panel", $("score-location-content"));
   $("score-fullscreen").setAttribute("aria-pressed", "true");
-  $("score-fullscreen").setAttribute("aria-label", "Partida modutik irten");
-  $("score-fullscreen").querySelector(".score-fullscreen-label").textContent = "Irten";
+  $("score-fullscreen").setAttribute("aria-label", t("Partida modutik irten"));
+  $("score-fullscreen").querySelector(".score-fullscreen-label").textContent = t("Irten");
   $("v-scoreboard").scrollTop = 0;
   // iPhone and browsers without Fullscreen API use the same viewport layout.
   try {
@@ -2729,8 +2799,8 @@ async function scoreExitMatchMode() {
   $("v-scoreboard").classList.remove("score-match-mode");
   document.body.classList.remove("score-match-active");
   $("score-fullscreen").setAttribute("aria-pressed", "false");
-  $("score-fullscreen").setAttribute("aria-label", "Pantaila osoko partida modua ireki");
-  $("score-fullscreen").querySelector(".score-fullscreen-label").textContent = "Partida modua";
+  $("score-fullscreen").setAttribute("aria-label", t("Pantaila osoko partida modua ireki"));
+  $("score-fullscreen").querySelector(".score-fullscreen-label").textContent = t("Partida modua");
   if (scoreWakeLock) { var lock = scoreWakeLock; scoreWakeLock = null; lock.release().catch(function () {}); }
   window.scrollTo(0, scoreModeScroll);
   $("score-fullscreen").focus({ preventScroll: true });
@@ -2784,7 +2854,7 @@ function setMobileMenu(open) {
   backdrop.classList.toggle("hidden", !isOpen);
   document.body.classList.toggle("mobile-menu-active", isOpen);
   toggle.setAttribute("aria-expanded", String(isOpen));
-  toggle.setAttribute("aria-label", isOpen ? "Menua itxi" : "Menua ireki");
+  toggle.setAttribute("aria-label", isOpen ? t("Menua itxi") : t("Menua ireki"));
   nav.setAttribute("aria-hidden", String(mobile && !isOpen));
   nav.inert = mobile && !isOpen;
 }
@@ -2863,12 +2933,12 @@ $("login-form").addEventListener("submit", async function (event) {
       p_usuario: $("username").value.trim().toLowerCase(),
       p_pasahitza: $("password").value
     }, true);
-    if (!result.token || !result.user) throw new Error("Supabasek ez du saio baliodunik itzuli");
+    if (!result.token || !result.user) throw new Error(t("Supabasek ez du saio baliodunik itzuli"));
     token = result.token; user = result.user;
     saveLocal("7metro-supabase-token", token);
     saveLocal("7metro-username", user.izena);
     $("password").value = "";
-    notify("Online kontura konektatuta", "success");
+    notify(t("Online kontura konektatuta"), "success");
     await loadTeams(true);
   } catch (error) {
     token = "";
@@ -2896,7 +2966,7 @@ $("account-create-form").addEventListener("submit", async function (event) {
   try {
     await request({ action: "register", p_usuario: username, p_pasahitza: password }, true);
     var result = await request({ p_usuario: username, p_pasahitza: password }, true);
-    if (!result.token || !result.user) throw new Error("Kontua sortu da, baina ezin izan da saioa hasi");
+    if (!result.token || !result.user) throw new Error(t("Kontua sortu da, baina ezin izan da saioa hasi"));
     token = result.token;
     user = result.user;
     saveLocal("7metro-supabase-token", token);
@@ -2904,7 +2974,7 @@ $("account-create-form").addEventListener("submit", async function (event) {
     $("password").value = "";
     $("new-password").value = "";
     $("account-create-dialog").close();
-    notify("Kontua sortu da eta saioa hasi duzu", "success");
+    notify(t("Kontua sortu da eta saioa hasi duzu"), "success");
     await loadTeams(true);
   } catch (error) {
     notify(error.message, "error");
@@ -2922,7 +2992,7 @@ $("open-team").addEventListener("click", async function () {
 $("team-select").addEventListener("change", updateTeamManagementControls);
 $("rename-team").addEventListener("click", function () {
   var selected = selectedTeamForManagement();
-  if (!selected || selected._role !== "owner") return notify("Taldearen jabeak bakarrik alda dezake izena", "error");
+  if (!selected || selected._role !== "owner") return notify(t("Taldearen jabeak bakarrik alda dezake izena"), "error");
   $("team-rename-name").value = selected.izena || "";
   $("team-rename-dialog").showModal();
 });
@@ -2930,8 +3000,8 @@ $("team-rename-close").addEventListener("click", function () { $("team-rename-di
 $("team-rename-form").addEventListener("submit", async function (event) {
   event.preventDefault();
   var selected = selectedTeamForManagement(), name = $("team-rename-name").value.trim();
-  if (!selected || selected._role !== "owner") return notify("Taldearen jabeak bakarrik alda dezake izena", "error");
-  if (name.length < 2 || name.length > 100) return notify("Izenak 2 eta 100 karaktere artean izan behar ditu", "error");
+  if (!selected || selected._role !== "owner") return notify(t("Taldearen jabeak bakarrik alda dezake izena"), "error");
+  if (name.length < 2 || name.length > 100) return notify(t("Izenak 2 eta 100 karaktere artean izan behar ditu"), "error");
   var button = this.querySelector('button[type="submit"]');
   button.disabled = true;
   try {
@@ -2940,7 +3010,7 @@ $("team-rename-form").addEventListener("submit", async function (event) {
     teams = teams.map(function (item) { return Number(item.id_taldea) === Number(updated.id_taldea) ? Object.assign({}, updated, { _role: "owner" }) : item; });
     var selectedId = String(updated.id_taldea);
     $("team-select").innerHTML = teams.map(function (item) {
-      return '<option value="' + Number(item.id_taldea) + '">' + esc(item.izena) + (item._role === "owner" ? " · Jabea" : " · Kidea") + "</option>";
+      return '<option value="' + Number(item.id_taldea) + '">' + esc(item.izena) + (item._role === "owner" ? t(" · Jabea") : t(" · Kidea")) + "</option>";
     }).join("");
     $("team-select").value = selectedId;
     if (Number(teamId) === Number(updated.id_taldea)) {
@@ -2948,14 +3018,14 @@ $("team-rename-form").addEventListener("submit", async function (event) {
       $("account").textContent = (user ? user.izena + " · " : "") + updated.izena;
     }
     $("team-rename-dialog").close();
-    notify("Taldearen izena aldatu da", "success");
+    notify(t("Taldearen izena aldatu da"), "success");
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
 });
 $("delete-team").addEventListener("click", async function () {
   var selected = selectedTeamForManagement();
-  if (!selected || selected._role !== "owner") return notify("Taldearen jabeak bakarrik ezaba dezake taldea", "error");
-  var confirmation = "Ziur zaude '" + selected.izena + "' taldea ezabatu nahi duzula? Ekintza honek taldeko jokalariak, entrenamenduak, partidak eta plangintza ere ezabatuko ditu.";
+  if (!selected || selected._role !== "owner") return notify(t("Taldearen jabeak bakarrik ezaba dezake taldea"), "error");
+  var confirmation = t("Ziur zaude '") + selected.izena + t("' taldea ezabatu nahi duzula? Ekintza honek taldeko jokalariak, entrenamenduak, partidak eta plangintza ere ezabatuko ditu.");
   if (!window.confirm(confirmation)) return;
   var button = this;
   button.disabled = true;
@@ -2965,7 +3035,7 @@ $("delete-team").addEventListener("click", async function () {
       team = null; teamId = 0; localStorage.removeItem("7metro-team-id");
     }
     await loadTeams(false);
-    notify("Taldea eta haren datuak ezabatu dira", "success");
+    notify(t("Taldea eta haren datuak ezabatu dira"), "success");
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
 });
@@ -2980,7 +3050,7 @@ $("team-form").addEventListener("submit", async function (event) {
     teams.push(team);
     await openTeam(team.id_taldea);
     form.reset();
-    notify("Taldea sortu da", "success");
+    notify(t("Taldea sortu da"), "success");
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
 });
@@ -2993,7 +3063,7 @@ $("player-form").addEventListener("submit", async function (event) {
   button.disabled = true;
   try {
     await request(Object.assign({ action: "pwa_create_player", team_id: teamId }, data));
-    form.reset(); await refreshAll(); notify("Jokalaria gehitu da", "success");
+    form.reset(); await refreshAll(); notify(t("Jokalaria gehitu da"), "success");
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
 });
@@ -3014,7 +3084,7 @@ $("exercise-form").addEventListener("submit", async function (event) {
     await request(Object.assign({ action: "pwa_create_exercise", team_id: teamId }, data));
     form.reset();
     $("exercise-category").querySelectorAll("input").forEach(function (input) { input.checked = false; });
-    resetBoard(); await refreshAll(); notify("Ariketa gehitu da", "success");
+    resetBoard(); await refreshAll(); notify(t("Ariketa gehitu da"), "success");
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
 });
@@ -3032,7 +3102,7 @@ $("exercise-category-form").addEventListener("submit", async function (event) {
     $("exercise-category").querySelectorAll("input").forEach(function (input) {
       if (normalizeCategoryName(input.value) === normalizeCategoryName(name)) input.checked = true;
     });
-    notify('"' + name + '" kategoria sortu da', "success");
+    notify('"' + name + t("\" kategoria sortu da"), "success");
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
 });
@@ -3055,7 +3125,7 @@ $("exercise-board").addEventListener("pointermove", boardPointerMove);
 $("exercise-board").addEventListener("pointerup", boardPointerUp);
 $("exercise-board").addEventListener("pointercancel", function () { boardPointer = null; redrawBoard(); });
 $("board-delete").addEventListener("click", function () {
-  if (!boardSelection) return notify("Aukeratu ezabatu nahi duzun elementua", "error");
+  if (!boardSelection) return notify(t("Aukeratu ezabatu nahi duzun elementua"), "error");
   if (boardSelection.kind === "token") delete boardState.posizioak[boardSelection.tag];
   else boardState.marrazkiak.splice(boardSelection.index, 1);
   boardSelection = null;
@@ -3063,7 +3133,7 @@ $("board-delete").addEventListener("click", function () {
 });
 $("board-clear").addEventListener("click", function () {
   if (!Object.keys(boardState.posizioak).length && !boardState.marrazkiak.length && !boardState.animazioa.length) return;
-  if (!confirm("Arbel guztia garbitu nahi duzu?")) return;
+  if (!confirm(t("Arbel guztia garbitu nahi duzu?"))) return;
   resetBoard();
 });
 $("board-frame-add").addEventListener("click", function () {
@@ -3072,7 +3142,7 @@ $("board-frame-add").addEventListener("click", function () {
   boardFrameIndex = boardState.animazioa.length - 1;
   document.querySelector('[data-board-tool="move"]').click();
   updateBoardAnimationControls();
-  notify((boardFrameIndex + 1) + ". pausoa gehitu da. Mugitu elementuak hurrengo pausorako.", "success");
+  notify((boardFrameIndex + 1) + t(". pausoa gehitu da. Mugitu elementuak hurrengo pausorako."), "success");
 });
 $("board-frames").addEventListener("change", function () {
   stopBoardAnimation();
@@ -3091,7 +3161,7 @@ $("board-frame-update").addEventListener("click", function () {
   if (boardFrameIndex < 0) return;
   boardState.animazioa[boardFrameIndex] = captureBoardFrame();
   updateBoardAnimationControls();
-  notify("Pausoa eguneratu da", "success");
+  notify(t("Pausoa eguneratu da"), "success");
 });
 $("board-frame-delete").addEventListener("click", function () {
   stopBoardAnimation();
@@ -3132,7 +3202,7 @@ $("plan-form").addEventListener("submit", async function (event) {
   try {
     await submitPlanForm();
     var message = planFormContext && planFormContext.kind === "macro"
-      ? "Makrozikloa gorde da" : "Mikrozikloa gorde da";
+      ? t("Makrozikloa gorde da") : t("Mikrozikloa gorde da");
     closePlanForm();
     await refreshAll();
     notify(message, "success");
@@ -3148,13 +3218,13 @@ $("plan-modal").addEventListener("click", async function (event) {
   var remove = event.target.closest("[data-plan-delete]");
   if (remove) {
     var isMacro = planFormContext && planFormContext.kind === "macro";
-    if (!confirm(isMacro ? "Makrozikloa ezabatu nahi duzu?" : "Mikrozikloa ezabatu nahi duzu?")) return;
+    if (!confirm(isMacro ? t("Makrozikloa ezabatu nahi duzu?") : t("Mikrozikloa ezabatu nahi duzu?"))) return;
     remove.disabled = true;
     try {
       await deletePlanRecord();
       closePlanForm();
       await refreshAll();
-      notify("Erregistroa ezabatu da", "success");
+      notify(t("Erregistroa ezabatu da"), "success");
     } catch (error) { notify(error.message, "error"); }
     finally { remove.disabled = false; }
   }
@@ -3182,7 +3252,7 @@ $("session-form").addEventListener("submit", async function (event) {
     sessionSelection = [];
     activeSessionGroup = null;
     form.reset(); $("session-date").value = localDateTime();
-    await refreshAll(); notify("Entrenamendua gorde da", "success");
+    await refreshAll(); notify(t("Entrenamendua gorde da"), "success");
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
 });
@@ -3346,7 +3416,7 @@ $("match-form").addEventListener("submit", async function (event) {
     return value.trim() === "" ? 0 : Number(value);
   });
   if (score.some(function (value) { return !Number.isInteger(value) || value < 0 || value > 999; })) {
-    return notify("Golak 0 eta 999 arteko zenbaki osoak izan behar dira", "error");
+    return notify(t("Golak 0 eta 999 arteko zenbaki osoak izan behar dira"), "error");
   }
   var stats = players.map(function (player) {
     var row = { id_jokalaria: Number(player.id_jokalaria) };
@@ -3367,7 +3437,7 @@ $("match-form").addEventListener("submit", async function (event) {
       emaitza_aurkaria: score[1], stats: stats
     });
     form.reset(); $("match-date").value = localDateTime();
-    await refreshAll(); notify("Partida gorde da", "success");
+    await refreshAll(); notify(t("Partida gorde da"), "success");
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
 });
@@ -3381,7 +3451,7 @@ $("match-detail").addEventListener("submit", async function (event) {
     return Number(form.querySelector('[data-match-score="' + side + '"]').value);
   });
   if (score.some(function (value) { return !Number.isInteger(value) || value < 0 || value > 999; })) {
-    return notify("Emaitza 0 eta 999 arteko zenbaki osoz osatu behar da", "error");
+    return notify(t("Emaitza 0 eta 999 arteko zenbaki osoz osatu behar da"), "error");
   }
   var stats = players.map(function (player) {
     var row = { id_jokalaria: Number(player.id_jokalaria) };
@@ -3406,7 +3476,7 @@ $("match-detail").addEventListener("submit", async function (event) {
     });
     await refreshAll();
     $("match-detail").classList.add("hidden");
-    notify("Partidaren emaitza eta estatistikak eguneratu dira", "success");
+    notify(t("Partidaren emaitza eta estatistikak eguneratu dira"), "success");
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
 });
@@ -3422,13 +3492,13 @@ $("match-detail").addEventListener("change", function (event) {
 
 $("score-save-match").addEventListener("click", async function () {
   var button = this;
-  if (scoreIsLocked()) return notify("Markagailu hau gordeta dago. Berrabiarazi beste partida bat gordetzeko.", "error");
-  if (!token || !teamId) return notify("Hasi saioa eta aukeratu taldea partida gordetzeko", "error");
+  if (scoreIsLocked()) return notify(t("Markagailu hau gordeta dago. Berrabiarazi beste partida bat gordetzeko."), "error");
+  if (!token || !teamId) return notify(t("Hasi saioa eta aukeratu taldea partida gordetzeko"), "error");
   var opponent = $("score-away-name").value.trim();
   var date = $("score-save-date").value;
   if (!date || !opponent) {
-    $("score-save-status").textContent = "Errorea: bete data eta aurkariaren izena.";
-    return notify("Data eta aurkariaren izena bete behar dira", "error");
+    $("score-save-status").textContent = t("Errorea: bete data eta aurkariaren izena.");
+    return notify(t("Data eta aurkariaren izena bete behar dira"), "error");
   }
   var homeName = $("score-home-name").value.trim() || "7metro";
   var statsByPlayer = {};
@@ -3474,7 +3544,7 @@ $("score-save-match").addEventListener("click", async function () {
       shots: savedShots, event_records: eventRecords
     });
   } catch (error) {
-    $("score-save-status").textContent = "Errorea: " + error.message;
+    $("score-save-status").textContent = t("Errorea: ") + error.message;
     notify(error.message, "error");
     scoreSaving = false; scoreRender();
     return;
@@ -3489,11 +3559,11 @@ $("score-save-match").addEventListener("click", async function () {
   };
   scoreboard.running = false; clearInterval(scoreTimer); scoreSaving = false;
   scoreSave(); scoreRender();
-  $("score-save-status").textContent = "Gordeta · " + opponent + " · " + scoreboard.home + "–" + scoreboard.away;
-  button.textContent = "Partida gordeta";
-  notify("Partida markagailutik gorde da", "success");
+  $("score-save-status").textContent = t("Gordeta · ") + opponent + " · " + scoreboard.home + "–" + scoreboard.away;
+  button.textContent = t("Partida gordeta");
+  notify(t("Partida markagailutik gorde da"), "success");
   try { await refreshAll(); }
-  catch (error) { notify("Partida gordeta dago, baina historiala ezin izan da birkargatu: " + error.message, "error"); }
+  catch (error) { notify(t("Partida gordeta dago, baina historiala ezin izan da birkargatu: ") + error.message, "error"); }
 });
 
 async function openMatchStats(matchId, view) {
@@ -3514,7 +3584,7 @@ async function openMatchStats(matchId, view) {
     tables.partidu_zigorrak = records("partidu_zigorrak").filter(function (row) { return Number(row.id_partida) !== id; }).concat(sanctions);
     renderMatches();
   }
-  if (!selected) { notify("Ezin izan da partida aurkitu. Birkargatu zerrenda.", "error"); return; }
+  if (!selected) { notify(t("Ezin izan da partida aurkitu. Birkargatu zerrenda."), "error"); return; }
   if (scoreMatchMode) await scoreExitMatchMode();
   $("stats-match").value = String(matchId);
   $("stats-mode").value = view === "opponents" ? "opponents" : "players";
@@ -3543,7 +3613,7 @@ $("attendance-dialog").addEventListener("click", function (event) {
 
 $("save-attendance").addEventListener("click", async function () {
   var sessionId = Number($("attendance-session").value);
-  if (!sessionId) return notify("Aukeratu entrenamendua lehenik", "error");
+  if (!sessionId) return notify(t("Aukeratu entrenamendua lehenik"), "error");
   var button = this, checks = Array.from(document.querySelectorAll("[data-att-player]"));
   button.disabled = true;
   try {
@@ -3556,7 +3626,7 @@ $("save-attendance").addEventListener("click", async function () {
         atzerapena_mota: document.querySelector('[data-late-type="' + id + '"]').value
       });
     }
-    await refreshAll(); renderAttendance(sessionId); $("attendance-dialog").close(); notify("Asistentzia gorde da", "success");
+    await refreshAll(); renderAttendance(sessionId); $("attendance-dialog").close(); notify(t("Asistentzia gorde da"), "success");
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
 });
@@ -3569,10 +3639,10 @@ document.addEventListener("click", async function (event) {
     try {
       await request({ action: "team_invitation_answer", invitation_id: Number(target.dataset.id), accept: target.dataset.teamInvitation === "accept" });
       if (target.dataset.teamInvitation === "accept") {
-        notify("Taldean sartu zara", "success");
+        notify(t("Taldean sartu zara"), "success");
         await loadTeams(false);
       } else {
-        notify("Gonbidapena baztertu da", "success");
+        notify(t("Gonbidapena baztertu da"), "success");
         await loadTeamInvitations();
       }
     } catch (error) { target.disabled = false; notify(error.message, "error"); }
@@ -3596,24 +3666,24 @@ document.addEventListener("click", async function (event) {
   }
   if (target.hasAttribute("data-refresh")) {
     target.disabled = true;
-    try { await refreshAll(); notify("Datuak eguneratu dira", "success"); }
+    try { await refreshAll(); notify(t("Datuak eguneratu dira"), "success"); }
     catch (error) { notify(error.message, "error"); }
     finally { target.disabled = false; }
   }
-  var deletion = null, message = "", successMessage = "Erregistroa ezabatu da";
+  var deletion = null, message = "", successMessage = t("Erregistroa ezabatu da");
   if (target.hasAttribute("data-delete-player")) {
     deletion = { action: "pwa_delete_player", id: Number(target.dataset.deletePlayer) };
-    message = "Jokalari hau ezabatu nahi duzu?";
+    message = t("Jokalari hau ezabatu nahi duzu?");
   } else if (target.hasAttribute("data-delete-exercise")) {
     deletion = { action: "pwa_delete_exercise", id: Number(target.dataset.deleteExercise) };
-    message = "Ariketa hau ezabatu nahi duzu?";
+    message = t("Ariketa hau ezabatu nahi duzu?");
   } else if (target.hasAttribute("data-delete-exercise-category")) {
     deletion = { action: "pwa_delete_category", izena: target.dataset.deleteExerciseCategory };
-    message = '"' + target.dataset.deleteExerciseCategory + '" izeneko kategoria-erregistro guztiak ezabatu? Kategoria hori ariketetatik kenduko da; beste kategoriak mantenduko dira.';
-    successMessage = "Kategoria ezabatu da";
+    message = '"' + target.dataset.deleteExerciseCategory + t("\" izeneko kategoria-erregistro guztiak ezabatu? Kategoria hori ariketetatik kenduko da; beste kategoriak mantenduko dira.");
+    successMessage = t("Kategoria ezabatu da");
   } else if (target.hasAttribute("data-delete-match")) {
     deletion = { action: "pwa_delete_match", id: Number(target.dataset.deleteMatch) };
-    message = "Partida hau eta haren estatistikak ezabatu nahi dituzu?";
+    message = t("Partida hau eta haren estatistikak ezabatu nahi dituzu?");
   }
   if (deletion && confirm(message)) {
     try {
@@ -3637,15 +3707,15 @@ document.addEventListener("click", async function (event) {
   if (target.hasAttribute("data-view-cup")) {
     var cupId = Number(target.dataset.viewCup);
     var cup = records("txapelketak").find(function (item) { return Number(item.id_txapelketa) === cupId; });
-    if (!cup) { notify("Ezin izan da txapelketa aurkitu. Birkargatu egutegia.", "error"); return; }
-    $("calendar-cup-title").textContent = cup.izena || "Txapelketa";
+    if (!cup) { notify(t("Ezin izan da txapelketa aurkitu. Birkargatu egutegia."), "error"); return; }
+    $("calendar-cup-title").textContent = cup.izena || t("Txapelketa");
     $("calendar-cup-meta").textContent = [formatDate(cup), cup.kategoria, cup.lekua].filter(Boolean).join(" · ");
     $("calendar-cup-modal").classList.remove("hidden");
   }
   if (target.hasAttribute("data-close-calendar-cup")) $("calendar-cup-modal").classList.add("hidden");
   if (target.hasAttribute("data-view-session")) {
     if (renderSavedSession(target.dataset.viewSession)) selectSection("v-session-detail");
-    else notify("Ezin izan da entrenamendua aurkitu. Birkargatu zerrenda.", "error");
+    else notify(t("Ezin izan da entrenamendua aurkitu. Birkargatu zerrenda."), "error");
   }
   if (target.hasAttribute("data-back-sessions")) selectSection("v-sessions");
   if (target.hasAttribute("data-training-board")) {
@@ -3673,11 +3743,11 @@ $("team-invite-form").addEventListener("submit", async function (event) {
   var friend = friendsCache.friends.find(function (item) {
     return String(item.user_id) === $("team-invite-friend").value;
   });
-  if (!friend) return notify("Aukeratu gonbidatzeko lagun bat", "error");
+  if (!friend) return notify(t("Aukeratu gonbidatzeko lagun bat"), "error");
   try {
     await request({ action: "team_invite", team_id: teamId, username: String(friend.username || "").trim().toLowerCase() });
     $("team-invite-friend").value = "";
-    notify("Taldeko gonbidapena bidali da", "success");
+    notify(t("Taldeko gonbidapena bidali da"), "success");
   } catch (error) { notify(error.message, "error"); }
 });
 
@@ -3691,7 +3761,7 @@ $("logout").addEventListener("click", async function () {
   localStorage.removeItem("7metro-team-id");
   showLogin();
   if (logoutError) notify(logoutError.message, "error");
-  else notify("Online saioa itxi da", "success");
+  else notify(t("Online saioa itxi da"), "success");
 });
 
 document.querySelectorAll("[data-theme-choice]").forEach(function (button) {
@@ -3712,11 +3782,11 @@ $("install").addEventListener("click", async function () {
   await installPrompt.prompt(); installPrompt = null; $("install").hidden = true;
 });
 var standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
-$("install-status").textContent = standalone ? "Instalatuta erabiltzen ari zara" : "Arakatzailetik erabiltzen ari zara";
+$("install-status").textContent = standalone ? t("Instalatuta erabiltzen ari zara") : t("Arakatzailetik erabiltzen ari zara");
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
     navigator.serviceWorker.register("sw.js").catch(function (error) {
-      console.error("Service worker-a ezin izan da erregistratu", error);
+      console.error(t("Service worker-a ezin izan da erregistratu"), error);
     });
   });
 }
