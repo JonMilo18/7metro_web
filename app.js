@@ -23,6 +23,7 @@ var macros = [], micros = [], playerStats = [], toastTimer, installPrompt = null
 var loadingCount = 0, loadingDelay = 0;
 var boardState = { fondo: "Zelaia", posizioak: {}, marrazkiak: [], animazioa: [] };
 var boardTool = "move", boardSelection = null, boardPointer = null, boardImages = {};
+var boardFrameIndex = -1, boardAnimationRaf = 0;
 var previewAnimation = null, previewAnimationFrame = 0;
 var sessionView = { ids: [], index: 0, raf: 0 };
 var sessionViewReturn = "v-sessions";
@@ -528,6 +529,7 @@ function finishBoardShape(start, end, tool) {
 
 function boardPointerDown(event) {
   if (event.button !== 0) return;
+  stopBoardAnimation();
   event.preventDefault();
   var point = boardPoint(event);
   var tool = boardTool;
@@ -599,9 +601,60 @@ function boardPointerUp(event) {
   boardPointer = null;
 }
 
+function captureBoardFrame() {
+  var frame = JSON.parse(JSON.stringify(boardState.posizioak));
+  boardState.marrazkiak.forEach(function (drawing, index) {
+    var props = Object.assign({}, drawing);
+    delete props.coords;
+    frame["dib_" + index] = { coords: drawing.coords.slice(), props: props };
+  });
+  return frame;
+}
+
+function updateBoardAnimationControls() {
+  var frames = boardState.animazioa;
+  $("board-frames").innerHTML = '<option value="-1">Uneko arbela</option>' + frames.map(function (_, index) {
+    return '<option value="' + index + '">' + (index + 1) + '. pausoa</option>';
+  }).join("");
+  $("board-frames").value = String(boardFrameIndex);
+  $("board-frame-update").disabled = boardFrameIndex < 0;
+  $("board-frame-delete").disabled = boardFrameIndex < 0;
+  $("board-animation-play").disabled = frames.length < 2;
+  $("board-animation-status").textContent = frames.length + " pauso gordeta. Animazioa sortzeko gutxienez 2 behar dira.";
+}
+
+function stopBoardAnimation() {
+  cancelAnimationFrame(boardAnimationRaf);
+  boardAnimationRaf = 0;
+  $("board-animation-play").textContent = "Animazioa ikusi";
+  redrawBoard();
+}
+
+function playBoardAnimation() {
+  if (boardAnimationRaf) { stopBoardAnimation(); return; }
+  if (boardState.animazioa.length < 2) return;
+  boardPointer = null;
+  var started;
+  $("board-animation-play").textContent = "Gelditu";
+  function animate(timestamp) {
+    if (started == null) started = timestamp;
+    var elapsed = (timestamp - started) / 650;
+    var index = Math.floor(elapsed), last = boardState.animazioa.length - 1;
+    if (index >= last) { stopBoardAnimation(); return; }
+    drawBoard($("exercise-board"), interpolateAnimationFrames(
+      boardState.animazioa[index], boardState.animazioa[index + 1], elapsed - index, boardState.fondo
+    ), null);
+    boardAnimationRaf = requestAnimationFrame(animate);
+  }
+  boardAnimationRaf = requestAnimationFrame(animate);
+}
+
 function resetBoard() {
+  stopBoardAnimation();
+  boardFrameIndex = -1;
   boardState = { fondo: $("board-background").value, posizioak: {}, marrazkiak: [], animazioa: [] };
   boardSelection = null;
+  updateBoardAnimationControls();
   redrawBoard();
 }
 
@@ -634,11 +687,17 @@ function interpolateAnimationFrames(start, end, progress, fondo) {
   var from = animationFrameState(start, fondo), to = animationFrameState(end, fondo);
   var state = { fondo: fondo, posizioak: {}, marrazkiak: [], animazioa: [] };
   Object.keys(from.posizioak).forEach(function (tag) {
-    if (!to.posizioak[tag]) return;
+    if (!to.posizioak[tag]) {
+      if (progress < 1) state.posizioak[tag] = from.posizioak[tag];
+      return;
+    }
     state.posizioak[tag] = {
       x: from.posizioak[tag].x + (to.posizioak[tag].x - from.posizioak[tag].x) * progress,
       y: from.posizioak[tag].y + (to.posizioak[tag].y - from.posizioak[tag].y) * progress
     };
+  });
+  if (progress >= 1) Object.keys(to.posizioak).forEach(function (tag) {
+    state.posizioak[tag] = to.posizioak[tag];
   });
   var count = Math.max(from.marrazkiak.length, to.marrazkiak.length);
   for (var i = 0; i < count; i++) {
@@ -1844,6 +1903,7 @@ async function refreshAll() {
 }
 
 function selectSection(id) {
+  if (id !== "v-board") stopBoardAnimation();
   setMobileMenu(false);
   if (id !== "v-session-view") stopSessionAnimation();
   if (id !== "v-session-detail" && previewAnimation &&
@@ -2373,6 +2433,7 @@ $("exercise-form").addEventListener("submit", async function (event) {
   var form = this, button = form.querySelector('button[type="submit"]');
   var data = Object.fromEntries(new FormData(form).entries());
   data.jokalari_kopurua = numberOrNull(data.jokalari_kopurua);
+  stopBoardAnimation();
   boardState.fondo = $("board-background").value;
   data.arbela_datuak = JSON.stringify(boardState);
   button.disabled = true;
@@ -2424,10 +2485,44 @@ $("board-delete").addEventListener("click", function () {
   redrawBoard();
 });
 $("board-clear").addEventListener("click", function () {
-  if (!Object.keys(boardState.posizioak).length && !boardState.marrazkiak.length) return;
+  if (!Object.keys(boardState.posizioak).length && !boardState.marrazkiak.length && !boardState.animazioa.length) return;
   if (!confirm("Arbel guztia garbitu nahi duzu?")) return;
   resetBoard();
 });
+$("board-frame-add").addEventListener("click", function () {
+  stopBoardAnimation();
+  boardState.animazioa.push(captureBoardFrame());
+  boardFrameIndex = boardState.animazioa.length - 1;
+  updateBoardAnimationControls();
+});
+$("board-frames").addEventListener("change", function () {
+  stopBoardAnimation();
+  boardFrameIndex = Number(this.value);
+  if (boardFrameIndex >= 0) {
+    var state = animationFrameState(boardState.animazioa[boardFrameIndex], boardState.fondo);
+    boardState.posizioak = JSON.parse(JSON.stringify(state.posizioak));
+    boardState.marrazkiak = JSON.parse(JSON.stringify(state.marrazkiak));
+    boardSelection = null;
+  }
+  updateBoardAnimationControls();
+  redrawBoard();
+});
+$("board-frame-update").addEventListener("click", function () {
+  stopBoardAnimation();
+  if (boardFrameIndex < 0) return;
+  boardState.animazioa[boardFrameIndex] = captureBoardFrame();
+  updateBoardAnimationControls();
+  notify("Pausoa eguneratu da", "success");
+});
+$("board-frame-delete").addEventListener("click", function () {
+  stopBoardAnimation();
+  if (boardFrameIndex < 0) return;
+  boardState.animazioa.splice(boardFrameIndex, 1);
+  boardFrameIndex = -1;
+  updateBoardAnimationControls();
+});
+$("board-animation-play").addEventListener("click", playBoardAnimation);
+updateBoardAnimationControls();
 loadBoardBackgrounds();
 redrawBoard();
 
