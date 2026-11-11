@@ -577,6 +577,12 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
  .quick-location .score-mode-dialog-heading h2{font-size:.9rem}
  .shot-goal-zone{font-size:.75rem}
 }
+.score-clock-edit{position:relative;width:100%;padding:0;border:0;border-radius:8px;background:transparent;color:var(--ink);text-align:center;cursor:pointer;appearance:none}
+.score-clock-edit:hover{background:rgba(0,68,238,.08)}.score-clock-edit:disabled{cursor:default}.score-clock-edit>.score-clock-edit-icon{position:absolute;right:1px;bottom:0;font-size:.9rem;color:var(--muted);line-height:1}.score-clock-edit:disabled>.score-clock-edit-icon{opacity:.35}
+.score-time-dialog{width:min(360px,calc(100% - 20px));max-height:calc(100dvh - 20px);padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--bg2);color:var(--ink);overflow:auto;overscroll-behavior:contain;box-shadow:0 20px 60px #0006}.score-time-dialog::backdrop{background:#0008;backdrop-filter:blur(3px)}
+.score-time-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}.score-time-heading h2{margin:0;font-size:1.1rem}.score-time-heading .btn{width:auto;min-height:44px;margin:0;padding:7px 12px}.score-time-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px}.score-time-inputs label{min-width:0}.score-time-inputs input{min-height:56px;text-align:center;font-size:1.35rem;font-weight:750;font-variant-numeric:tabular-nums}
+.score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
+@media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
 </head>
 <body>
@@ -824,7 +830,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
       <div class="card score-live-panel" id="score-live-panel">
         <div class="score-live-summary">
           <div class="score-live-side"><span id="score-home-label">Gure taldea</span><strong id="score-home">0</strong></div>
-          <div class="score-live-time"><span id="score-live-state">Prest</span><strong id="score-clock">00:00</strong><span id="score-period">1. zatia</span></div>
+          <button class="score-live-time score-clock-edit" id="score-clock-edit" type="button" aria-label="Denbora zuzendu" aria-describedby="score-clock score-period" aria-haspopup="dialog" aria-expanded="false" title="Denbora zuzendu"><span id="score-live-state">Prest</span><strong id="score-clock">00:00</strong><span id="score-period">1. zatia</span><span class="score-clock-edit-icon" aria-hidden="true">&#9998;</span></button>
           <div class="score-live-side"><span id="score-away-label">Aurkaria</span><strong id="score-away">0</strong></div>
         </div>
         <div class="score-timer-actions"><button class="btn" id="score-start" type="button">Hasi denbora</button><button class="btn secondary" id="score-period-next" type="button">Hurrengo zatia</button></div>
@@ -870,6 +876,12 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
         <div class="help-heading"><h2>Partida gorde</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-16" aria-label="Partida gorde: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-16" hidden>Emaitza, bi taldeetako jokalarien golak, jaurtiketak eta zigorrak, eta erregistratutako kokapenak partiden historialean gordeko dira.</p>
         <div class="grid2"><label>Data eta ordua<input id="score-save-date" type="datetime-local" required></label><label>Tokia<select id="score-save-venue"><option>Etxean</option><option>Kanpoan</option></select></label></div><button class="btn" id="score-save-match" type="button">Partida hau gorde</button><p class="muted" id="score-save-status" aria-live="polite">Oraindik ez da gorde.</p><button class="btn secondary hidden" id="score-opponent-stats" type="button">Ikusi aurkariaren estatistikak</button>
       </div></details>
+      <dialog id="score-time-dialog" class="score-time-dialog" aria-labelledby="score-time-title"><div class="score-time-heading"><h2 id="score-time-title">Denbora zuzendu</h2><button class="btn secondary" id="score-time-cancel" type="button">Utzi</button></div>
+        <form id="score-time-form" class="stack"><p class="muted" id="score-time-status" role="status">Kronoa pausatuta dago.</p><div class="score-time-inputs"><label>Minutuak<input id="score-time-minutes" type="number" inputmode="numeric" min="0" max="999" step="1" required></label><label>Segundoak<input id="score-time-seconds" type="number" inputmode="numeric" min="0" max="59" step="1" required></label></div>
+          <div class="score-time-shifts" role="group" aria-label="Segundoak gehitu edo kendu"><button type="button" data-score-time-delta="-30">&minus;30 s</button><button type="button" data-score-time-delta="-10">&minus;10 s</button><button type="button" data-score-time-delta="10">+10 s</button><button type="button" data-score-time-delta="30">+30 s</button></div>
+          <label class="checkrow"><input id="score-time-resume" type="checkbox">Kronoarekin jarraitu</label><p id="score-time-error" class="notice error" role="alert" hidden></p><button class="btn" type="submit">Aplikatu denbora</button>
+        </form>
+      </dialog>
       <dialog id="score-tools-dialog" class="score-mode-dialog" aria-labelledby="score-tools-title"><div class="score-mode-dialog-heading"><h2 id="score-tools-title">Partidaren aukerak</h2><button class="btn secondary" type="button" data-close-score-dialog="score-tools-dialog">Itxi</button></div><button class="btn secondary" type="button" id="score-mode-new-shot">Jaurtiketa berria kokapenarekin</button><div id="score-tools-content"></div></dialog>
       <dialog id="score-location-dialog" class="score-mode-dialog" aria-labelledby="score-location-title"><div class="score-mode-dialog-heading"><h2 id="score-location-title">Jaurtiketaren kokapena</h2><button class="btn secondary" type="button" data-close-score-dialog="score-location-dialog">Utzi</button></div><div id="score-location-content"></div></dialog>
       <dialog id="score-player-dialog" class="score-player-dialog" aria-labelledby="score-player-title"><div class="score-player-heading"><div><span class="score-small-label" id="score-player-time"></span><h2 id="score-player-title">Aukeratu jokalaria</h2></div><button type="button" class="btn secondary" id="score-player-cancel">Utzi</button></div><div class="score-player-grid" id="score-player-grid"></div><details id="score-opponent-add" class="score-opponent-add hidden"><summary><strong>+ Aurkariaren jokalaria</strong></summary><form id="score-opponent-form" class="stack score-details-content"><div class="score-opponent-fields"><label>Dortsala<input id="score-opponent-number" type="number" inputmode="numeric" min="0" max="999" step="1" placeholder="7"></label><label>Izena (aukerakoa)<input id="score-opponent-name" type="text" maxlength="100" autocomplete="off"></label></div><p id="score-opponent-error" class="notice error" role="alert" hidden></p><button class="btn" type="submit">Gehitu eta erregistratu</button></form></details><button class="btn secondary" type="button" id="score-player-unspecified">Jokalaria zehaztu gabe</button></dialog>
@@ -960,6 +972,6 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="app.js?v=121" defer></script>
+<script src="app.js?v=122" defer></script>
 </body>
 </html>

@@ -2013,10 +2013,12 @@ function selectSection(id) {
 }
 
 var scoreboard = { home: 0, away: 0, seconds: 0, period: 0, running: false, events: [], lastTick: 0 };
+var scoreTimeEditState = null;
 var scoreMatchMode = false, scoreModePanels = [], scoreModeScroll = 0, scoreNativeFullscreen = false, scoreWakeLock = null, scoreWakePending = false;
 var scoreTimer = 0, scoreSaving = false, scoreShotType = "normal", scoreSanctionSide = "home", pendingScoreAction = null, shotTargetEvent = null;
 function scoreStorageKey() { return "7metro-scoreboard-" + (teamId || "local"); }
 function scoreRead() {
+  scoreDiscardTimeEdit();
   clearInterval(scoreTimer);
   pendingScoreAction = null; scoreShotType = "normal"; scoreSanctionSide = "home";
   if ($("score-player-dialog").open) $("score-player-dialog").close();
@@ -2119,7 +2121,7 @@ function scoreRender() {
     return '<li class="item"><div class="item-main"><strong>' + esc(event.score) + ' \u00b7 ' + esc(scoreActionLabel(event.type)) + '</strong><small>' + esc(scoreEventText(event)) + '</small></div></li>';
   }).join("") : '<li class="empty">Oraindik ez da gertaerarik erregistratu.</li>';
   document.querySelectorAll("[data-quick-side], [data-score], [data-score-type]").forEach(function (button) { button.disabled = locked; });
-  ["score-start", "score-period-next", "score-home-name", "score-away-name", "score-mode", "score-minutes", "score-save-date", "score-save-venue"].forEach(function (id) { $(id).disabled = locked; });
+  ["score-start", "score-clock-edit", "score-period-next", "score-home-name", "score-away-name", "score-mode", "score-minutes", "score-save-date", "score-save-venue"].forEach(function (id) { $(id).disabled = locked; });
   $("score-reset").disabled = scoreSaving;
   $("score-save-match").disabled = locked;
   $("score-opponent-stats").classList.toggle("hidden", !Number.isSafeInteger(scoreboard.savedMatchId) || scoreboard.savedMatchId < 1);
@@ -2566,6 +2568,85 @@ document.querySelectorAll("[data-score]").forEach(function (button) {
     scoreSave(); scoreRender();
   });
 });
+function scoreTimeLimit() {
+  return $("score-mode").value === "manual" ? 999 * 60 + 59 : Math.max(1, Number($("score-minutes").value) || 30) * 60;
+}
+function scoreTimeDraft() {
+  var minutes = $("score-time-minutes").value, seconds = $("score-time-seconds").value;
+  if (minutes === "" || seconds === "" || !Number.isInteger(Number(minutes)) || !Number.isInteger(Number(seconds)) || Number(minutes) < 0 || Number(seconds) < 0 || Number(seconds) > 59) return null;
+  return Number(minutes) * 60 + Number(seconds);
+}
+function scoreTimeCanRun(seconds) {
+  if ($("score-mode").value === "manual") return true;
+  return $("score-mode").value === "countdown" ? seconds > 0 : seconds < scoreTimeLimit();
+}
+function scoreRenderTimeDraft() {
+  var draft = scoreTimeDraft(), canRun = draft !== null && draft <= scoreTimeLimit() && scoreTimeCanRun(draft);
+  $("score-time-resume").disabled = !canRun;
+  $("score-time-status").textContent = "Kronoa pausatuta dago." + (draft !== null && draft <= scoreTimeLimit() && !scoreTimeCanRun(draft) ? " Zatiaren amaiera." : "");
+}
+function scoreSetTimeDraft(seconds) {
+  $("score-time-minutes").value = String(Math.floor(seconds / 60));
+  $("score-time-seconds").value = String(seconds % 60);
+  $("score-time-error").hidden = true;
+  scoreRenderTimeDraft();
+}
+function scoreResumeClock() {
+  scoreboard.running = true; scoreboard.lastTick = Date.now();
+  clearInterval(scoreTimer); scoreTimer = setInterval(scoreUpdate, 250);
+}
+function scoreDiscardTimeEdit() {
+  scoreTimeEditState = null;
+  if ($("score-time-dialog").open) $("score-time-dialog").close();
+  $("score-clock-edit").setAttribute("aria-expanded", "false");
+}
+$("score-clock-edit").addEventListener("click", function () {
+  if (scoreIsLocked()) return;
+  scoreUpdate();
+  scoreTimeEditState = { board: scoreboard, wasRunning: scoreboard.running, applied: false };
+  scoreboard.running = false; clearInterval(scoreTimer);
+  $("score-time-minutes").max = String(Math.floor(scoreTimeLimit() / 60));
+  $("score-time-resume").checked = scoreTimeEditState.wasRunning;
+  scoreSetTimeDraft(Math.min(scoreTimeLimit(), scoreboard.seconds));
+  scoreSave(); scoreRender();
+  this.setAttribute("aria-expanded", "true");
+  $("score-time-dialog").showModal();
+});
+document.querySelectorAll("[data-score-time-delta]").forEach(function (button) {
+  button.addEventListener("click", function () {
+    if (scoreIsLocked() || !scoreTimeEditState) return;
+    var draft = scoreTimeDraft();
+    scoreSetTimeDraft(Math.max(0, Math.min(scoreTimeLimit(), (draft === null ? scoreboard.seconds : draft) + Number(this.dataset.scoreTimeDelta))));
+  });
+});
+$("score-time-form").addEventListener("input", function () { $("score-time-error").hidden = true; scoreRenderTimeDraft(); });
+$("score-time-form").addEventListener("submit", function (event) {
+  event.preventDefault();
+  if (scoreIsLocked() || !scoreTimeEditState || scoreTimeEditState.board !== scoreboard) return;
+  var draft = scoreTimeDraft();
+  if (draft === null || draft > scoreTimeLimit()) {
+    $("score-time-error").textContent = "Idatzi 0:00 eta " + scoreFormat(scoreTimeLimit()) + " arteko denbora.";
+    $("score-time-error").hidden = false;
+    return;
+  }
+  scoreboard.seconds = draft;
+  scoreboard.running = false; scoreboard.lastTick = 0; clearInterval(scoreTimer);
+  if ($("score-time-resume").checked && scoreTimeCanRun(draft)) scoreResumeClock();
+  scoreTimeEditState.applied = true;
+  scoreSave(); scoreRender(); scoreFinishTimeEdit(); $("score-time-dialog").close();
+});
+function scoreFinishTimeEdit() {
+  var edit = scoreTimeEditState; scoreTimeEditState = null;
+  $("score-clock-edit").setAttribute("aria-expanded", "false");
+  if (edit && !edit.applied && edit.board === scoreboard && !scoreIsLocked()) {
+    if (edit.wasRunning) scoreResumeClock();
+    scoreSave(); scoreRender();
+  }
+}
+function scoreCancelTimeEdit() { scoreFinishTimeEdit(); $("score-time-dialog").close(); }
+$("score-time-cancel").addEventListener("click", scoreCancelTimeEdit);
+$("score-time-dialog").addEventListener("cancel", function (event) { event.preventDefault(); scoreCancelTimeEdit(); });
+$("score-time-dialog").addEventListener("close", function () { if (!this.open) scoreFinishTimeEdit(); });
 $("score-start").addEventListener("click", function () {
   if (scoreIsLocked()) return;
   scoreUpdate();
@@ -2642,7 +2723,7 @@ async function scoreEnterMatchMode() {
 async function scoreExitMatchMode() {
   if (!scoreMatchMode) return;
   scoreMatchMode = false; scoreNativeFullscreen = false;
-  ["score-player-dialog", "score-tools-dialog", "score-location-dialog"].forEach(function (id) { if ($(id).open) $(id).close(); });
+  ["score-player-dialog", "score-tools-dialog", "score-location-dialog", "score-time-dialog"].forEach(function (id) { if ($(id).open) $(id).close(); });
   scoreModePanels.forEach(function (panel) { panel.placeholder.replaceWith(panel.element); });
   scoreModePanels = [];
   $("v-scoreboard").classList.remove("score-match-mode");
