@@ -1,9 +1,9 @@
 // 7metro - service worker probisionala
 // Aldaketak argitaratzean, aldatu CACHE bertsioa.
-const CACHE = "7metro-v142";
+const CACHE = "7metro-v143";
 const SHELL = ["./", "./index.html", "./manifest.json",
-  "./locales/es.js?v=142", "./i18n.js?v=142", "./app.js?v=142", "./insights-data.js?v=142", "./insights.js?v=142",
-  "./report-pdf.js?v=142", "./insights.css?v=142", "./vendor/jspdf.umd.min.js",
+  "./locales/es.js?v=143", "./i18n.js?v=143", "./app.js?v=143", "./insights-data.js?v=143", "./insights.js?v=143",
+  "./report-pdf.js?v=143", "./insights.css?v=143", "./vendor/jspdf.umd.min.js",
   "./vendor/fonts/NotoSans-Regular.ttf", "./vendor/fonts/NotoSans-Bold.ttf",
   "./irudiak/Zelaia.png", "./irudiak/Zelai-erdia.png",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];

@@ -6,6 +6,8 @@ window.SevenMetroLocales.es = {
   "name": "Español",
   "locale": "es-ES",
   "messages": {
+    "Ikusgaiak hautatu": "Seleccionar visibles",
+    "Kategoriarik gabe": "Sin categoría",
     "Bilatzen...": "Buscando...",
     "Hautatu erabiltzaile bat eskaera bidaltzeko.": "Selecciona un usuario para enviarle una solicitud.",
     "Ez da erabiltzailerik aurkitu.": "No se han encontrado usuarios.",
