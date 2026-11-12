@@ -96,3 +96,11 @@
 
 #plan-micro-legend[hidden]{display:none!important}
 .plan-legend-heading{margin:10px 0;color:var(--muted);font-size:.85rem}
+
+.friend-search-results[hidden],#friend-search-status[hidden]{display:none!important}
+.friend-search-results{margin:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;max-height:300px;overflow-y:auto}
+.friend-search-results li+li{border-top:1px solid var(--line)}
+.friend-search-option{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;width:100%;border:0;padding:12px;background:var(--bg2);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.friend-search-option span:first-child{min-width:0;overflow-wrap:anywhere}
+.friend-search-option:hover,.friend-search-option:focus-visible{background:rgba(0,68,238,.15);outline:2px solid var(--blue);outline-offset:-2px}
+#friend-search-status{margin:0;font-size:.85rem}

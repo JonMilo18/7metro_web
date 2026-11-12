@@ -2176,6 +2176,7 @@ async function refreshAll() {
 }
 
 function selectSection(id) {
+  if (id !== "v-friends" && typeof friendSearchSequence === "number") clearFriendSearch();
   if (id !== "v-planning") closePlanningOptions();
   if (id !== "v-scoreboard" && scoreMatchMode) scoreExitMatchMode();
   if (id !== "v-board") stopBoardAnimation();
@@ -2566,11 +2567,49 @@ async function loadFriends() {
     notify(error.message, "error");
   }
 }
+var friendSearchTimer = 0, friendSearchSequence = 0;
+function clearFriendSearch() {
+  clearTimeout(friendSearchTimer); friendSearchSequence++;
+  $("friend-search-results").hidden = true;
+  $("friend-search-results").innerHTML = "";
+  $("friend-search-status").hidden = true;
+}
+$("friend-username").addEventListener("input", function () {
+  clearFriendSearch();
+  var query = this.value.trim(), sequence = friendSearchSequence;
+  if (!query) return;
+  var status = $("friend-search-status");
+  status.hidden = false; status.textContent = t("Bilatzen...");
+  friendSearchTimer = setTimeout(async function () {
+    try {
+      var result = await request({ action: "friends_search", query: query });
+      if (sequence !== friendSearchSequence) return;
+      var users = result.users || [], list = $("friend-search-results");
+      status.textContent = t(users.length ? "Hautatu erabiltzaile bat eskaera bidaltzeko." : "Ez da erabiltzailerik aurkitu.");
+      list.innerHTML = users.map(function (user) {
+        return '<li><button type="button" class="friend-search-option" data-friend-username="' + esc(user.username) + '"><span>' + esc(user.username) + '</span><span aria-hidden="true">&rsaquo;</span></button></li>';
+      }).join("");
+      list.hidden = !users.length;
+    } catch (error) {
+      if (sequence !== friendSearchSequence) return;
+      status.textContent = t("Ezin izan dira erabiltzaileak bilatu");
+    }
+  }, 250);
+});
+$("friend-search-results").addEventListener("click", function (event) {
+  var button = event.target.closest("[data-friend-username]");
+  if (!button) return;
+  $("friend-username").value = button.dataset.friendUsername;
+  clearFriendSearch(); $("friend-username").focus();
+});
+$("friend-username").addEventListener("keydown", function (event) {
+  if (event.key === "Escape") clearFriendSearch();
+});
 $("friend-form").addEventListener("submit", async function (event) {
   event.preventDefault();
   try {
     await request({ action: "friend_add", username: $("friend-username").value.trim().toLowerCase() });
-    $("friend-username").value = ""; notify(t("Lagun-eskaera bidali da"), "success"); await loadFriends();
+    $("friend-username").value = ""; clearFriendSearch(); notify(t("Lagun-eskaera bidali da"), "success"); await loadFriends();
   } catch (error) { notify(error.message, "error"); }
 });
 $("friends-refresh").addEventListener("click", function () { loadFriends(); });

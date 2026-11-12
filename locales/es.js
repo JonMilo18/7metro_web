@@ -6,6 +6,12 @@ window.SevenMetroLocales.es = {
   "name": "Español",
   "locale": "es-ES",
   "messages": {
+    "Bilatzen...": "Buscando...",
+    "Hautatu erabiltzaile bat eskaera bidaltzeko.": "Selecciona un usuario para enviarle una solicitud.",
+    "Ez da erabiltzailerik aurkitu.": "No se han encontrado usuarios.",
+    "Bilaketarekin bat datozen erabiltzaileak": "Usuarios que coinciden con la búsqueda",
+    "Ezin izan dira erabiltzaileak bilatu": "No se han podido buscar usuarios",
+    "Bilaketa ez da baliozkoa": "La búsqueda no es válida",
     "Mikrozikloen koloreak": "Colores de los microciclos",
     "Mikrozikloen koloreak: informazioa": "Colores de los microciclos: informaci?n",
     "Gehitu plangintzan": "A?adir a la planificaci?n",

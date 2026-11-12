@@ -36,3 +36,12 @@ aurreko transakzio osoaren leheneratzea egiaztatzen dituzte.
 autentifikazioa eta taldekidetasuna egiaztatu ondoren. `partidak.partida_analisia`
 eremua bakarrik eguneratzen du; aurreko balioarekin alderatzen du beste gailuko
 oharrak ustekabean gainidaztea eragozteko. Ez du beste migraziorik behar.
+
+
+`friend-search.ts` moduluak `friends_search` ekintza eskaintzen du.
+`metro-api`-ko `socialActions` multzoan erregistratuta dago eta, saioa
+balioztatu ondoren, `searchFriendUsers(payload, supabase, userId, jsonResponse)`
+deitzen du. `query` testuaren arabera gehienez zortzi erabiltzaile-izen itzultzen
+ditu; norberaren kontua baztertzen du eta ez du kontaktu-daturik itzultzen.
+Ez du datu-baseko migraziorik behar. Webeko argitalpenaz gain, `metro-api`
+funtzioa ere hedatu behar da: `npx supabase functions deploy metro-api`.
