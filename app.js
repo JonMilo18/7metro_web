@@ -204,6 +204,7 @@ async function requestImpl(payload, anonymous) {
 }
 
 function showLogin() {
+  if (window.PlayerPortal) window.PlayerPortal.reset();
   if (scoreMatchMode) scoreExitMatchMode();
   token = "";
   setMobileMenu(false);
@@ -302,6 +303,7 @@ async function loadTeams(autoOpen) {
 }
 
 async function openTeam(id) {
+  if (window.PlayerPortal) window.PlayerPortal.hide();
   var selected = teams.find(function (item) { return Number(item.id_taldea) === Number(id); });
   if (!selected) throw new Error(t("Aukeratutako taldea ez da aurkitu"));
   if (teamId !== Number(selected.id_taldea)) {
@@ -2188,7 +2190,7 @@ function selectSection(id) {
   var primarySection = id === "v-home" ? "v-home" :
     (["v-sessions", "v-board", "v-session-view", "v-session-detail"].indexOf(id) !== -1 ? "v-sessions" :
     (["v-matches", "v-scoreboard", "v-match-report"].indexOf(id) !== -1 ? "v-matches" :
-    (id === "v-player-profile" ? "v-players" :
+    (["v-player-profile", "v-player-management"].includes(id) ? "v-players" :
       (["v-planning", "v-players", "v-stats", "v-friends"].indexOf(id) !== -1 ? id : "v-more"))));
   document.querySelectorAll("nav [data-v]").forEach(function (button) {
     button.setAttribute("aria-selected", String(button.dataset.v === primarySection));
@@ -2197,6 +2199,7 @@ function selectSection(id) {
     section.classList.toggle("on", section.id === id);
   });
   if (id === "v-friends") loadFriends();
+  if (id === "v-player-management" && window.PlayerPortal) window.PlayerPortal.loadCoach();
   window.scrollTo(0, 0);
   if (id === "v-stats") renderStats();
 }
@@ -3186,7 +3189,7 @@ $("login-form").addEventListener("submit", async function (event) {
     saveLocal("7metro-username", user.izena);
     $("password").value = "";
     notify(t("Online kontura konektatuta"), "success");
-    await loadTeams(true);
+    await routeAuthenticatedSession($("login-mode").value);
   } catch (error) {
     token = "";
     localStorage.removeItem("7metro-supabase-token");
@@ -3222,7 +3225,7 @@ $("account-create-form").addEventListener("submit", async function (event) {
     $("new-password").value = "";
     $("account-create-dialog").close();
     notify(t("Kontua sortu da eta saioa hasi duzu"), "success");
-    await loadTeams(true);
+    await routeAuthenticatedSession($("login-mode").value);
   } catch (error) {
     notify(error.message, "error");
   } finally { button.disabled = false; }
@@ -4173,7 +4176,7 @@ if ("serviceWorker" in navigator) {
 (async function () {
   if (!token) return;
   try {
-    await loadTeams(true);
+    await routeAuthenticatedSession();
   } catch (error) {
     showLogin(); notify(error.message, "error");
   }

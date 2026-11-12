@@ -54,3 +54,15 @@ jsonResponse)` deitzen du. Jokalariaren identifikatzailea eta taldea erabiliz
 editagarriak diren eremuak bakarrik eguneratzen ditu, jabea eta estatistiken
 loturak aldatu gabe. `expected` aurreko datuekin alderatzen du aldaketa
 gatazkatsuak saihesteko. Ez du migraziorik behar; `metro-api` ere hedatu behar da.
+
+Jokalarien aplikazioa: `portal-actions.ts` eta
+`migrations/20261112120000_player_portal.sql`. Lehenik SQL migrazioa aplikatu,
+ondoren `metro-api` hedatu eta azkenik webeko bertsioa argitaratu.
+`metro-api`-k `portalActions` multzoko ekintzak saioa balioztatu ondoren
+`handlePortalAction` funtziora bidaltzen ditu, benetako erabiltzaile-IDarekin.
+`player_portal_action` RPCak baimenak eta idazketak transakzio berean ebazten ditu.
+Taula berriek RLS dute, eta RPCa service_role rolak bakarrik exekuta dezake.
+Jokalarien loturak ez dira `team_memberships` taulan sartzen. Jokalariaren
+erantzunak eta benetako asistentzia bereizita gordetzen dira. Snapshotak baimendutako
+eremuak bakarrik itzultzen ditu; ez ditu kontaktuak edo entrenatzailearen ohar
+pribatuak ematen. Funtzionamendua: [JOKALARIAK.md](../JOKALARIAK.md).

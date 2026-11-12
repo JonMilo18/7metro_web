@@ -1,0 +1,27 @@
+#player-portal [hidden],#portal-response-error[hidden],#portal-coach-error[hidden]{display:none!important}
+body.player-mode header{position:relative;width:100%;padding:14px 20px;display:flex;border-bottom:1px solid var(--line)}
+body.player-mode #account{position:static;margin-left:auto;font-size:.85rem;overflow-wrap:anywhere}
+body.player-mode main{margin-left:0;padding:24px 16px 120px}
+body.player-mode main>#player-portal{width:100%;max-width:760px;margin:auto}
+.portal-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.portal-heading>div{min-width:0}.portal-heading h1{margin:5px 0}.portal-heading p{margin:0;overflow-wrap:anywhere}
+.portal-heading>.btn{width:auto;flex:none;margin:0}
+.portal-tabs,.portal-coach-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:16px 0}
+.portal-tabs{position:fixed;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:728px;bottom:8px;margin:0;padding:8px;border:1px solid var(--line);border-radius:14px;background:var(--bg);box-shadow:0 4px 24px #0004;z-index:2;padding-bottom:max(8px,env(safe-area-inset-bottom))}
+.portal-tabs button,.portal-coach-tabs button{min-width:0;min-height:46px;padding:8px 4px;font-size:.85rem;font-weight:700;background:var(--bg2);border:1px solid var(--line);border-radius:9px;color:var(--muted);cursor:pointer;overflow-wrap:anywhere}
+.portal-tabs button[aria-pressed=true],.portal-coach-tabs button[aria-pressed=true]{background:var(--blue);color:white;border-color:var(--blue)}
+.portal-kind{display:block;font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:6px}
+.portal-event h3{font-size:1.15rem;margin:0 0 8px;overflow-wrap:anywhere}.portal-event p{margin:6px 0}
+.portal-event .btn{margin:14px 0 0}.portal-event-date{font-weight:700}
+.portal-meeting{margin:14px 0;padding:12px;border-left:3px solid var(--blue);background:rgba(0,68,238,.08);border-radius:6px}
+.portal-authored{white-space:pre-wrap;overflow-wrap:anywhere}
+.portal-response{font-size:.85rem;font-weight:700;color:var(--muted)}.portal-response.yes{color:var(--good)}.portal-response.no{color:var(--bad)}.portal-response.maybe{color:var(--warn,#e6a23c)}
+.portal-roster-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
+.portal-roster-row:last-child{border:0}.portal-roster-row>div{min-width:0;flex:1}.portal-roster-row strong,.portal-roster-row small{display:block;overflow-wrap:anywhere}.portal-roster-row small{margin-top:5px}.portal-roster-row>.btn{width:auto;margin:0;min-height:44px;font-size:.85rem;padding:8px 10px}
+.portal-response-roster{margin-top:14px}.portal-callup-roster{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:8px}
+.portal-inline-actions{display:flex;gap:8px}.portal-inline-actions .btn{flex:1;min-width:0}
+.portal-logout{max-width:240px;margin:24px auto 0}
+#portal-coach-content input,#portal-coach-content select,#portal-coach-content textarea,#portal-response-dialog input,#portal-response-dialog select{min-width:0;max-width:100%}
+#portal-coach-content label{min-width:0;grid-template-columns:minmax(0,1fr)}
+#portal-response-dialog{max-width:560px}
+@media(max-width:420px){.portal-heading{align-items:flex-start}.portal-heading h1{font-size:1.55rem}.portal-heading>.btn{padding:9px;font-size:.85rem}.portal-tabs button,.portal-coach-tabs button{font-size:.76rem}.portal-roster-row{flex-wrap:wrap}.portal-roster-row>.portal-response{flex:0 0 100%;margin:0}.portal-roster-row>.btn{max-width:100%}}

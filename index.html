@@ -585,7 +585,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=145">
+<link rel="stylesheet" href="insights.css?v=146"><link rel="stylesheet" href="portal.css?v=146">
 </head>
 <body>
 <div id="app">
@@ -594,13 +594,30 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <section id="v-login" class="on">
   <div class="help-heading"><h1>Saioa hasi</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-1" aria-label="Saioa hasi: informazioa"><span aria-hidden="true">i</span></button></div>
   <p class="sub" id="help-text-1" hidden>Hasi saioa edo sortu 7metroko kontu berria. Pasahitzak gutxienez 8 karaktere izan behar ditu.</p>
-  <form id="login-form" class="card stack">
+  <form id="login-form" class="card stack"><label>Sarbidea<select id="login-mode"><option value="">Automatikoa</option><option value="coach">Entrenatzailea</option><option value="player">Jokalaria</option></select></label>
     <label>Erabiltzailea<input id="username" autocomplete="username" required></label>
     <label>Pasahitza<input id="password" type="password" autocomplete="current-password" required></label>
     <button class="btn" type="submit">Saioa hasi</button>
   </form>
   <button class="btn secondary" id="create-account" type="button">Kontua sortu</button>
   <label style="margin-top:20px">Hizkuntza<select id="login-language-select" data-language-select><option value="eu" lang="eu" translate="no">Euskara</option><option value="es" lang="es" translate="no">Español</option></select></label>
+</section>
+
+<section id="player-portal" class="hidden" aria-label="Jokalarien aplikazioa">
+  <div class="portal-heading"><div><span class="insight-eyebrow">7METRO · JOKALARIA</span><h1>Nire taldea</h1><p id="portal-player-name" class="muted"></p></div><button class="btn secondary" id="portal-refresh" type="button">Birkargatu</button></div>
+  <p id="portal-error" class="notice error" role="alert" hidden></p>
+  <div id="portal-invites"></div>
+  <div id="portal-no-link" class="card" hidden><h2>Lotu zure jokalari-fitxa</h2><p>Eskatu entrenatzaileari gonbidapena erabiltzaile-izen honetara bidaltzeko:</p><strong id="portal-username"></strong><p class="muted">Gonbidapena jasotzean, hemen onartu ahal izango duzu.</p></div>
+  <label id="portal-team-label" hidden>Taldea<select id="portal-team"></select></label>
+  <div id="portal-linked-content" hidden>
+    <div id="portal-agenda" class="portal-view"></div>
+    <div id="portal-callups" class="portal-view" hidden></div>
+    <div id="portal-notices" class="portal-view" hidden></div>
+    <div id="portal-settings" class="portal-view" hidden><div class="card stack"><h2>Nire kontua</h2><label>Hizkuntza<select data-language-select><option value="eu">Euskara</option><option value="es">Español</option></select></label><button class="btn secondary" id="portal-coach-mode" type="button">Entrenatzaile modura</button></div></div>
+    <div class="portal-tabs" role="group" aria-label="Jokalariaren atalak"><button type="button" data-portal-tab="agenda" aria-pressed="true">Agenda</button><button type="button" data-portal-tab="callups" aria-pressed="false">Deialdiak</button><button type="button" data-portal-tab="notices" aria-pressed="false">Abisuak</button><button type="button" data-portal-tab="settings" aria-pressed="false">Kontua</button></div>
+  </div>
+  <button class="btn secondary" id="portal-return-coach" type="button" hidden>Entrenatzaile modura</button>
+  <button class="btn secondary portal-logout" id="portal-logout" type="button">Saioa itxi</button>
 </section>
 
 <dialog id="account-create-dialog" class="attendance-dialog" aria-labelledby="account-create-title">
@@ -785,6 +802,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
       <ul id="players-list" class="list"></ul>
       <div class="card"><div class="help-heading"><h2>Asistentzia</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-11" aria-label="Asistentzia: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-11" hidden>Aukeratu entrenamendua eta apuntatu bertaratzea, berandutzeak eta haien arrazoiak.</p><div class="grid2"><label>Entrenamendua<select id="attendance-session"></select></label><button class="btn" id="attendance-open" type="button" disabled>Asistentzia apuntatu</button></div></div>
 
+      <div class="card"><h2>Jokalarien aplikazioa</h2><p class="muted">Kontuak, deialdiak, abisuak eta bertaratze-baieztapenak.</p><button class="btn secondary" type="button" data-open-section="v-player-management">Jokalarien sarbidea kudeatu</button></div>
       <details class="card" id="team-management">
         <summary><strong>Taldearen kudeaketa</strong></summary>
         <div class="stack" style="margin-top:14px">
@@ -796,6 +814,13 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
           </div>
         </div>
       </details>
+    </section>
+    <section id="v-player-management">
+      <button class="btn secondary insight-back" type="button" data-open-section="v-players">← Taldera itzuli</button>
+      <h1>Jokalarien aplikazioa</h1><p class="muted">Gonbidatu jokalariak, argitaratu deialdiak eta kudeatu taldeko abisuak.</p>
+      <p id="portal-coach-error" class="notice error" role="alert" hidden></p>
+      <div class="portal-coach-tabs" role="group" aria-label="Jokalarien aplikazioaren kudeaketa"><button type="button" data-coach-tab="accounts" aria-pressed="true">Kontuak</button><button type="button" data-coach-tab="callups" aria-pressed="false">Deialdiak</button><button type="button" data-coach-tab="notices" aria-pressed="false">Abisuak</button><button type="button" data-coach-tab="responses" aria-pressed="false">Bertaratzeak</button></div>
+      <div id="portal-coach-content"></div>
     </section>
     <section id="v-player-profile">
       <button class="btn secondary insight-back" id="player-profile-back" type="button">← Itzuli</button>
@@ -947,7 +972,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
     </section>
     <section id="v-more">
       <div class="help-heading"><h1>Gehiago</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-21" aria-label="Gehiago: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-21" hidden>Komunitatea eta zure kontuaren ezarpenak.</p>
-      <div class="more-links">
+      <div class="more-links"><button class="more-link" id="open-player-mode" type="button"><strong>Jokalari modua</strong><span>Ireki zure jokalari-kontua</span></button>
       </div>
 
       <div class="card"><div class="help-heading"><h2>Itxura</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-23" aria-label="Itxura: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-23" hidden>Aukeratu aplikazioaren kolore-modua.</p><div class="theme-choices" role="group" aria-label="Kolore-modua"><button class="btn secondary theme-choice" id="theme-light" type="button" data-theme-choice="light" aria-pressed="false">☀️ Modu argia</button><button class="btn secondary theme-choice" id="theme-dark" type="button" data-theme-choice="dark" aria-pressed="true">🌙 Modu iluna</button></div></div>
@@ -965,6 +990,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
   </div>
 </div>
 </main>
+  <dialog id="portal-response-dialog" class="attendance-dialog" aria-labelledby="portal-response-title"><div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="portal-response-title">Bertaratzea baieztatu</h2><button class="btn secondary" id="portal-response-close" type="button">Itxi</button></div><p id="portal-response-name" class="muted"></p><form id="portal-response-form" class="stack"><label>Erantzuna<select id="portal-response-value" required><option value="yes">Banoa</option><option value="no">Ezin dut</option><option value="maybe">Zalantzan</option></select></label><label>Oharra (aukerakoa)<textarea id="portal-response-note" maxlength="500"></textarea></label><p class="muted">Erantzuna eta oharra entrenatzaileak ikusiko ditu.</p><p id="portal-response-error" class="notice error" role="alert" hidden></p><button class="btn" type="submit">Erantzuna gorde</button></form></div></dialog>
   <dialog id="session-preview-dialog" class="attendance-dialog session-preview-dialog" aria-labelledby="session-preview-title">
     <div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="session-preview-title">Ariketa-arbela</h2><button class="btn secondary" id="session-preview-close" type="button" aria-label="Itxi">Itxi</button></div>
       <canvas id="session-preview-canvas" class="session-preview-canvas" width="800" height="500" aria-label="Ariketaren arbela"></canvas>
@@ -998,11 +1024,12 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=145" defer></script>
-<script src="i18n.js?v=145" defer></script>
-<script src="insights-data.js?v=145" defer></script>
-<script src="app.js?v=145" defer></script>
-<script src="report-pdf.js?v=145" defer></script>
-<script src="insights.js?v=145" defer></script>
+<script src="locales/es.js?v=146" defer></script>
+<script src="i18n.js?v=146" defer></script>
+<script src="insights-data.js?v=146" defer></script>
+<script src="portal.js?v=146" defer></script>
+<script src="app.js?v=146" defer></script>
+<script src="report-pdf.js?v=146" defer></script>
+<script src="insights.js?v=146" defer></script>
 </body>
 </html>
