@@ -93,3 +93,6 @@
 .plan-option-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .plan-option-grid .btn{width:100%;min-width:0;min-height:48px;margin:0;padding:10px 8px;white-space:normal}
 #plan-create-toggle[aria-expanded="true"]{box-shadow:0 0 0 3px rgba(0,68,238,.2)}
+
+#plan-micro-legend[hidden]{display:none!important}
+.plan-legend-heading{margin:10px 0;color:var(--muted);font-size:.85rem}

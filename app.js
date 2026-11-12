@@ -1985,7 +1985,8 @@ function renderPlanning() {
   var microLegend = MICRO_TYPES.map(function (type) {
     return '<span class="plan-legend-type"><i style="background:' + MICRO_TYPE_COLORS[type] + ("\"></i>" + esc(t("Mikro · "))) + esc(t(type)) + '</span>';
   }).join("");
-  $("plan-legend").innerHTML = macroLegend + microLegend;
+  $("plan-legend").innerHTML = macroLegend;
+  $("plan-micro-legend").innerHTML = microLegend;
   var todayKey = planKey(new Date());
   grid.innerHTML = planWeeks(base).map(function (week) {
     return week.map(function (day) {

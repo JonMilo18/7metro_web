@@ -6,6 +6,8 @@ window.SevenMetroLocales.es = {
   "name": "Español",
   "locale": "es-ES",
   "messages": {
+    "Mikrozikloen koloreak": "Colores de los microciclos",
+    "Mikrozikloen koloreak: informazioa": "Colores de los microciclos: informaci?n",
     "Gehitu plangintzan": "A?adir a la planificaci?n",
     "+ Entrenamendu berria": "+ Nuevo entrenamiento",
     "+ Partida berria": "+ Nuevo partido",
