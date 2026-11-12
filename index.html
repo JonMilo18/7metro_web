@@ -585,7 +585,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=137">
+<link rel="stylesheet" href="insights.css?v=138">
 </head>
 <body>
 <div id="app">
@@ -973,7 +973,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
   </dialog>
 <button id="mobile-menu-backdrop" class="mobile-menu-backdrop hidden" type="button" aria-label="Menua itxi" tabindex="-1"></button>
 <nav id="nav" class="hidden" aria-label="Nagusia" aria-hidden="true" inert><div role="tablist">
-  <button role="tab" data-v="v-home" aria-selected="true">Hasiera</button><button role="tab" data-v="v-sessions" aria-selected="false">Entrenamendua</button><button role="tab" data-v="v-planning" aria-selected="false">Plangintza</button><button role="tab" data-v="v-players" aria-selected="false">Taldea</button><button role="tab" data-v="v-matches" aria-selected="false">Lehiaketa</button><button role="tab" data-v="v-stats" aria-selected="false">Estatistikak</button><button role="tab" data-v="v-friends" aria-selected="false">Lagunak</button><button role="tab" data-v="v-more" aria-selected="false">Gehiago</button>
+  <button role="tab" data-v="v-home" aria-selected="true"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg><span>Hasiera</span></button><button role="tab" data-v="v-sessions" aria-selected="false"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="4" width="14" height="17" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="m8 12 2 2 5-5M8 18h8"/></svg><span>Entrenamendua</span></button><button role="tab" data-v="v-planning" aria-selected="false"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-14 4h2m4 0h2m-8 3h2"/></svg><span>Plangintza</span></button><button role="tab" data-v="v-players" aria-selected="false"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="7" r="3"/><path d="M6 21v-2a6 6 0 0 1 12 0v2M5 5a3 3 0 0 0 0 6m14-6a3 3 0 0 1 0 6M2 20v-2a5 5 0 0 1 3-4m17 6v-2a5 5 0 0 0-3-4"/></svg><span>Taldea</span></button><button role="tab" data-v="v-matches" aria-selected="false"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3h8v5a4 4 0 0 1-8 0Zm0 2H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 1v6m-4 3h8m-6-3h4v3"/></svg><span>Lehiaketa</span></button><button role="tab" data-v="v-stats" aria-selected="false"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 3v18h17M8 17v-5m5 5V8m5 9V4"/></svg><span>Estatistikak</span></button><button role="tab" data-v="v-friends" aria-selected="false"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="8" cy="7" r="3"/><circle cx="17" cy="9" r="3"/><path d="M2 21v-2a6 6 0 0 1 12 0v2m2-6a5 5 0 0 1 6 5v1"/></svg><span>Lagunak</span></button><button role="tab" data-v="v-more" aria-selected="false"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span>Gehiago</span></button>
 </div></nav>
 <div id="plan-modal" class="modal hidden">
   <div class="modal-box card">
@@ -990,11 +990,11 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=137" defer></script>
-<script src="i18n.js?v=137" defer></script>
-<script src="insights-data.js?v=137" defer></script>
-<script src="app.js?v=137" defer></script>
-<script src="report-pdf.js?v=137" defer></script>
-<script src="insights.js?v=137" defer></script>
+<script src="locales/es.js?v=138" defer></script>
+<script src="i18n.js?v=138" defer></script>
+<script src="insights-data.js?v=138" defer></script>
+<script src="app.js?v=138" defer></script>
+<script src="report-pdf.js?v=138" defer></script>
+<script src="insights.js?v=138" defer></script>
 </body>
 </html>
