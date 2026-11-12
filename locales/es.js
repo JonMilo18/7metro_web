@@ -6,6 +6,7 @@ window.SevenMetroLocales.es = {
   "name": "Español",
   "locale": "es-ES",
   "messages": {
+    "Jokalarien erantzunak ikusi": "Ver respuestas de los jugadores",
     "Oraindik ez dago deialdirik.": "Todavía no hay convocatoria.",
     "Bertaratze-erantzunak": "Respuestas de asistencia",
     "Deialdia": "Convocatoria",

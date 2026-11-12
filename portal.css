@@ -31,6 +31,11 @@ body.player-mode main>#player-portal{width:100%;max-width:760px;margin:auto}
 .portal-response-counts>div{padding:10px 6px;border:1px solid var(--line);border-radius:10px;text-align:center;min-width:0}
 .portal-response-counts strong{display:block;font-size:1.5rem;line-height:1.3}
 .portal-response-counts span{display:block;font-size:.75rem;margin-top:4px;overflow-wrap:anywhere;color:var(--muted)}
+.portal-response-details>summary{display:flex;align-items:center;gap:10px;min-height:44px;padding:10px 0;color:var(--ink);font-weight:700;cursor:pointer}
+.portal-response-details>summary::before{content:"▸";color:var(--blue)}
+.portal-response-details>summary::-webkit-details-marker{display:none}
+.portal-response-details[open]>summary::before{content:"▾"}
+.portal-response-details>summary:focus-visible{outline:2px solid var(--blue);outline-offset:3px;border-radius:5px}
 .portal-callup-editor{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 .portal-callup-editor summary{font-weight:700;cursor:pointer;padding:8px 0}
 .portal-callup-editor form,#portal-callup-form{margin-top:14px}

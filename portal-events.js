@@ -13,9 +13,11 @@ function portalEventResponses(kind, id, data) {
     return '<div class="portal-roster-row"><div><strong>' + esc((player.dortsala == null ? '' : '#' + player.dortsala + ' ') + playerName(player)) + '</strong>' + (!linked ? '<small class="muted">' + esc(t("Konturik lotu gabe")) + '</small>' : '') + (response && response.note ? '<small class="portal-authored">' + esc(response.note) + '</small>' : '') + '</div><span class="portal-response ' + (response ? response.response : '') + '">' + esc(portalResponseLabel(response && response.response)) + '</span></div>';
   }).join("");
   if (!rows.length) return portalEmpty(kind === "match" ? "Oraindik ez dago deialdirik." : "Ez dago jokalaririk.");
-  return '<div class="portal-response-counts">' + [["yes", "Banoa"], ["no", "Ezin dut"], ["maybe", "Zalantzan"], ["pending", "Erantzun gabe"]].map(function (entry) {
+  var summary = '<div class="portal-response-counts">' + [["yes", "Banoa"], ["no", "Ezin dut"], ["maybe", "Zalantzan"], ["pending", "Erantzun gabe"]].map(function (entry) {
     return '<div><strong class="portal-response ' + entry[0] + '">' + counts[entry[0]] + '</strong><span>' + esc(t(entry[1])) + '</span></div>';
-  }).join("") + '</div><div class="portal-response-roster">' + markup + '</div>';
+  }).join("") + '</div>';
+  var roster = '<div class="portal-response-roster">' + markup + '</div>';
+  return summary + (kind === "session" ? '<details class="portal-response-details"><summary>' + esc(t("Jokalarien erantzunak ikusi")) + '</summary>' + roster + '</details>' : roster);
 }
 function portalMatchCallupForm(matchId, data, formId) {
   var callups = data.callups.filter(function (c) { return Number(c.match_id) === matchId; }), first = callups[0] || {};

@@ -21,6 +21,7 @@ dezake Kontuak ataletik.
 - **Agenda:** datozen 90 egunetako entrenamenduak eta partidak.
 - **Bertaratzea:** Banoa, Ezin dut edo Zalantzan, aukerako ohar batekin.
   Entrenatzaileak erantzunak entrenamenduaren **Ikusi** atalean ikusiko ditu,
+  hasieran kopuruen laburpena eta **Jokalarien erantzunak ikusi** sakatuta xehetasunak;
   eta **Asistentzia** apuntatzean jokalari bakoitzaren izenaren azpian ere bai. Aurreikuspena da;
   entrenamenduko benetako asistentziaren erregistroa ez du automatikoki aldatzen.
 - **Deialdiak:** entrenatzaileak partida, jokalariak, elkartzeko ordua eta tokia
