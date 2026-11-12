@@ -1913,7 +1913,7 @@ function planDayHtml(day, base, todayKey, spans, microList) {
   var classes = "plan-day" + (day.getMonth() === base.getMonth() ? "" : " out") +
     (key === todayKey ? " today" : "");
   var html = '<div class="' + classes + '" data-plan-day="' + key + '">' +
-    '<span class="plan-day-num">' + (key === todayKey ? t("Gaur · ") : "") + day.getDate() + "</span>";
+    '<button type="button" class="plan-day-num" data-plan-select-day="' + key + '" aria-label="' + esc(day.toLocaleDateString(I18n.locale(), {year: "numeric", month: "long", day: "numeric"})) + '" aria-pressed="false">' + (key === todayKey ? t("Gaur · ") : "") + day.getDate() + "</button>";
   var dayMacros = spans.filter(function (span) {
     return planKey(span.start) <= key && key <= planKey(span.end);
   });
@@ -1992,6 +1992,7 @@ function renderPlanning() {
       return planDayHtml(day, base, todayKey, spans, microList);
     }).join("");
   }).join("");
+  syncPlanningSelectedDay();
   var agenda = [];
   function addAgenda(dateValue, kind, title, detail, actionAttr, actionId) {
     var date = planDayNumber(dateValue);
@@ -3304,6 +3305,15 @@ document.querySelectorAll("[data-plan-new]").forEach(function (button) {
   button.addEventListener("click", function () { openPlanForm(button.dataset.planNew, null); });
 });
 
+function syncPlanningSelectedDay() {
+  var selected = $("plan-create-date").value;
+  document.querySelectorAll("[data-plan-day]").forEach(function (day) {
+    day.classList.toggle("selected", day.dataset.planDay === selected);
+    day.querySelector("[data-plan-select-day]").setAttribute("aria-pressed", String(day.dataset.planDay === selected));
+  });
+}
+$("plan-create-date").addEventListener("change", syncPlanningSelectedDay);
+
 function planningCreationDate() {
   var input = $("plan-create-date");
   if (!input.reportValidity()) return null;
@@ -3333,6 +3343,7 @@ $("plan-next").addEventListener("click", function () { stepPlanMonth(1); });
 $("plan-today").addEventListener("click", function () {
   planMonth = new Date();
   planMonth.setDate(1);
+  $("plan-create-date").value = planKey(new Date());
   renderPlanning();
 });
 
@@ -3340,7 +3351,13 @@ $("plan-grid").addEventListener("click", function (event) {
   var micro = event.target.closest("[data-plan-micro]");
   if (micro) { openPlanForm("micro", micro.dataset.planMicro); return; }
   var macro = event.target.closest("[data-plan-macro]");
-  if (macro) openPlanForm("macro", macro.dataset.planMacro);
+  if (macro) { openPlanForm("macro", macro.dataset.planMacro); return; }
+  if (event.target.closest(".plan-event")) return;
+  var day = event.target.closest("[data-plan-day]");
+  if (day) {
+    $("plan-create-date").value = day.dataset.planDay;
+    syncPlanningSelectedDay();
+  }
 });
 
 $("plan-form").addEventListener("submit", async function (event) {

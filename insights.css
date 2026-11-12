@@ -63,3 +63,8 @@
 #plan-agenda .agenda-detail small{display:block;line-height:1.5;overflow-wrap:anywhere}
 #plan-agenda .agenda-open{align-self:center;padding:0;text-align:center}
 @media(max-width:420px){.plan-create-actions label{flex-basis:100%}.plan-create-actions .btn{flex-basis:100%}#plan-agenda .item{grid-template-columns:52px minmax(0,1fr) 16px;gap:10px}}
+
+.plan-day .plan-day-num{display:block;width:100%;min-height:28px;border:0;border-radius:5px;background:transparent;text-align:left;font:inherit;font-size:.78rem;font-weight:750;color:var(--muted);cursor:pointer}
+.plan-day.selected{outline:2px solid var(--blue);outline-offset:-2px;background:rgba(0,68,238,.12)}
+.plan-day .plan-day-num[aria-pressed="true"]{color:var(--ink);background:rgba(0,68,238,.2)}
+.plan-day .plan-day-num:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
