@@ -68,3 +68,9 @@
 .plan-day.selected{outline:2px solid var(--blue);outline-offset:-2px;background:rgba(0,68,238,.12)}
 .plan-day .plan-day-num[aria-pressed="true"]{color:var(--ink);background:rgba(0,68,238,.2)}
 .plan-day .plan-day-num:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+
+.plan-create-actions label{flex:0 1 200px;max-width:100%}
+#plan-create-date{display:block;box-sizing:border-box;width:100%;min-width:0;max-width:100%;height:48px;min-height:48px;margin:0;padding:10px 12px;font-size:16px;line-height:1.25}
+#plan-create-date::-webkit-date-and-time-value{min-width:0;text-align:left}
+#plan-create-date::-webkit-datetime-edit{min-width:0;padding:0}
+@media(max-width:420px){.plan-create-actions label{flex:1 1 100%;width:100%}}
