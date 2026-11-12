@@ -57,7 +57,9 @@ gatazkatsuak saihesteko. Ez du migraziorik behar; `metro-api` ere hedatu behar d
 
 Jokalarien aplikazioa: `portal-actions.ts` eta
 `migrations/20261112120000_player_portal.sql`. Lehenik SQL migrazioa aplikatu,
-ondoren `metro-api` hedatu eta azkenik webeko bertsioa argitaratu.
+eta ondoren `migrations/20261112130000_preserve_callup_responses.sql`,
+deialdia editatzean bertan jarraitzen duten jokalarien erantzunak mantentzeko.
+Ondoren `metro-api` hedatu eta azkenik webeko bertsioa argitaratu.
 `metro-api`-k `portalActions` multzoko ekintzak saioa balioztatu ondoren
 `handlePortalAction` funtziora bidaltzen ditu, benetako erabiltzaile-IDarekin.
 `player_portal_action` RPCak baimenak eta idazketak transakzio berean ebazten ditu.

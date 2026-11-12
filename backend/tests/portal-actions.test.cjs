@@ -30,6 +30,7 @@ test('player portal isolates roles and teams throughout invitations, agenda, cal
  INSERT INTO saioak VALUES(100,7,to_char(current_date+1,'YYYY-MM-DD')||'T18:00','Kiroldegia','Helburua'),(101,8,to_char(current_date+1,'YYYY-MM-DD')||'T18:00','Other','Secret');
  INSERT INTO partidak VALUES(200,7,to_char(current_date+2,'YYYY-MM-DD')||'T18:00','Etxean','Aurkaria'),(201,8,to_char(current_date+2,'YYYY-MM-DD')||'T18:00','Other','Secret');`);
  await db.exec(fs.readFileSync(path.join(__dirname,'../migrations/20261112120000_player_portal.sql'),'utf8'));
+ await db.exec(fs.readFileSync(path.join(__dirname,'../migrations/20261112130000_preserve_callup_responses.sql'),'utf8'));
  const call=async(user,action,payload={})=>(await db.query('SELECT player_portal_action($1,$2,$3::jsonb) AS result',[user,action,JSON.stringify(payload)])).rows[0].result;
  const denied=async(user,action,payload,code='42501')=>assert.rejects(call(user,action,payload),e=>e.code===code);
  try{
@@ -61,8 +62,19 @@ test('player portal isolates roles and teams throughout invitations, agenda, cal
   await call(1,'portal_publish_callup',{team_id:7,match_id:200,player_ids:[10,11],meeting_time:'2026-11-20T17:00',meeting_place:'Kiroldegia',note:'Elkartu hemen'});
   assert((await call(2,'portal_player_snapshot',{player_id:10})).responses.some(r=>r.kind==='match'));
   await call(1,'portal_publish_callup',{team_id:7,match_id:200,player_ids:[10,11],meeting_time:'2026-11-20T17:30',meeting_place:'Kiroldegia',note:'Elkartu hemen'});
-  assert(!(await call(2,'portal_player_snapshot',{player_id:10})).responses.some(r=>r.kind==='match'));
-  await call(2,'portal_respond',{player_id:10,kind:'match',event_id:200,response:'yes'});
+  assert((await call(2,'portal_player_snapshot',{player_id:10})).responses.some(r=>r.kind==='match'));
+  for(const response of ['yes','no','maybe']){
+    await call(2,'portal_respond',{player_id:10,kind:'match',event_id:200,response,note:'Keep this reply'});
+    const before=(await db.query("SELECT updated_at FROM portal_event_responses WHERE player_id=10 AND kind='match' AND event_id=200")).rows[0].updated_at;
+    for(const player_ids of [[10],[10,11]]){
+      await call(1,'portal_publish_callup',{team_id:7,match_id:200,player_ids,meeting_time:'2026-11-20T18:00',meeting_place:'Another place',note:'Changed coach instructions'});
+      const saved=(await call(2,'portal_player_snapshot',{player_id:10})).responses.find(r=>r.kind==='match');
+      assert.equal(saved.response,response);assert.equal(saved.note,'Keep this reply');
+      const after=(await db.query("SELECT updated_at FROM portal_event_responses WHERE player_id=10 AND kind='match' AND event_id=200")).rows[0].updated_at;
+      assert.equal(String(after),String(before));
+    }
+  }
+
   await call(1,'portal_create_notice',{team_id:7,title:'Abisua',body:'Ordua aldatu da'});
   await call(4,'portal_create_notice',{team_id:8,title:'Secret',body:'Other team'});
   const notices=(await call(2,'portal_player_snapshot',{player_id:10})).notices;assert.equal(notices.length,1);assert.equal(notices[0].read,false);
@@ -73,6 +85,7 @@ test('player portal isolates roles and teams throughout invitations, agenda, cal
   await denied(2,'portal_read_notice',{player_id:10,id:otherNotice});
   await call(1,'portal_publish_callup',{team_id:7,match_id:200,player_ids:[]});
   assert.equal((await call(2,'portal_player_snapshot',{player_id:10})).matches[0].callup,null);
+  assert(!(await call(2,'portal_player_snapshot',{player_id:10})).responses.some(r=>r.kind==='match'));
   await call(1,'portal_revoke',{team_id:7,player_id:10});
   await denied(2,'portal_player_snapshot',{player_id:10});
   await denied(2,'portal_respond',{player_id:10,kind:'session',event_id:100,response:'no'});

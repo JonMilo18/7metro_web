@@ -28,7 +28,7 @@ dezake Kontuak ataletik.
   eta oharrak argitaratzen ditu, **Lehiaketa → partida → Deialdia** aukeratik.
   Bertan deialdia editatu eta erantzunak ikus daitezke. Partidaren txostenetik ere
   ireki daiteke. Deitutako jokalari bakoitzak erantzun dezake.
-  Deialdiaren argibideak aldatzean baieztapena berriro eskatzen da.
+  Deialdia editatzean, bertan jarraitzen duten jokalarien erantzunak eta oharrak mantentzen dira.
 - **Abisuak:** entrenatzaileak taldeko abisuak argitaratzen ditu. Jokalariak
   Irakurrita markatu dezake, eta entrenatzaileak nork irakurri duen ikus dezake.
 
