@@ -42,6 +42,7 @@
     var profile = model.profile(playerId, data(), $("player-profile-period").value), body = $("player-profile-content");
     if (!profile) { $("player-profile-name").textContent = t("Jokalaria ez da aurkitu"); body.innerHTML = empty("Birkargatu taldeko jokalarien zerrenda."); return; }
     var p = profile.player, s = profile.totals;
+    $("player-profile-edit").dataset.playerEdit = String(p.id_jokalaria);
     $("player-profile-name").textContent = playerName(p);
     $("player-profile-number").textContent = p.dortsala == null ? "—" : "#" + p.dortsala;
     $("player-profile-meta").textContent = [t(p.posizioa || "Posiziorik gabe"), t(p.egoera || "")].filter(Boolean).join(" · ");

@@ -6,6 +6,12 @@ window.SevenMetroLocales.es = {
   "name": "Español",
   "locale": "es-ES",
   "messages": {
+    "Jokalaria editatu": "Editar jugador",
+    "Jokalariaren datuak eguneratu dira": "Los datos del jugador se han actualizado",
+    "Jokalariaren datuak ez dira baliozkoak": "Los datos del jugador no son válidos",
+    "Jaiotze-data ez da baliozkoa": "La fecha de nacimiento no es válida",
+    "Ezin izan dira jokalariaren aldaketak gorde": "No se han podido guardar los cambios del jugador",
+    "Jokalariaren datuak aldatu dira edo ez dago taldean. Birkargatu berriro editatu aurretik": "Los datos del jugador han cambiado o ya no pertenece al equipo. Recarga antes de volver a editar",
     "Ikusgaiak hautatu": "Seleccionar visibles",
     "Kategoriarik gabe": "Sin categoría",
     "Bilatzen...": "Buscando...",

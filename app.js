@@ -1034,7 +1034,7 @@ function renderPlayers() {
     return '<li class="item"><div class="item-main"><strong>' +
       (player.dortsala != null ? "#" + esc(player.dortsala) + " " : "") + esc(playerName(player)) +
       '</strong><small>' + esc(t(player.posizioa) || t("Posiziorik gabe")) + " · " +
-      esc(t(player.egoera) || "") + '</small>' + attendanceMarkup + '</div><div class="player-row-actions"><button class="btn secondary" type="button" data-player-profile="' + Number(player.id_jokalaria) + '">' + esc(t("Fitxa")) + '</button><button class="btn danger" type="button" data-delete-player="' +
+      esc(t(player.egoera) || "") + '</small>' + attendanceMarkup + '</div><div class="player-row-actions"><button class="btn secondary" type="button" data-player-profile="' + Number(player.id_jokalaria) + '">' + esc(t("Fitxa")) + '</button><button class="btn secondary" type="button" data-player-edit="' + Number(player.id_jokalaria) + '">' + esc(t("Editatu")) + '</button><button class="btn danger" type="button" data-delete-player="' +
       Number(player.id_jokalaria) + ("\">" + esc(t("Ezabatu")) + "</button></div></li>");
   }).join("") : '<li class="empty">' + (players.length ? t("Ez da jokalaririk aurkitu iragazki horiekin.") : t("Ez dago jokalaririk. Gehitu lehenengo jokalaria.")) + '</li>';
 
@@ -3255,6 +3255,54 @@ $("team-form").addEventListener("submit", async function (event) {
     notify(t("Taldea sortu da"), "success");
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
+});
+
+var playerEditContext = null, playerEditBusy = false;
+var playerEditableFields = ["izena", "abizena", "dortsala", "posizioa", "egoera", "jaiotze_data", "altuera_cm", "pisua_kg", "eskua", "telefonoa", "emaila", "oharrak"];
+function openPlayerEditor(id) {
+  var player = players.find(function (item) { return Number(item.id_jokalaria) === Number(id); });
+  if (!player || playerEditBusy) return;
+  var form = $("player-edit-form"), expected = {};
+  form.innerHTML = $("player-form").innerHTML + '<p id="player-edit-error" class="notice error" role="alert" hidden></p>';
+  playerEditableFields.forEach(function (key) {
+    expected[key] = player[key] == null ? null : player[key];
+    var input = form.elements.namedItem(key), value = player[key] == null ? "" : String(player[key]);
+    if (input.tagName === "SELECT" && value && !Array.from(input.options).some(function (option) { return option.value === value; })) {
+      var option = document.createElement("option"); option.value = value; option.textContent = t(value); input.appendChild(option);
+    }
+    input.value = value;
+  });
+  form.querySelector('[type="submit"]').textContent = t("Aldaketak gorde");
+  playerEditContext = { id: Number(id), teamId: teamId, expected: expected };
+  $("player-edit-dialog").showModal();
+  $("player-edit-dialog").scrollTop = 0;
+  form.elements.namedItem("izena").focus({ preventScroll: true });
+}
+document.addEventListener("click", function (event) {
+  var button = event.target.closest("button[data-player-edit]");
+  if (button) openPlayerEditor(button.dataset.playerEdit);
+});
+$("player-edit-close").addEventListener("click", function () {
+  if (!playerEditBusy) $("player-edit-dialog").close();
+});
+$("player-edit-dialog").addEventListener("cancel", function (event) { if (playerEditBusy) event.preventDefault(); });
+$("player-edit-form").addEventListener("submit", async function (event) {
+  event.preventDefault();
+  if (!playerEditContext || playerEditBusy) return;
+  var context = playerEditContext, form = this, data = Object.fromEntries(new FormData(form).entries());
+  ["dortsala", "altuera_cm", "pisua_kg"].forEach(function (key) { data[key] = numberOrNull(data[key]); });
+  $("player-edit-error").hidden = true;
+  playerEditBusy = true; form.inert = true; $("player-edit-close").disabled = true;
+  try {
+    var result = await request(Object.assign({ action: "pwa_update_player", team_id: context.teamId, id: context.id, expected: context.expected }, data));
+    $("player-edit-dialog").close();
+    if (context.teamId === teamId) {
+      players.concat(records("jokalariak")).forEach(function (player) { if (Number(player.id_jokalaria) === context.id) Object.assign(player, result.player); });
+      renderPlayers(); if (window.InsightsUI) window.InsightsUI.refresh();
+      notify(t("Jokalariaren datuak eguneratu dira"), "success");
+    }
+  } catch (error) { $("player-edit-error").textContent = error.message; $("player-edit-error").hidden = false; }
+  finally { playerEditBusy = false; form.inert = false; $("player-edit-close").disabled = false; }
 });
 
 $("player-form").addEventListener("submit", async function (event) {

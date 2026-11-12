@@ -45,3 +45,12 @@ deitzen du. `query` testuaren arabera gehienez zortzi erabiltzaile-izen itzultze
 ditu; norberaren kontua baztertzen du eta ez du kontaktu-daturik itzultzen.
 Ez du datu-baseko migraziorik behar. Webeko argitalpenaz gain, `metro-api`
 funtzioa ere hedatu behar da: `npx supabase functions deploy metro-api`.
+
+
+`player-actions.ts` moduluak `pwa_update_player` ekintza eskaintzen du.
+`metro-api`-ko `teamActions` eta `pwaActions` multzoetan erregistratuta dago;
+saioa eta taldekidetasuna egiaztatuta, `updatePlayer(payload, supabase, teamId,
+jsonResponse)` deitzen du. Jokalariaren identifikatzailea eta taldea erabiliz
+editagarriak diren eremuak bakarrik eguneratzen ditu, jabea eta estatistiken
+loturak aldatu gabe. `expected` aurreko datuekin alderatzen du aldaketa
+gatazkatsuak saihesteko. Ez du migraziorik behar; `metro-api` ere hedatu behar da.
