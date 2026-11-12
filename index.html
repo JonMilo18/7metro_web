@@ -43,7 +43,7 @@ h2{font-size:1.1rem;margin:0 0 10px}
 .sub{color:var(--muted);margin:0 0 20px}
 section{display:none}section.on{display:block}
 nav{position:fixed;z-index:3;left:0;right:0;bottom:0;background:rgba(6,14,26,.96);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);backdrop-filter:blur(16px)}
-nav div{max-width:720px;margin:0 auto;display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+nav div{max-width:720px;margin:0 auto;display:grid;grid-template-columns:repeat(8,minmax(0,1fr))}
 nav button{background:none;border:0;padding:10px 4px;font:650 .82rem var(--f);color:var(--muted);min-height:56px;cursor:pointer}
 nav button[aria-selected="true"]{color:#fff;background:rgba(0,68,238,.18);box-shadow:inset 0 3px 0 var(--blue)}
 :focus-visible{outline:3px solid var(--blue);outline-offset:2px}
@@ -585,7 +585,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=132">
+<link rel="stylesheet" href="insights.css?v=133">
 </head>
 <body>
 <div id="app">
@@ -941,7 +941,6 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
     <section id="v-more">
       <div class="help-heading"><h1>Gehiago</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-21" aria-label="Gehiago: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-21" hidden>Komunitatea eta zure kontuaren ezarpenak.</p>
       <div class="more-links">
-        <button class="more-link" type="button" data-open-section="v-friends"><strong>Komunitatea eta lagunak</strong><span>Eskaerak eta ariketa zein entrenamenduen partekatzea</span></button>
       </div>
 
       <div class="card"><div class="help-heading"><h2>Itxura</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-23" aria-label="Itxura: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-23" hidden>Aukeratu aplikazioaren kolore-modua.</p><div class="theme-choices" role="group" aria-label="Kolore-modua"><button class="btn secondary theme-choice" id="theme-light" type="button" data-theme-choice="light" aria-pressed="false">☀️ Modu argia</button><button class="btn secondary theme-choice" id="theme-dark" type="button" data-theme-choice="dark" aria-pressed="true">🌙 Modu iluna</button></div></div>
@@ -973,7 +972,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
   </dialog>
 <button id="mobile-menu-backdrop" class="mobile-menu-backdrop hidden" type="button" aria-label="Menua itxi" tabindex="-1"></button>
 <nav id="nav" class="hidden" aria-label="Nagusia" aria-hidden="true" inert><div role="tablist">
-  <button role="tab" data-v="v-home" aria-selected="true">Hasiera</button><button role="tab" data-v="v-sessions" aria-selected="false">Entrenamendua</button><button role="tab" data-v="v-planning" aria-selected="false">Plangintza</button><button role="tab" data-v="v-players" aria-selected="false">Taldea</button><button role="tab" data-v="v-matches" aria-selected="false">Lehiaketa</button><button role="tab" data-v="v-stats" aria-selected="false">Estatistikak</button><button role="tab" data-v="v-more" aria-selected="false">Gehiago</button>
+  <button role="tab" data-v="v-home" aria-selected="true">Hasiera</button><button role="tab" data-v="v-sessions" aria-selected="false">Entrenamendua</button><button role="tab" data-v="v-planning" aria-selected="false">Plangintza</button><button role="tab" data-v="v-players" aria-selected="false">Taldea</button><button role="tab" data-v="v-matches" aria-selected="false">Lehiaketa</button><button role="tab" data-v="v-stats" aria-selected="false">Estatistikak</button><button role="tab" data-v="v-friends" aria-selected="false">Lagunak</button><button role="tab" data-v="v-more" aria-selected="false">Gehiago</button>
 </div></nav>
 <div id="plan-modal" class="modal hidden">
   <div class="modal-box card">
@@ -990,11 +989,11 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=132" defer></script>
-<script src="i18n.js?v=132" defer></script>
-<script src="insights-data.js?v=132" defer></script>
-<script src="app.js?v=132" defer></script>
-<script src="report-pdf.js?v=132" defer></script>
-<script src="insights.js?v=132" defer></script>
+<script src="locales/es.js?v=133" defer></script>
+<script src="i18n.js?v=133" defer></script>
+<script src="insights-data.js?v=133" defer></script>
+<script src="app.js?v=133" defer></script>
+<script src="report-pdf.js?v=133" defer></script>
+<script src="insights.js?v=133" defer></script>
 </body>
 </html>

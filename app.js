@@ -2179,7 +2179,7 @@ function selectSection(id) {
     (["v-sessions", "v-board", "v-session-view", "v-session-detail"].indexOf(id) !== -1 ? "v-sessions" :
     (["v-matches", "v-scoreboard", "v-match-report"].indexOf(id) !== -1 ? "v-matches" :
     (id === "v-player-profile" ? "v-players" :
-      (["v-planning", "v-players", "v-stats"].indexOf(id) !== -1 ? id : "v-more"))));
+      (["v-planning", "v-players", "v-stats", "v-friends"].indexOf(id) !== -1 ? id : "v-more"))));
   document.querySelectorAll("nav [data-v]").forEach(function (button) {
     button.setAttribute("aria-selected", String(button.dataset.v === primarySection));
   });
