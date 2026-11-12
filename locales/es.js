@@ -6,6 +6,10 @@ window.SevenMetroLocales.es = {
   "name": "Español",
   "locale": "es-ES",
   "messages": {
+    "Agendaren ikuspegia": "Vista de la agenda",
+    "Egutegia": "Calendario",
+    "Hilabeteko egunak": "Días del mes",
+    "Egun honetan ez dago jarduerarik.": "No hay actividades este día.",
     "Jokalarien erantzunak ikusi": "Ver respuestas de los jugadores",
     "Oraindik ez dago deialdirik.": "Todavía no hay convocatoria.",
     "Bertaratze-erantzunak": "Respuestas de asistencia",

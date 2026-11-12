@@ -19,6 +19,7 @@ function portalHide() {
 }
 function portalReset() {
   portalHide(); portalState.bootstrap = null; portalState.playerId = 0; portalState.data = null; portalState.coachData = null;
+  if (typeof portalCalendarReset === "function") portalCalendarReset();
   if ($("portal-event-dialog").open) $("portal-event-dialog").close();
   if ($("portal-response-dialog").open) $("portal-response-dialog").close();
   $("portal-response-note").value = "";
@@ -91,8 +92,7 @@ function portalRenderPlayer() {
   var data = portalState.data; if (!data) return;
   $("portal-player-name").textContent = [portalName(data.player), data.player.number == null ? "" : "#" + data.player.number, data.player.team_name].filter(Boolean).join(" · ");
   var events = data.sessions.map(function (s) { return { kind: "session", row: s }; }).concat(data.matches.map(function (m) { return { kind: "match", row: m }; })).sort(function (a, b) { return a.row.date.localeCompare(b.row.date); });
-  var upcoming = events.filter(function (e) { return String(e.row.date).slice(0, 10) >= planKey(new Date()); });
-  $("portal-agenda").innerHTML = '<h2>' + esc(t("Nire agenda")) + '</h2><p class="muted">' + esc(t("Datozen 90 egunetako jarduerak")) + '</p>' + (upcoming.length ? upcoming.map(portalEventCard).join("") : portalEmpty("Ez dago hurrengo jarduerarik."));
+  portalRenderAgenda(events);
   var callups = events.filter(function (event) { return event.kind === "match" && event.row.callup; });
   $("portal-callups").innerHTML = '<h2>' + esc(t("Nire deialdiak")) + '</h2>' + (callups.length ? callups.map(portalEventCard).join("") : portalEmpty("Oraindik ez duzu deialdirik."));
   $("portal-notices").innerHTML = '<h2>' + esc(t("Taldeko abisuak")) + '</h2>' + (data.notices.length ? data.notices.map(function (notice) {

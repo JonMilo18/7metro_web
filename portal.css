@@ -45,3 +45,29 @@ body.player-mode main>#player-portal{width:100%;max-width:760px;margin:auto}
 #portal-event-content label{min-width:0;grid-template-columns:minmax(0,1fr)}
 #portal-event-content input,#portal-event-content textarea{min-width:0;max-width:100%}
 #portal-event-content input[type=datetime-local]{width:0;min-width:100%;-webkit-appearance:none;appearance:none}
+
+.portal-agenda-toggle{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.portal-agenda-toggle button{min-height:44px;padding:9px;border:1px solid var(--line);border-radius:10px;background:var(--bg2);color:var(--muted);font-weight:700;cursor:pointer}
+.portal-agenda-toggle button[aria-pressed=true]{color:#fff;background:var(--blue);border-color:var(--blue)}
+.portal-calendar{padding:14px;min-width:0}
+.portal-calendar-nav{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:8px}
+.portal-calendar-nav h3{margin:0;text-align:center;overflow-wrap:anywhere;font-size:1.05rem}
+.portal-calendar-nav button{width:44px;height:44px;border:1px solid var(--line);border-radius:10px;background:var(--bg2);color:var(--ink);font-size:1.7rem;cursor:pointer}
+.portal-calendar button:disabled{opacity:.3;cursor:default}
+.portal-calendar-today{width:auto;margin:8px auto 12px;min-height:40px;padding:6px 16px}
+.portal-calendar-weekdays,.portal-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.portal-calendar-weekdays span{text-align:center;font-size:.76rem;color:var(--muted);padding:6px 0;min-width:0}
+.portal-calendar-day{display:flex;flex-direction:column;justify-content:space-between;align-items:center;min-width:0;width:100%;min-height:62px;padding:5px 2px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--ink);cursor:pointer;font-size:.85rem}
+.portal-calendar-day.outside{color:var(--muted)}
+.portal-calendar-day.today>span:first-child{font-weight:800;text-decoration:underline;text-underline-offset:4px}
+.portal-calendar-day[aria-pressed=true]{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue);background:rgba(0,68,238,.2)}
+.portal-calendar-day:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.portal-calendar-dots{display:flex;align-items:center;justify-content:center;gap:3px;min-height:13px}
+.portal-calendar-dots i,.portal-calendar-legend i{display:inline-block;width:6px;height:6px;border-radius:50%;flex:none}
+.portal-calendar-dots .session,.portal-calendar-legend .session{background:var(--blue)}
+.portal-calendar-dots .match,.portal-calendar-legend .match{background:var(--good)}
+.portal-calendar-dots small{font-size:.6rem;line-height:1}
+.portal-calendar-legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;color:var(--muted);font-size:.76rem}
+.portal-calendar-legend span{display:flex;align-items:center;gap:6px}
+#portal-calendar-events>h3{font-size:1rem;margin:22px 0 12px;overflow-wrap:anywhere}
+@media(max-width:360px){.portal-calendar{padding:10px}.portal-calendar-weekdays,.portal-calendar-grid{gap:3px}.portal-calendar-day{font-size:.78rem;min-height:58px}}

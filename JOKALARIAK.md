@@ -18,7 +18,10 @@ dezake Kontuak ataletik.
 
 ## Eguneroko erabilera
 
-- **Agenda:** datozen 90 egunetako entrenamenduak eta partidak.
+- **Agenda:** datozen 90 egunetako entrenamenduak eta partidak. **Egutegia**
+  aukeratuta, hilabete-bista irekitzen da; egun bat sakatzean bere jarduerak eta
+  bertaratzea baieztatzeko aukera agertzen dira. Geziekin hilabetez aldatu eta
+  **Gaur** botoiarekin uneko egunera itzuli daiteke.
 - **Bertaratzea:** Banoa, Ezin dut edo Zalantzan, aukerako ohar batekin.
   Entrenatzaileak erantzunak entrenamenduaren **Ikusi** atalean ikusiko ditu,
   hasieran kopuruen laburpena eta **Jokalarien erantzunak ikusi** sakatuta xehetasunak;
