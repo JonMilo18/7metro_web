@@ -19,9 +19,11 @@ function portalHide() {
 }
 function portalReset() {
   portalHide(); portalState.bootstrap = null; portalState.playerId = 0; portalState.data = null; portalState.coachData = null;
+  if ($("portal-event-dialog").open) $("portal-event-dialog").close();
   if ($("portal-response-dialog").open) $("portal-response-dialog").close();
   $("portal-response-note").value = "";
-  ["portal-agenda", "portal-callups", "portal-notices", "portal-invites", "portal-coach-content"].forEach(function (id) { $(id).innerHTML = ""; });
+  ["portal-agenda", "portal-callups", "portal-notices", "portal-invites", "portal-coach-content", "portal-event-content", "saved-session-responses"].forEach(function (id) { $(id).innerHTML = ""; });
+  document.querySelectorAll("[data-att-response]").forEach(function (label) { label.textContent = ""; });
 }
 async function routeAuthenticatedSession(requested) {
   var sessionToken = token, sequence = ++portalState.routeSequence;
@@ -142,8 +144,7 @@ function portalRenderCoach() {
   } else if (tab === "callups") {
     var games = portalCoachEvents().filter(function (event) { return event.kind === "match"; });
     if (!games.some(function (event) { return event.id === portalState.coachMatch; })) portalState.coachMatch = games.length ? games[0].id : 0;
-    var callups = data.callups.filter(function (c) { return Number(c.match_id) === portalState.coachMatch; }), first = callups[0] || {};
-    html = games.length ? '<form id="portal-callup-form" class="card stack"><h2>' + esc(t("Partidako deialdia")) + '</h2><label>' + esc(t("Partida")) + '<select id="portal-coach-match" name="match_id">' + games.map(function (g) { return '<option value="' + g.id + '"' + (g.id === portalState.coachMatch ? ' selected' : '') + '>' + esc(portalDate(g.date) + ' · ' + g.title) + '</option>'; }).join("") + '</select></label><label>' + esc(t("Elkartzeko ordua")) + '<input name="meeting_time" type="datetime-local" value="' + esc(first.meeting_time || '') + '"></label><label>' + esc(t("Elkartzeko tokia")) + '<input name="meeting_place" maxlength="250" value="' + esc(first.meeting_place || '') + '"></label><label>' + esc(t("Oharrak")) + '<textarea name="note" maxlength="2000">' + esc(first.note || '') + '</textarea></label><p class="muted">' + esc(t("Hautatutako jokalariek deialdia ikusiko dute beren aplikazioan.")) + '</p><div class="portal-callup-roster">' + players.map(function (p) { return '<label class="checkrow"><input type="checkbox" name="player_ids" value="' + Number(p.id_jokalaria) + '"' + (callups.some(function (c) { return Number(c.player_id) === Number(p.id_jokalaria); }) ? ' checked' : '') + '><span>' + esc((p.dortsala == null ? '' : '#' + p.dortsala + ' ') + playerName(p)) + '</span></label>'; }).join("") + '</div><button type="submit" class="btn">' + esc(t("Deialdia gorde")) + '</button></form>' : portalEmpty("Ez dago hurrengo partidarik. Sortu partida Lehiaketan edo Plangintzan.");
+    html = games.length ? '<div class="card"><h2>' + esc(t("Partidako deialdia")) + '</h2><label>' + esc(t("Partida")) + '<select id="portal-coach-match">' + games.map(function (g) { return '<option value="' + g.id + '"' + (g.id === portalState.coachMatch ? ' selected' : '') + '>' + esc(portalDate(g.date) + ' - ' + g.title) + '</option>'; }).join("") + '</select></label>' + portalMatchCallupForm(portalState.coachMatch, data, "portal-callup-form") + '</div>' : portalEmpty("Ez dago hurrengo partidarik. Sortu partida Lehiaketan edo Plangintzan.");
   } else if (tab === "notices") {
     html = '<form id="portal-notice-form" class="card stack"><h2>' + esc(t("Abisu berria")) + '</h2><label>' + esc(t("Izenburua")) + '<input name="title" maxlength="150" required></label><label>' + esc(t("Mezua")) + '<textarea name="body" maxlength="2000" required></textarea></label><button type="submit" class="btn">' + esc(t("Abisua argitaratu")) + '</button></form>' + data.notices.map(function (n) {
       return '<article class="card"><h3>' + esc(n.title) + '</h3><p class="portal-authored">' + esc(n.body) + '</p><p class="muted">' + esc(t("Irakurrita")) + ': ' + n.readers.length + '</p>' + (n.readers.length ? '<p class="muted">' + esc(n.readers.map(function (id) { var p = portalCoachPlayer(id); return p ? playerName(p) : t("Jokalaria"); }).join(', ')) + '</p>' : '') + '<button type="button" class="btn danger" data-portal-delete-notice="' + Number(n.id) + '">' + esc(t("Ezabatu")) + '</button></article>';
@@ -163,10 +164,18 @@ function portalRenderCoach() {
 }
 async function portalCoachMutation(payload, form) {
   if (form.inert) return;
-  form.inert = true; portalError("portal-coach-error", "");
-  try { await request(Object.assign({ team_id: teamId }, payload)); await portalLoadCoach(); notify(t("Aldaketak gordeta"), "success"); }
-  catch (error) { portalError("portal-coach-error", error.message); }
-  finally { form.inert = false; }
+  var eventForm = form.id === "portal-event-callup-form", errorId = eventForm ? "portal-event-error" : "portal-coach-error";
+  form.inert = true; portalError(errorId, "");
+  if (eventForm) { $("portal-event-close").disabled = true; $("portal-event-refresh").disabled = true; }
+  try {
+    await request(Object.assign({ team_id: teamId }, payload));
+    if (eventForm) await portalLoadEventMatch(); else await portalLoadCoach();
+    notify(t("Aldaketak gordeta"), "success");
+  } catch (error) { portalError(errorId, error.message); }
+  finally {
+    form.inert = false;
+    if (eventForm) { $("portal-event-close").disabled = false; $("portal-event-refresh").disabled = false; }
+  }
 }
 
 window.PlayerPortal = { reset: portalReset, hide: portalHide, loadCoach: portalLoadCoach };
@@ -209,7 +218,7 @@ window.addEventListener("DOMContentLoaded", function () {
   $("portal-coach-content").addEventListener("submit", function (event) {
     var form = event.target; event.preventDefault(); var fields = Object.fromEntries(new FormData(form));
     if (form.id === "portal-invite-form") portalCoachMutation({ action: "portal_invite", player_id: Number(fields.player_id), username: fields.username }, form);
-    if (form.id === "portal-callup-form") portalCoachMutation({ action: "portal_publish_callup", match_id: Number(fields.match_id), player_ids: new FormData(form).getAll("player_ids").map(Number), meeting_time: fields.meeting_time, meeting_place: fields.meeting_place, note: fields.note }, form);
+    if (form.id === "portal-callup-form") portalCoachMutation(portalCallupPayload(form), form);
     if (form.id === "portal-notice-form") portalCoachMutation({ action: "portal_create_notice", title: fields.title, body: fields.body }, form);
   });
   $("portal-coach-content").addEventListener("click", function (event) {

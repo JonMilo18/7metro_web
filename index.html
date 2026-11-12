@@ -585,7 +585,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=146"><link rel="stylesheet" href="portal.css?v=146">
+<link rel="stylesheet" href="insights.css?v=147"><link rel="stylesheet" href="portal.css?v=147">
 </head>
 <body>
 <div id="app">
@@ -767,6 +767,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
       <button class="btn secondary" type="button" data-back-sessions>← Saioetara itzuli</button>
       <h1 id="saved-session-title">Entrenamendua</h1><p class="sub" id="saved-session-meta"></p>
       <div class="session-actions session-detail-actions"><button class="btn secondary" id="saved-session-edit" type="button" data-edit-session>Editatu</button><button class="btn secondary" id="saved-session-duplicate" type="button" data-duplicate-session>Bikoiztu</button><button class="btn secondary" id="saved-session-share" type="button" data-share-session>Partekatu</button></div>
+      <div class="card"><div class="toolbar"><h2>Bertaratze-erantzunak</h2><button class="btn secondary" id="saved-session-responses-refresh" type="button">Birkargatu</button></div><p class="muted">Aurreikuspen hauek ez dute entrenamenduko benetako asistentzia aldatzen.</p><div id="saved-session-responses"></div><button class="btn secondary" id="saved-session-attendance" type="button">Asistentzia apuntatu</button></div>
       <div class="card training-session-overview"><span class="training-overview-label">SAIOAREN HELBURUA</span><p id="saved-session-goal">Helbururik gabe</p><div id="saved-session-cycle" class="muted"></div></div>
       <div class="toolbar"><h2>Ariketen sekuentzia</h2><strong class="training-total" id="saved-session-total">0 min</strong></div>
       <div id="saved-session-exercises" class="training-exercise-grid"></div>
@@ -846,6 +847,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
       <div class="insight-controls"><button class="btn secondary insight-back" id="match-report-back" type="button">← Itzuli</button><button class="btn secondary insight-back" id="match-report-refresh" type="button">Birkargatu</button></div>
       <div class="help-heading"><h1>Partidaren txostena</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-26" aria-label="Partidaren txostena: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-26" hidden>Banakako estatistikek erregistratutako ekintzak biltzen dituzte. Mapetan kokapena duten jaurtiketak bakarrik agertzen dira.</p>
       <div class="report-export-actions"><button class="btn" id="match-report-share" type="button" disabled>PDFa partekatu</button><button class="btn secondary" id="match-report-download" type="button" disabled>PDFa deskargatu</button><button class="btn secondary" id="match-report-copy" type="button">Laburpena kopiatu</button></div><p id="match-report-pdf-status" class="muted" role="status" aria-live="polite"></p>
+      <button class="btn secondary insight-back" id="match-report-callup" type="button">Deialdia eta erantzunak</button>
       <div id="match-report-content"></div>
       <div class="card report-notes"><div class="help-heading"><h2>Entrenatzailearen oharrak</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-27" aria-label="Entrenatzailearen oharrak: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-27" hidden>Ohar hauek PDF txostenean sartuko dira. Gorde taldeko gainerako kideek ere ikus ditzaten.</p><label>Oharrak<textarea id="match-report-notes" maxlength="10000" rows="5"></textarea></label><div class="toolbar"><button class="btn secondary" id="match-report-save-notes" type="button">Oharrak gorde</button><span id="match-report-notes-status" class="muted" role="status" aria-live="polite"></span></div></div>
     </section>
@@ -990,6 +992,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
   </div>
 </div>
 </main>
+  <dialog id="portal-event-dialog" class="attendance-dialog" aria-labelledby="portal-event-title"><div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="portal-event-title">Deialdia eta erantzunak</h2><button class="btn secondary" id="portal-event-close" type="button">Itxi</button></div><div class="toolbar"><p id="portal-event-name" class="muted"></p><button class="btn secondary" id="portal-event-refresh" type="button">Birkargatu</button></div><p id="portal-event-error" class="notice error" role="alert" hidden></p><div id="portal-event-content"></div></div></dialog>
   <dialog id="portal-response-dialog" class="attendance-dialog" aria-labelledby="portal-response-title"><div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="portal-response-title">Bertaratzea baieztatu</h2><button class="btn secondary" id="portal-response-close" type="button">Itxi</button></div><p id="portal-response-name" class="muted"></p><form id="portal-response-form" class="stack"><label>Erantzuna<select id="portal-response-value" required><option value="yes">Banoa</option><option value="no">Ezin dut</option><option value="maybe">Zalantzan</option></select></label><label>Oharra (aukerakoa)<textarea id="portal-response-note" maxlength="500"></textarea></label><p class="muted">Erantzuna eta oharra entrenatzaileak ikusiko ditu.</p><p id="portal-response-error" class="notice error" role="alert" hidden></p><button class="btn" type="submit">Erantzuna gorde</button></form></div></dialog>
   <dialog id="session-preview-dialog" class="attendance-dialog session-preview-dialog" aria-labelledby="session-preview-title">
     <div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="session-preview-title">Ariketa-arbela</h2><button class="btn secondary" id="session-preview-close" type="button" aria-label="Itxi">Itxi</button></div>
@@ -1002,7 +1005,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
   <dialog id="player-edit-dialog" class="attendance-dialog" aria-labelledby="player-edit-title"><div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="player-edit-title">Jokalaria editatu</h2><button class="btn secondary" id="player-edit-close" type="button">Itxi</button></div><form id="player-edit-form" class="stack"></form></div></dialog>
   <dialog id="attendance-dialog" class="attendance-dialog" aria-labelledby="attendance-dialog-title">
     <div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="attendance-dialog-title">Asistentzia apuntatu</h2><button class="btn secondary" id="attendance-close" type="button" aria-label="Itxi">Itxi</button></div>
-      <div id="attendance-list" class="list"></div><button class="btn" id="save-attendance" type="button">Gorde eta itxi</button>
+      <p id="attendance-response-state" class="muted" role="status"></p><div id="attendance-list" class="list"></div><button class="btn" id="save-attendance" type="button">Gorde eta itxi</button>
     </div>
   </dialog>
 <button id="mobile-menu-backdrop" class="mobile-menu-backdrop hidden" type="button" aria-label="Menua itxi" tabindex="-1"></button>
@@ -1024,12 +1027,13 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=146" defer></script>
-<script src="i18n.js?v=146" defer></script>
-<script src="insights-data.js?v=146" defer></script>
-<script src="portal.js?v=146" defer></script>
-<script src="app.js?v=146" defer></script>
-<script src="report-pdf.js?v=146" defer></script>
-<script src="insights.js?v=146" defer></script>
+<script src="locales/es.js?v=147" defer></script>
+<script src="i18n.js?v=147" defer></script>
+<script src="insights-data.js?v=147" defer></script>
+<script src="portal.js?v=147" defer></script>
+<script src="portal-events.js?v=147" defer></script>
+<script src="app.js?v=147" defer></script>
+<script src="report-pdf.js?v=147" defer></script>
+<script src="insights.js?v=147" defer></script>
 </body>
 </html>

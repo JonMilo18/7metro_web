@@ -36,11 +36,11 @@
   white-space: normal;
 }
 #matches-list .match-actions [data-match-report] {
-  grid-column: 1 / -1;
+  grid-column: auto;
 }
-@container match-card (min-width: 40rem) {
+@container match-card (min-width: 44rem) {
   #matches-list .match-actions {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
   #matches-list .match-actions [data-match-report] {
     grid-column: auto;

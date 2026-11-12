@@ -1056,7 +1056,7 @@ function renderPlayers() {
     var id = Number(player.id_jokalaria), name = esc(playerName(player));
     return '<div class="attendance-row"><label class="checkrow"><input type="checkbox" data-att-player="' +
       id + '" checked><span>' + (player.dortsala != null ? "#" + esc(player.dortsala) + " " : "") +
-      name + ("</span></label><label>" + esc(t("Berandu (min)")) + "<input type=\"number\" min=\"0\" max=\"999\" value=\"0\" data-late=\"") +
+      name + '<small class="portal-attendance-answer" data-att-response="' + id + '"></small>' + ("</span></label><label>" + esc(t("Berandu (min)")) + "<input type=\"number\" min=\"0\" max=\"999\" value=\"0\" data-late=\"") +
       id + ("\"></label><label>" + esc(t("Atzerapen mota")) + "<select data-late-type=\"") + id +
       ("\"><option value=\"\">" + esc(t("Ez dago")) + "</option><option value=\"Justifikatua\">" + esc(t("Justifikatua")) + "</option><option value=\"Justifikatu gabea\">" + esc(t("Justifikatu gabea")) + "</option></select></label></div>");
   }).join("") : ("<p class=\"empty\">" + esc(t("Ez dago jokalaririk.")) + "</p>");
@@ -1559,6 +1559,7 @@ function renderSavedSession(sessionId) {
     var canvas = document.querySelector('[data-training-preview="' + preview.index + '"]');
     if (canvas) drawBoard(canvas, preview.data, null);
   });
+  if (window.PlayerPortal) window.PlayerPortal.loadSession(sessionId);
   return true;
 }
 
@@ -1596,7 +1597,7 @@ function renderMatches() {
     return '<li class="item"><div class="item-main"><strong>' + esc(match.aurkaria || t("Aurkaria")) +
       " · " + Number(match.emaitza_geurea || 0) + " - " + Number(match.emaitza_aurkaria || 0) +
       '</strong><small>' + esc(formatDate(match)) + " · " + esc(t(match.lekua) || "") +
-      '</small></div><span class="match-actions"><button class="btn secondary" type="button" data-match-report="' + Number(match.id_partida) + '">' + esc(t("Txostena")) + '</button><button class="btn secondary" type="button" data-match-stats="' +
+      '</small></div><span class="match-actions"><button class="btn secondary" type="button" data-match-report="' + Number(match.id_partida) + '">' + esc(t("Txostena")) + '</button><button class="btn secondary" type="button" data-match-callup="' + Number(match.id_partida) + '">' + esc(t("Deialdia")) + '</button><button class="btn secondary" type="button" data-match-stats="' +
       Number(match.id_partida) + ("\">" + esc(t("Estatistikak")) + "</button> <button class=\"btn secondary\" type=\"button\" data-match-stats=\"") +
       Number(match.id_partida) + ("\" data-match-stats-view=\"opponents\" aria-label=\"" + esc(t("Ikusi aurkariaren estatistikak")) + "\">" + esc(t("Aurkaria")) + "</button> <button class=\"btn secondary\" type=\"button\" data-edit-match=\"") +
       Number(match.id_partida) + ("\">" + esc(t("Editatu")) + "</button> <button class=\"btn danger\" type=\"button\" data-delete-match=\"") +
@@ -2156,6 +2157,7 @@ function openAttendanceDialog(sessionId) {
   renderAttendance(id);
   var dialog = $("attendance-dialog");
   if (!dialog.open) dialog.showModal();
+  if (window.PlayerPortal) window.PlayerPortal.loadAttendance(id);
 }
 
 async function refreshAll() {

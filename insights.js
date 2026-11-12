@@ -84,6 +84,7 @@
     if (!reportId) return;
     var report = reportData();
     if (!report) { $("match-report-content").innerHTML = empty("Ez da taldeko partida aurkitu"); return; }
+    $("match-report-callup").dataset.matchCallup = String(report.match.id_partida);
     var m = report.match, home = report.homeTotal, away = report.awayTotal;
     var homeName = team && team.izena || "7metro", awayName = m.aurkaria || t("Aurkaria"), draft = reportDraft(m);
     var html = '<div class="report-score"><p>' + esc(formatDate(m)) + ' · ' + esc(t(m.lekua || "")) + '</p><div class="report-score-line"><span>' + esc(homeName) + '</span><strong>' + Number(m.emaitza_geurea || 0) + ' - ' + Number(m.emaitza_aurkaria || 0) + '</strong><span>' + esc(awayName) + '</span></div></div>';

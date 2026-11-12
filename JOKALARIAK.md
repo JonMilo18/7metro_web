@@ -20,10 +20,13 @@ dezake Kontuak ataletik.
 
 - **Agenda:** datozen 90 egunetako entrenamenduak eta partidak.
 - **Bertaratzea:** Banoa, Ezin dut edo Zalantzan, aukerako ohar batekin.
-  Entrenatzaileak erantzuna **Bertaratzeak** atalean ikusiko du. Aurreikuspena da;
+  Entrenatzaileak erantzunak entrenamenduaren **Ikusi** atalean ikusiko ditu,
+  eta **Asistentzia** apuntatzean jokalari bakoitzaren izenaren azpian ere bai. Aurreikuspena da;
   entrenamenduko benetako asistentziaren erregistroa ez du automatikoki aldatzen.
 - **Deialdiak:** entrenatzaileak partida, jokalariak, elkartzeko ordua eta tokia
-  eta oharrak argitaratzen ditu. Deitutako jokalari bakoitzak erantzun dezake.
+  eta oharrak argitaratzen ditu, **Lehiaketa → partida → Deialdia** aukeratik.
+  Bertan deialdia editatu eta erantzunak ikus daitezke. Partidaren txostenetik ere
+  ireki daiteke. Deitutako jokalari bakoitzak erantzun dezake.
   Deialdiaren argibideak aldatzean baieztapena berriro eskatzen da.
 - **Abisuak:** entrenatzaileak taldeko abisuak argitaratzen ditu. Jokalariak
   Irakurrita markatu dezake, eta entrenatzaileak nork irakurri duen ikus dezake.
