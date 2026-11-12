@@ -34,6 +34,7 @@ test('worker encrypts real Web Push messages, protects its endpoint and never in
  const request=new Request('https://example.test/worker',{method:'POST',headers:{'x-7metro-push-worker':'SECRET'}});
  const fakeFetch=async(url,options)=>{
   fetchCalls++;assert.equal(url,job.endpoint);assert.equal(options.redirect,'error');assert.equal(options.method,'POST');
+  assert.equal(new Headers(options.headers).has('Topic'),false,'Single-digit notification IDs must not create invalid Apple push topics');
   const decoded=JSON.parse(require('http_ece').decrypt(Buffer.from(options.body),{version:'aes128gcm',privateKey:receiver,authSecret:auth.toString('base64url')}).toString());
   assert.equal(decoded.title,'Nueva solicitud de amistad');assert.equal(decoded.notification_id,7);assert.equal(decoded.binding,job.binding);assert(!JSON.stringify(decoded).includes('PRIVATE NOTE'));
   return new Response(null,{status:201});
@@ -51,4 +52,10 @@ test('worker encrypts real Web Push messages, protects its endpoint and never in
  assert.equal(result.status,200);assert.equal((await result.json()).sent,1);assert.equal(finished[0].p_status,201);assert.equal(finished[0].p_lease,job.lease);
  job.endpoint='https://127.0.0.1/private';await worker.handlePushWorker(request,db,vapid,'SECRET',generateRequestDetails,fakeFetch);assert.equal(fetchCalls,1);assert.equal(finished.at(-1).p_status,400);
  job.endpoint='https://fcm.googleapis.com/fcm/send/test';await worker.handlePushWorker(request,db,vapid,'SECRET',generateRequestDetails,async()=>new Response(null,{status:410}));assert.equal(finished.at(-1).p_status,410);
+ job.endpoint='https://web.push.apple.com/test';job.kind='test';
+ const apple=await worker.handlePushWorker(request,db,vapid,'SECRET',generateRequestDetails,async(url,options)=>{
+  const headers=new Headers(options.headers);assert.equal(headers.has('Topic'),false);assert.equal(headers.get('Urgency'),'high');
+  return new Response(JSON.stringify({reason:'BadWebPushTopic'}),{status:400});
+ });
+ assert.deepEqual(JSON.parse(JSON.stringify((await apple.json()).errors)),[{status:400,reason:'BadWebPushTopic'}]);
 });

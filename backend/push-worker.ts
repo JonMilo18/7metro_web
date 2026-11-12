@@ -53,20 +53,28 @@ export async function handlePushWorker(request: Request, supabase: SupabaseClien
     const claimed = await supabase.rpc("push_claim", { p_limit: 20 });
     if (claimed.error) return response(500, { error: "Queue unavailable" });
     const jobs = (claimed.data || []) as Job[];
-    const counts = { processed: jobs.length, sent: 0, failed: 0 };
+    const counts = { processed: jobs.length, sent: 0, failed: 0, errors: [] as { status: number; reason: string }[] };
     for (let start = 0; start < jobs.length; start += 4) {
       await Promise.all(jobs.slice(start, start + 4).map(async (job) => {
-        let status = 400;
+        let status = 400, reason = "InvalidEndpoint";
         if (allowedPushEndpoint(job.endpoint)) {
           try {
             const details = generateRequestDetails({ endpoint: job.endpoint, keys: { p256dh: job.p256dh, auth: job.auth } }, JSON.stringify(pushPayload(job)),
-              { vapidDetails: vapid, TTL: 3600, urgency: "normal", contentEncoding: "aes128gcm", topic: String(job.notification_id) });
+              // Numeric IDs are not always valid base64url topics for Apple.
+              // Group visible notifications with the payload tag instead.
+              { vapidDetails: vapid, TTL: 3600, urgency: job.kind === "test" ? "high" : "normal", contentEncoding: "aes128gcm" });
             const result = await fetcher(details.endpoint, { method: "POST", headers: details.headers, body: new Uint8Array(details.body), redirect: "error", signal: AbortSignal.timeout(8000) });
-            status = result.status; await result.body?.cancel();
-          } catch { status = 0; }
+            status = result.status; reason = "ProviderRejected";
+            if (status >= 400) {
+              // Providers such as Apple return a short machine-readable reason.
+              // Never expose endpoint tokens or an arbitrary provider response.
+              const text = await result.text();
+              try { const code = JSON.parse(text).reason; if (typeof code === "string" && /^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(code)) reason = code; } catch { /* Keep the generic reason. */ }
+            } else await result.body?.cancel();
+          } catch { status = 0; reason = "TransportError"; }
         }
         const finished = await supabase.rpc("push_finish", { p_id: job.id, p_lease: job.lease, p_status: status });
-        if (status >= 200 && status < 300 && !finished.error) counts.sent++; else counts.failed++;
+        if (status >= 200 && status < 300 && !finished.error) counts.sent++; else { counts.failed++; if (counts.errors.length < 4) counts.errors.push({ status, reason }); }
       }));
     }
     return response(200, counts);
