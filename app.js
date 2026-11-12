@@ -2021,9 +2021,9 @@ function planTypeOptions(current) {
   }).join("");
 }
 
-function planDefaultStart() { return planKey(planMonth); }
+function planDefaultStart() { return $("plan-create-date").value || planKey(planMonth); }
 function planDefaultEnd() {
-  var end = new Date(planMonth);
+  var end = planDayNumber(planDefaultStart());
   end.setDate(end.getDate() + 6);
   return planKey(end);
 }
@@ -2175,6 +2175,7 @@ async function refreshAll() {
 }
 
 function selectSection(id) {
+  if (id !== "v-planning") closePlanningOptions();
   if (id !== "v-scoreboard" && scoreMatchMode) scoreExitMatchMode();
   if (id !== "v-board") stopBoardAnimation();
   setMobileMenu(false);
@@ -3302,7 +3303,23 @@ redrawBoard();
 
 
 document.querySelectorAll("[data-plan-new]").forEach(function (button) {
-  button.addEventListener("click", function () { openPlanForm(button.dataset.planNew, null); });
+  button.addEventListener("click", function () {
+    if (!$("plan-create-date").reportValidity()) return;
+    openPlanForm(button.dataset.planNew, null); closePlanningOptions();
+  });
+});
+
+function closePlanningOptions() {
+  $("plan-create-options").hidden = true;
+  $("plan-create-toggle").setAttribute("aria-expanded", "false");
+}
+$("plan-create-toggle").addEventListener("click", function () {
+  var panel = $("plan-create-options");
+  panel.hidden = !panel.hidden;
+  this.setAttribute("aria-expanded", String(!panel.hidden));
+});
+$("plan-create-options").addEventListener("keydown", function (event) {
+  if (event.key === "Escape") { closePlanningOptions(); $("plan-create-toggle").focus(); }
 });
 
 function syncPlanningSelectedDay() {

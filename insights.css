@@ -86,3 +86,10 @@
   #plan-create-date{width:0;min-width:100%;max-width:100%;-webkit-appearance:none;appearance:none}
   .plan-create-actions .btn{width:100%;min-width:0}
 }
+
+#plan-create-options[hidden]{display:none!important}
+#plan-create-options{padding:0 0 16px;margin:12px 0;border-bottom:1px solid var(--line)}
+#plan-create-options .plan-create-actions{margin:0 0 12px}
+.plan-option-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.plan-option-grid .btn{width:100%;min-width:0;min-height:48px;margin:0;padding:10px 8px;white-space:normal}
+#plan-create-toggle[aria-expanded="true"]{box-shadow:0 0 0 3px rgba(0,68,238,.2)}
