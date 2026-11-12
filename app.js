@@ -1965,6 +1965,11 @@ function renderPlanning() {
     button.setAttribute("aria-pressed", String(button.dataset.planView === planView));
   });
   var base = planMonth;
+  var creationDate = $("plan-create-date"), monthKey = planKey(base).slice(0, 7);
+  if (!creationDate.value || creationDate.value.slice(0, 7) !== monthKey) {
+    var today = new Date();
+    creationDate.value = planKey(today).slice(0, 7) === monthKey ? planKey(today) : monthKey + "-01";
+  }
   $("plan-month").textContent = t(PLAN_MONTHS[base.getMonth()]) + " " + base.getFullYear();
   var spans = planMacroSpans();
   var microList = planMicroList();
@@ -3297,6 +3302,30 @@ redrawBoard();
 
 document.querySelectorAll("[data-plan-new]").forEach(function (button) {
   button.addEventListener("click", function () { openPlanForm(button.dataset.planNew, null); });
+});
+
+function planningCreationDate() {
+  var input = $("plan-create-date");
+  if (!input.reportValidity()) return null;
+  return input.value + "T" + localDateTime().slice(11, 16);
+}
+$("plan-create-session").addEventListener("click", function () {
+  var date = planningCreationDate();
+  if (!date || sessionEditorBusy || !canReplaceSessionDraft()) return;
+  resetSessionEditor();
+  $("session-date").value = date;
+  sessionCleanDraft = sessionDraftValue();
+  showSessionEditor();
+});
+$("plan-create-match").addEventListener("click", function () {
+  var date = planningCreationDate();
+  if (!date) return;
+  if (($("match-opponent").value.trim() || $("match-score-home").value || $("match-score-away").value) &&
+      !window.confirm(t("Gorde gabeko partida ordeztu nahi duzu?"))) return;
+  $("match-form").reset();
+  $("match-date").value = date;
+  selectSection("v-matches");
+  $("match-create").click();
 });
 
 $("plan-prev").addEventListener("click", function () { stepPlanMonth(-1); });

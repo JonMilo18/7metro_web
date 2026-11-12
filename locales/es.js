@@ -6,6 +6,9 @@ window.SevenMetroLocales.es = {
   "name": "Español",
   "locale": "es-ES",
   "messages": {
+    "+ Entrenamendu berria": "+ Nuevo entrenamiento",
+    "+ Partida berria": "+ Nuevo partido",
+    "Gorde gabeko partida ordeztu nahi duzu?": "?Quieres sustituir el partido sin guardar?",
     "0": "0",
     "7": "7",
     "— eskaera bidalita": "— solicitud enviada",

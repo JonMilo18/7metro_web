@@ -51,3 +51,15 @@
 #sessions-list .session-actions{justify-self:stretch;box-sizing:border-box;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;max-width:none;gap:8px;align-items:stretch;white-space:normal}
 #sessions-list .session-actions .btn{width:100%;min-width:0;min-height:44px;height:100%;margin:0;padding:10px 8px;font-size:.9rem;line-height:1.25;white-space:normal}
 @container session-card (min-width:40rem){#sessions-list .session-actions{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+.plan-create-actions{display:flex;align-items:end;flex-wrap:wrap;gap:10px;margin:16px 0}
+.plan-create-actions label{flex:1 1 180px;min-width:0;margin:0}
+.plan-create-actions .btn{flex:1 1 180px;width:auto;margin:0;min-height:44px}
+#plan-agenda .item{display:grid;grid-template-columns:60px minmax(0,1fr) 20px;gap:14px;align-items:start;padding:16px 0}
+#plan-agenda .agenda-date{display:block;min-width:0;padding:10px 4px;line-height:1.5;font-variant-numeric:tabular-nums}
+#plan-agenda .agenda-detail{display:flex;flex-direction:column;gap:6px;min-width:0}
+#plan-agenda .agenda-kind{display:block;margin:0;font-size:.75rem;font-weight:650;color:var(--muted)}
+#plan-agenda .agenda-detail strong{display:block;font-size:1rem;line-height:1.4;overflow-wrap:anywhere}
+#plan-agenda .agenda-detail small{display:block;line-height:1.5;overflow-wrap:anywhere}
+#plan-agenda .agenda-open{align-self:center;padding:0;text-align:center}
+@media(max-width:420px){.plan-create-actions label{flex-basis:100%}.plan-create-actions .btn{flex-basis:100%}#plan-agenda .item{grid-template-columns:52px minmax(0,1fr) 16px;gap:10px}}
