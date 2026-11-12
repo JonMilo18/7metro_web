@@ -79,3 +79,10 @@
 #nav .nav-icon{display:block;flex:none;width:22px;height:22px;color:var(--muted);transition:color .16s ease}
 #nav button[aria-selected="true"] .nav-icon{color:var(--blue)}
 #nav button[data-v]>span{min-width:0;overflow-wrap:anywhere}
+
+@media(max-width:767px){
+  .plan-create-actions{display:grid;grid-template-columns:minmax(0,1fr);width:100%;min-width:0;max-width:100%}
+  .plan-create-actions label{display:grid;grid-template-columns:minmax(0,1fr);width:100%;min-width:0;max-width:100%}
+  #plan-create-date{width:0;min-width:100%;max-width:100%;-webkit-appearance:none;appearance:none}
+  .plan-create-actions .btn{width:100%;min-width:0}
+}
