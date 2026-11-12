@@ -28,6 +28,7 @@
     }).join('') + '</tbody></table></div>';
   }
   function maps(shots, title) {
+    if (!shots.length) return "";
     var circles = function (destination) {
       return shots.map(function (s) {
         var p = destination ? s.to : s.from, x = destination ? 18 + p[0] * 324 : p[0] * 800, y = destination ? 18 + p[1] * 174 : p[1] * 520;
