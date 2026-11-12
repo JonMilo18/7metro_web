@@ -1,5 +1,16 @@
 "use strict";
 
+// Safari can ignore viewport zoom restrictions. Block its pinch gestures as
+// well as multi-touch browser zoom, while preserving one-finger scrolling.
+(function () {
+  function preventPinch(event) {
+    if (event.cancelable && (event.type.indexOf("gesture") === 0 || (event.touches && event.touches.length > 1))) event.preventDefault();
+  }
+  ["gesturestart", "gesturechange", "gestureend", "touchstart", "touchmove"].forEach(function (type) {
+    document.addEventListener(type, preventPinch, { passive: false, capture: true });
+  });
+})();
+
 var DEFAULT_API_URL = "https://txkjflrtoziscqcytpbc.supabase.co";
 var DEFAULT_API_KEY = "sb_publishable_R2yjFvK-Z7ezWbXVi2KqmA_dzox4-pd";
 var t = window.I18n.t;
