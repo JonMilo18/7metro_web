@@ -1,9 +1,9 @@
 // 7metro - service worker probisionala
 // Aldaketak argitaratzean, aldatu CACHE bertsioa.
-const CACHE = "7metro-v133";
+const CACHE = "7metro-v134";
 const SHELL = ["./", "./index.html", "./manifest.json",
-  "./locales/es.js?v=133", "./i18n.js?v=133", "./app.js?v=133", "./insights-data.js?v=133", "./insights.js?v=133",
-  "./report-pdf.js?v=133", "./insights.css?v=133", "./vendor/jspdf.umd.min.js",
+  "./locales/es.js?v=134", "./i18n.js?v=134", "./app.js?v=134", "./insights-data.js?v=134", "./insights.js?v=134",
+  "./report-pdf.js?v=134", "./insights.css?v=134", "./vendor/jspdf.umd.min.js",
   "./vendor/fonts/NotoSans-Regular.ttf", "./vendor/fonts/NotoSans-Bold.ttf",
   "./irudiak/Zelaia.png", "./irudiak/Zelai-erdia.png",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];
@@ -21,7 +21,7 @@ self.addEventListener("fetch", e => {
   if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
   // Nabigazioa: sarea lehenik, konexiorik ez badago cachea
   if (req.mode === "navigate") {
-    e.respondWith(fetch(req).then(r => { caches.open(CACHE).then(c => c.put("./index.html", r.clone())); return r; })
+    e.respondWith(fetch(req, { cache: "no-cache" }).then(r => { caches.open(CACHE).then(c => c.put("./index.html", r.clone())); return r; })
       .catch(() => caches.match("./index.html")));
     return;
   }

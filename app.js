@@ -3928,7 +3928,11 @@ var standalone = window.matchMedia("(display-mode: standalone)").matches || navi
 $("install-status").textContent = standalone ? t("Instalatuta erabiltzen ari zara") : t("Arakatzailetik erabiltzen ari zara");
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
-    navigator.serviceWorker.register("sw.js").catch(function (error) {
+    navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(function (registration) {
+      document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "visible") registration.update().catch(function () {});
+      });
+    }).catch(function (error) {
       console.error(t("Service worker-a ezin izan da erregistratu"), error);
     });
   });
