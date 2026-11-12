@@ -48,12 +48,6 @@
 }
 
 #sessions-list > .item{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;container:session-card / inline-size}
-#sessions-list .session-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;max-width:none;gap:8px;align-items:stretch;white-space:normal}
+#sessions-list .session-actions{justify-self:stretch;box-sizing:border-box;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;max-width:none;gap:8px;align-items:stretch;white-space:normal}
 #sessions-list .session-actions .btn{width:100%;min-width:0;min-height:44px;height:100%;margin:0;padding:10px 8px;font-size:.9rem;line-height:1.25;white-space:normal}
 @container session-card (min-width:40rem){#sessions-list .session-actions{grid-template-columns:repeat(4,minmax(0,1fr))}}
-
-@media(max-width:680px){
-  #sessions-list .session-actions{grid-template-columns:minmax(0,1fr)}
-  #session-selected .session-detail-actions{display:grid;grid-template-columns:minmax(0,1fr);width:100%;gap:8px}
-  #session-selected .session-detail-actions .btn{width:100%;min-width:0;min-height:44px;margin:0}
-}
