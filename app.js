@@ -1502,6 +1502,7 @@ function renderSavedSession(sessionId) {
   $("v-session-detail").dataset.sessionId = String(sessionId);
   $("saved-session-edit").dataset.editSession = String(sessionId);
   $("saved-session-duplicate").dataset.duplicateSession = String(sessionId);
+  $("saved-session-share").dataset.shareSession = String(sessionId);
   var micro = records("mikrozikloak").find(function (item) {
     return Number(item.id_mikroziklo) === Number(session.id_mikroziklo);
   });
@@ -1572,7 +1573,7 @@ function renderSessions() {
       '</strong><small>' + esc(session.lekua || "") +
       (session.helburu_taktikoa ? " · " + esc(session.helburu_taktikoa) : "") +
       (names.length ? " · " + esc(names.join(", ")) : "") +
-      '</small></div><div class="session-actions"><button class="btn secondary" type="button" data-view-session="' +
+      '</small></div><div class="session-actions"><button class="btn secondary" type="button" data-share-session="' + Number(session.id_saio) + '">' + esc(t("Partekatu")) + '</button><button class="btn secondary" type="button" data-view-session="' +
       Number(session.id_saio) + ("\">" + esc(t("Ikusi")) + "</button><button class=\"btn secondary\" type=\"button\" data-attendance-session=\"") +
       Number(session.id_saio) + ("\">" + esc(t("Asistentzia")) + "</button>") +
       '<button class="btn secondary" type="button" data-edit-session="' + Number(session.id_saio) + '">' + esc(t("Editatu")) + '</button>' +
@@ -2498,6 +2499,50 @@ function scoreUndo() {
   if (shotTargetEvent === entry) scoreClearShot();
   scoreSave(); scoreRender();
 }
+var sessionShareContext = null, sessionShareSequence = 0, sessionShareBusy = false;
+async function openSessionShare(id) {
+  var session = sessions.find(function (item) { return Number(item.id_saio) === Number(id); });
+  if (!session || sessionShareBusy) return;
+  var sequence = ++sessionShareSequence;
+  sessionShareContext = { id: Number(id), teamId: teamId };
+  $("session-share-name").textContent = (session.helburu_taktikoa || t("Entrenamendua")) + " · " + formatDay(session);
+  $("session-share-friend").innerHTML = "";
+  $("session-share-submit").disabled = true;
+  $("session-share-status").textContent = t("Kargatzen…");
+  $("session-share-dialog").showModal();
+  try {
+    var result = await request({ action: "friends_list" });
+    if (sequence !== sessionShareSequence || !$("session-share-dialog").open) return;
+    setFriendOptions("session-share-friend", result.friends || [], t("Aukeratu laguna"));
+    $("session-share-submit").disabled = !result.friends || !result.friends.length;
+    $("session-share-status").textContent = result.friends && result.friends.length ? "" : t("Onartutako lagunik ez duzu oraindik.");
+  } catch (error) {
+    if (sequence === sessionShareSequence && $("session-share-dialog").open) $("session-share-status").textContent = error.message;
+  }
+}
+document.addEventListener("click", function (event) {
+  var button = event.target.closest("[data-share-session]");
+  if (button) openSessionShare(button.dataset.shareSession);
+});
+$("session-share-close").addEventListener("click", function () {
+  if (!sessionShareBusy) $("session-share-dialog").close();
+});
+$("session-share-dialog").addEventListener("close", function () { sessionShareSequence++; });
+$("session-share-dialog").addEventListener("cancel", function (event) { if (sessionShareBusy) event.preventDefault(); });
+$("session-share-form").addEventListener("submit", async function (event) {
+  event.preventDefault();
+  if (sessionShareBusy || !sessionShareContext || !$("session-share-friend").value) return;
+  var context = sessionShareContext;
+  if (context.teamId !== teamId) { $("session-share-dialog").close(); return; }
+  sessionShareBusy = true; this.inert = true; $("session-share-close").disabled = true;
+  $("session-share-status").textContent = t("Bidaltzen...");
+  try {
+    await request({ action: "training_share", friend_id: Number($("session-share-friend").value), training_id: context.id });
+    $("session-share-dialog").close(); notify(t("Entrenamendua lagunarekin partekatu da"), "success");
+  } catch (error) { $("session-share-status").textContent = error.message; }
+  finally { sessionShareBusy = false; this.inert = false; $("session-share-close").disabled = false; }
+});
+
 var friendsCache = { friends: [], incoming: [], outgoing: [] };
 var shareExerciseSelection = new Set(), friendExerciseCategoryRelations = [];
 var friendExercises = [], friendTrainings = [], friendSharedExercises = [], friendSharedTrainings = [];

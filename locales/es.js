@@ -6,6 +6,8 @@ window.SevenMetroLocales.es = {
   "name": "Español",
   "locale": "es-ES",
   "messages": {
+    "Entrenamendua partekatu": "Compartir entrenamiento",
+    "Bidaltzen...": "Enviando...",
     "Jokalaria editatu": "Editar jugador",
     "Jokalariaren datuak eguneratu dira": "Los datos del jugador se han actualizado",
     "Jokalariaren datuak ez dira baliozkoak": "Los datos del jugador no son válidos",
