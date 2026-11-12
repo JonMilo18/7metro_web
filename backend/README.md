@@ -1,5 +1,12 @@
 # Entrenamenduak editatu eta bikoiztu
 
+`match-actions.ts` moduluak `pwa_update_match` ekintza kudeatzen du.
+`metro-api`-k `updateMatch(payload, supabase, teamId, jsonResponse)` deitzen du,
+saioa eta taldekidetasuna egiaztatu ondoren. Emaitzaz eta estatistikez gain,
+`lekua` eremuan `Etxean` edo `Kanpoan` gordetzen du. Eremua bidaltzen ez duten
+bertsio zaharrek lehengo tokia mantentzen dute. `metro-api` ere hedatu behar da;
+ez du datu-baseko migraziorik behar.
+
 `session-actions.ts` moduluak `pwa_get_session`, `pwa_update_session` eta
 `pwa_duplicate_session` ekintzak kudeatzen ditu. Ez da PWAren fitxategi publikoetan
 argitaratzen; Supabaseko `metro-api` funtzioan erabiltzen da.

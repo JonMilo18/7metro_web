@@ -1650,6 +1650,10 @@ function renderMatchEditor(matchId, scroll) {
     ("<div class=\"grid2\"><label>" + esc(t("Gure emaitza")) + "<input type=\"number\" min=\"0\" max=\"999\" required data-match-score=\"home\" value=\"") +
     Number(match.emaitza_geurea || 0) + ("\"></label><label>" + esc(t("Aurkariaren emaitza")) + "<input type=\"number\" min=\"0\" max=\"999\" required data-match-score=\"away\" value=\"") +
     Number(match.emaitza_aurkaria || 0) + '"></label></div>' +
+    '<label>' + esc(t("Tokia")) + '<select name="lekua" required>' +
+    ["Etxean", "Kanpoan"].map(function (venue) {
+      return '<option value="' + venue + '"' + (match.lekua === venue ? ' selected' : '') + '>' + esc(t(venue)) + '</option>';
+    }).join("") + '</select></label>' +
     ("<h3>" + esc(t("Jokalari bakoitzaren estatistikak")) + "</h3>") +
     (players.map(function (player) {
       var playerId = Number(player.id_jokalaria);
@@ -3855,11 +3859,12 @@ $("match-detail").addEventListener("submit", async function (event) {
     await request({
       action: "pwa_update_match", team_id: teamId,
       id: Number(form.dataset.matchEditId),
-      emaitza_geurea: score[0], emaitza_aurkaria: score[1], stats: stats
+      emaitza_geurea: score[0], emaitza_aurkaria: score[1], stats: stats,
+      lekua: form.elements.lekua.value
     });
     await refreshAll();
     $("match-detail").classList.add("hidden");
-    notify(t("Partidaren emaitza eta estatistikak eguneratu dira"), "success");
+    notify(t("Aldaketak gordeta"), "success");
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
 });
