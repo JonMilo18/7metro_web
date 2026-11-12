@@ -10,6 +10,7 @@ body.player-mode main>#player-portal{width:100%;max-width:760px;margin:auto}
 .portal-tabs{position:fixed;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:728px;bottom:8px;margin:0;padding:8px;border:1px solid var(--line);border-radius:14px;background:var(--bg);box-shadow:0 4px 24px #0004;z-index:2;padding-bottom:max(8px,env(safe-area-inset-bottom))}
 .portal-tabs button,.portal-coach-tabs button{min-width:0;min-height:46px;padding:8px 4px;font-size:.85rem;font-weight:700;background:var(--bg2);border:1px solid var(--line);border-radius:9px;color:var(--muted);cursor:pointer;overflow-wrap:anywhere}
 .portal-tabs button[aria-pressed=true],.portal-coach-tabs button[aria-pressed=true]{background:var(--blue);color:white;border-color:var(--blue)}
+.portal-tabs button:disabled{opacity:.4;cursor:default}
 .portal-kind{display:block;font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:6px}
 .portal-event h3{font-size:1.15rem;margin:0 0 8px;overflow-wrap:anywhere}.portal-event p{margin:6px 0}
 .portal-event .btn{margin:14px 0 0}.portal-event-date{font-weight:700}
@@ -71,3 +72,9 @@ body.player-mode main>#player-portal{width:100%;max-width:760px;margin:auto}
 .portal-calendar-legend span{display:flex;align-items:center;gap:6px}
 #portal-calendar-events>h3{font-size:1rem;margin:22px 0 12px;overflow-wrap:anywhere}
 @media(max-width:360px){.portal-calendar{padding:10px}.portal-calendar-weekdays,.portal-calendar-grid{gap:3px}.portal-calendar-day{font-size:.78rem;min-height:58px}}
+
+.push-preferences{display:grid;gap:8px;margin:14px 0}.push-preferences label{min-height:44px;margin:0}
+.push-preferences .checkrow input{flex:none}.push-preferences .checkrow span{min-width:0;overflow-wrap:anywhere}
+.push-settings-status{font-size:.85rem;overflow-wrap:anywhere}
+.push-settings-status:empty{display:none}
+.push-settings-actions{display:flex;flex-wrap:wrap;gap:8px}.push-settings-actions .btn{flex:1 1 150px;width:auto;margin:0;font-size:.88rem}

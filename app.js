@@ -204,6 +204,7 @@ async function requestImpl(payload, anonymous) {
 }
 
 function showLogin() {
+  if (window.PushUI) window.PushUI.reset();
   if (window.PlayerPortal) window.PlayerPortal.reset();
   if (scoreMatchMode) scoreExitMatchMode();
   token = "";
@@ -4132,6 +4133,7 @@ $("team-invite-form").addEventListener("submit", async function (event) {
 });
 
 $("logout").addEventListener("click", async function () {
+  if (window.PushUI) await window.PushUI.beforeLogout();
   var logoutError = null;
   try { await request({ action: "pwa_logout" }); }
   catch (error) { logoutError = error; }

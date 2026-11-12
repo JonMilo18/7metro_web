@@ -35,8 +35,10 @@ dezake Kontuak ataletik.
 - **Abisuak:** entrenatzaileak taldeko abisuak argitaratzen ditu. Jokalariak
   Irakurrita markatu dezake, eta entrenatzaileak nork irakurri duen ikus dezake.
 
-Abisuak aplikazioaren barruan ikusten dira; lehen bertsio honek ez du telefonoaren
-push jakinarazpenik bidaltzen. Birkargatu botoiak azken aldaketak jasotzen ditu.
+Abisuak aplikazioaren barruan ikusten dira. **Kontua → Jakinarazpenak** atalean
+telefonoaren push jakinarazpenak aktibatu daitezke, lagun-eskaerak barne.
+Xehetasunak: [JAKINARAZPENAK.md](JAKINARAZPENAK.md).
+Birkargatu botoiak azken aldaketak jasotzen ditu.
 Erantzunak bidaltzeko Interneteko konexioa behar da; errorean idatzitako oharra
 mantentzen da berriro saiatzeko.
 

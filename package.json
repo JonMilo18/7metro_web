@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.16",
-    "jspdf": "4.2.1"
+    "jspdf": "4.2.1",
+    "web-push": "4.0.0"
   }
 }

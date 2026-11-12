@@ -68,3 +68,43 @@ Jokalarien loturak ez dira `team_memberships` taulan sartzen. Jokalariaren
 erantzunak eta benetako asistentzia bereizita gordetzen dira. Snapshotak baimendutako
 eremuak bakarrik itzultzen ditu; ez ditu kontaktuak edo entrenatzailearen ohar
 pribatuak ematen. Funtzionamendua: [JOKALARIAK.md](../JOKALARIAK.md).
+
+## Web Push
+
+1. Aplikatu `migrations/20261112140000_web_push.sql`.
+2. Sortu VAPID gako-pare bat behin bakarrik, `web-push` 4.0.0 paketeko
+   `generateVAPIDKeys` erabiliz. Supabaseko sekretuak: `VAPID_PUBLIC_KEY`,
+   `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` (aplikazioaren HTTPS helbidea) eta
+   `PUSH_WORKER_TOKEN` (ausazko 32 byte). Ez gorde gako pribatuak biltegian.
+3. Gorde `PUSH_WORKER_TOKEN` bera Supabase Vault-en,
+   `7metro_push_worker_token` izenarekin.
+4. `supabase/functions/metro-push/index.ts` fitxak biltegi honetako
+   `backend/push-entry.ts` inportatu behar du. Hedatu
+   `npx supabase functions deploy metro-push --no-verify-jwt` erabiliz.
+   Funtzioak bere autentifikazioa du: sinatutako erabilera bakarreko esnatzeak
+   eta administrazio-probetarako sekretua. `?health=1` probak sinadura eta
+   zifratzea egiaztatzen ditu, mezurik bidali gabe.
+5. `metro-api`-k `pushActions` multzoko eskaerak `getSessionUserId` ondoren
+   `handlePushAction`-era bidaltzen ditu, egiaztatutako erabiltzailearekin eta
+   saio-tokenarekin. Hedatu `metro-api` ere.
+6. Exekutatu `push-scheduler.sql`. pg_net-ek commit ondoren esnatzen du workerra;
+   pg_cron-ek minutuero berriz saiatzen du, bidalketarik zain badago.
+
+Taulako triggerrek sortzen dituzte jakinarazpenak, webeko nahiz mahaigaineko
+aldaketetarako. Gailu bakoitzeko lehentasunak, saio balioduna eta dagokion taldeko
+sarbidea bidali aurretik egiaztatzen dira. Saioa ezabatzean harpidetza kentzen da.
+Harpidetzak, gailu-gakoak, jakinarazpenak eta entregak RLS bidez babestuta daude;
+workerreko RPCak service_role rolak bakarrik exekuta ditzake.
+
+pg_net-en HTTP ilarak ez du sekretu berrerabilgarririk gordetzen: Vault-eko
+gakoarekin sinatutako bi minutuko nonce bat darabil, behin bakarrik onartzen dena.
+Gailuko workerreko IndexedDB kontu-loturak beste kontu baterako mezua erakustea
+eragozten du. Harpidetza-helbideak push hornitzaile ezagunetara mugatzen dira;
+workerrek ez dituzte HTTP birbideratzeak jarraitzen.
+
+Entregak bi minutuko lease batekin hartzen dira, lau bidalketa paralelo gehienez.
+Aldi baterako erroreak gehienez bost aldiz berriz saiatzen dira; 404/410 erroreek
+harpidetza iraungia kentzen dute. Jakinarazpenak ez dira 24 ordutik aurrera berriz
+bidaltzen; providerreko TTL ordu batekoa da. Zazpi eguneko garbiketa dago.
+Probak: `npm test` (PostgreSQL ilara, baimenak, erreplay babesa eta benetako Web
+Push zifratze/deszifratzea). Erabilera: [JAKINARAZPENAK.md](../JAKINARAZPENAK.md).

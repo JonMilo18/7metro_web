@@ -34,6 +34,7 @@ async function routeAuthenticatedSession(requested) {
   var mode = requested || readStore(portalModeKey()) || ((boot.links.length || boot.invites.length) && !boot.coach ? "player" : "coach");
   if (mode === "player") { portalSetMode("player"); await portalShow(boot); }
   else { portalSetMode("coach"); portalHide(); await loadTeams(true); }
+  if (window.PushUI) await window.PushUI.afterLogin();
 }
 async function portalShow(boot) {
   var sessionToken = token, sequence = ++portalState.sequence;
@@ -47,17 +48,24 @@ async function portalShow(boot) {
   if (!token || token !== sessionToken || sequence !== portalState.sequence) return;
   portalState.bootstrap = boot;
   $("portal-username").textContent = user && user.izena || userName;
-  $("portal-no-link").hidden = !!boot.links.length; $("portal-linked-content").hidden = !boot.links.length;
+  $("portal-no-link").hidden = !!boot.links.length; $("portal-linked-content").hidden = false;
+  document.querySelectorAll("[data-portal-tab]").forEach(function (button) { button.disabled = !boot.links.length && button.dataset.portalTab !== "settings"; });
   $("portal-team-label").hidden = boot.links.length < 2;
   $("portal-coach-mode").hidden = !boot.coach; $("portal-return-coach").hidden = !boot.coach;
   $("portal-invites").innerHTML = boot.invites.map(function (invite) {
     return '<div class="card"><h2>' + esc(invite.team_name) + '</h2><p>' + esc(t("Jokalari-fitxa lotzeko gonbidapena")) + ': ' + esc(portalName(invite)) + '</p><div class="portal-inline-actions"><button type="button" class="btn" data-portal-invite="' + Number(invite.id) + '" data-accept="true">' + esc(t("Onartu")) + '</button><button type="button" class="btn secondary" data-portal-invite="' + Number(invite.id) + '" data-accept="false">' + esc(t("Baztertu")) + '</button></div></div>';
   }).join("");
+  var previousPlayer = portalState.playerId;
   if (!boot.links.some(function (link) { return link.player_id === portalState.playerId; })) portalState.playerId = boot.links.length ? boot.links[0].player_id : 0;
+  if (!previousPlayer && portalState.playerId) portalState.tab = "agenda";
   $("portal-team").innerHTML = boot.links.map(function (link) { return '<option value="' + Number(link.player_id) + '">' + esc(link.team_name) + '</option>'; }).join("");
   $("portal-team").value = String(portalState.playerId);
   if (portalState.playerId) await portalLoadPlayer();
-  else { $("portal-player-name").textContent = ""; portalState.data = null; }
+  else {
+    $("portal-player-name").textContent = ""; portalState.data = null;
+    ["portal-agenda", "portal-callups", "portal-notices"].forEach(function (id) { $(id).innerHTML = ""; });
+    portalSetTab("settings");
+  }
 }
 async function portalLoadPlayer() {
   var sequence = ++portalState.sequence, id = portalState.playerId;
@@ -70,6 +78,8 @@ async function portalLoadPlayer() {
   } catch (error) { if (sequence === portalState.sequence) portalError("portal-error", error.message); }
 }
 function portalSetTab(tab) {
+  if (!portalState.playerId && tab !== "settings") tab = "settings";
+  if (tab === "settings" && window.PushUI) window.PushUI.loadPlayerFriends();
   portalState.tab = tab;
   ["agenda", "callups", "notices", "settings"].forEach(function (name) { $("portal-" + name).hidden = name !== tab; });
   document.querySelectorAll("[data-portal-tab]").forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.portalTab === tab)); });
