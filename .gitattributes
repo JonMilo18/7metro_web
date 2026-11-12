@@ -1,2 +1,5 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
 # Upstream library notices retain their original whitespace.
 vendor/jspdf.umd.min.js -whitespace
