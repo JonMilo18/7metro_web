@@ -585,6 +585,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
+<link rel="stylesheet" href="insights.css?v=126">
 </head>
 <body>
 <div id="app">
@@ -796,6 +797,12 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
         </div>
       </details>
     </section>
+    <section id="v-player-profile">
+      <button class="btn secondary insight-back" id="player-profile-back" type="button">← Itzuli</button>
+      <div class="profile-heading"><div class="profile-number" id="player-profile-number"></div><div><span class="insight-eyebrow">Jokalariaren fitxa</span><h1 id="player-profile-name"></h1><p id="player-profile-meta"></p></div></div>
+      <label class="insight-period">Denboraldia<select id="player-profile-period"><option value="all">Guztiak</option><option value="season">Uneko denboraldia</option><option value="month">Azken hilabetea</option><option value="3months">Azken 3 hilabeteak</option></select></label>
+      <div id="player-profile-content"></div>
+    </section>
     <section id="v-matches">
       <div class="session-page-heading"><div class="help-heading"><h1>Lehiaketa</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-12" aria-label="Lehiaketa: informazioa"><span aria-hidden="true">i</span></button></div><button class="btn session-create-button" id="match-create" type="button" aria-label="Partida berria sortu" title="Partida berria sortu" aria-controls="match-create-panel" aria-expanded="false"><span aria-hidden="true">+</span></button></div><p class="sub" id="help-text-12" hidden>Kudeatu partidak, erabili zuzeneko markagailua eta aztertu estatistikak.</p>
       <div class="group-links"><button class="btn secondary" type="button" data-open-section="v-scoreboard">Markagailua</button></div>
@@ -810,6 +817,13 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
       <div class="toolbar"><h2>Partiden historia</h2><button class="btn secondary" type="button" data-refresh>Birkargatu</button></div>
       <ul id="matches-list" class="list"></ul><div id="match-detail" class="card hidden"></div>
     </section>
+    <section id="v-match-report">
+      <div class="insight-controls"><button class="btn secondary insight-back" id="match-report-back" type="button">← Itzuli</button><button class="btn secondary insight-back" id="match-report-refresh" type="button">Birkargatu</button></div>
+      <div class="help-heading"><h1>Partidaren txostena</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-26" aria-label="Partidaren txostena: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-26" hidden>Banakako estatistikek erregistratutako ekintzak biltzen dituzte. Mapetan kokapena duten jaurtiketak bakarrik agertzen dira.</p>
+      <div class="report-export-actions"><button class="btn" id="match-report-share" type="button" disabled>PDFa partekatu</button><button class="btn secondary" id="match-report-download" type="button" disabled>PDFa deskargatu</button><button class="btn secondary" id="match-report-copy" type="button">Laburpena kopiatu</button></div><p id="match-report-pdf-status" class="muted" role="status" aria-live="polite"></p>
+      <div id="match-report-content"></div>
+      <div class="card report-notes"><div class="help-heading"><h2>Entrenatzailearen oharrak</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-27" aria-label="Entrenatzailearen oharrak: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-27" hidden>Ohar hauek PDF txostenean sartuko dira. Gorde taldeko gainerako kideek ere ikus ditzaten.</p><label>Oharrak<textarea id="match-report-notes" maxlength="10000" rows="5"></textarea></label><div class="toolbar"><button class="btn secondary" id="match-report-save-notes" type="button">Oharrak gorde</button><span id="match-report-notes-status" class="muted" role="status" aria-live="polite"></span></div></div>
+    </section>
     <section id="v-stats">
       <div class="help-heading"><h1>Estatistikak</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-13" aria-label="Estatistikak: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-13" hidden>Taldearen, jokalarien eta aurkarien errendimendua aztertu.</p>
       <div class="card" id="stats-card">
@@ -817,7 +831,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
         <div class="grid3"><label>Ikuspegia<select id="stats-mode"><option value="team">Taldea</option><option value="players">Jokalariak</option><option value="opponents">Aurkariak</option></select></label><label>Denboraldia<select id="stats-period"><option value="all">Guztiak</option><option value="month">Azken hilabetea</option><option value="3months">Azken 3 hilabeteak</option><option value="season">Uneko denboraldia</option></select></label><label>Etxeko/kanpoko<select id="stats-venue"><option value="all">Guztiak</option><option value="home">Etxean</option><option value="away">Kanpoan</option></select></label></div>
         <div class="grid3"><label>Hasiera data<input id="stats-start" type="date"></label><label>Amaiera data<input id="stats-end" type="date"></label><label>Aurkaria<select id="stats-opponent"><option value="">Aurkari guztiak</option></select></label></div>
         <div class="grid3"><label>Partida<select id="stats-match"><option value="">Partida guztiak</option></select></label><label>Jokalari bilaketa<input id="stats-search" type="search" placeholder="Izena edo dorsala"></label><button class="btn secondary" id="stats-clear" type="button">Garbitu iragazkiak</button></div>
-        <div class="toolbar"><h2 id="stats-heading">Taldearen laburpena</h2><button class="btn secondary" id="stats-print" type="button">Inprimatu / PDF gorde</button></div>
+        <div class="toolbar"><h2 id="stats-heading">Taldearen laburpena</h2><button class="btn secondary" id="stats-match-report" type="button" data-match-report hidden>Partidaren txostena</button><button class="btn secondary" id="stats-print" type="button">Inprimatu / PDF gorde</button></div>
         <div id="stats-summary" class="grid3"></div>
         <div id="stats-team-panel"><h3>Gol eta eraginkortasuna 10 minutuko tarteetan</h3><div id="stats-period-chart" class="stack"></div></div>
         <div id="stats-player-panel" class="hidden"><div class="toolbar"><h3>Jokalari bakoitzaren xehetasunak</h3><div class="stats-view-toggle" role="group" aria-label="Jokalarien estatistiken ikuspegia"><button id="stats-view-visual" type="button" aria-pressed="true">Bisuala</button><button id="stats-view-list" type="button" aria-pressed="false">Zerrenda</button></div></div><div id="stats-players-visual" class="player-visual-grid"></div><ul id="stats-list" class="list hidden"></ul></div>
@@ -877,7 +891,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
       </div></details>
       <details class="card" id="score-save-panel"><summary><strong>Partida amaitu eta gorde</strong></summary><div class="stack score-details-content">
         <div class="help-heading"><h2>Partida gorde</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-16" aria-label="Partida gorde: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-16" hidden>Emaitza, bi taldeetako jokalarien golak, jaurtiketak eta zigorrak, eta erregistratutako kokapenak partiden historialean gordeko dira.</p>
-        <div class="grid2"><label>Data eta ordua<input id="score-save-date" type="datetime-local" required></label><label>Tokia<select id="score-save-venue"><option value="Etxean">Etxean</option><option value="Kanpoan">Kanpoan</option></select></label></div><button class="btn" id="score-save-match" type="button">Partida hau gorde</button><p class="muted" id="score-save-status" aria-live="polite">Oraindik ez da gorde.</p><button class="btn secondary hidden" id="score-opponent-stats" type="button">Ikusi aurkariaren estatistikak</button>
+        <div class="grid2"><label>Data eta ordua<input id="score-save-date" type="datetime-local" required></label><label>Tokia<select id="score-save-venue"><option value="Etxean">Etxean</option><option value="Kanpoan">Kanpoan</option></select></label></div><button class="btn" id="score-save-match" type="button">Partida hau gorde</button><p class="muted" id="score-save-status" aria-live="polite">Oraindik ez da gorde.</p><button class="btn secondary hidden" id="score-opponent-stats" type="button">Ikusi aurkariaren estatistikak</button><button class="btn secondary hidden" id="score-match-report" type="button" data-match-report>Partidaren txostena</button>
       </div></details>
       <dialog id="score-time-dialog" class="score-time-dialog" aria-labelledby="score-time-title"><div class="score-time-heading"><h2 id="score-time-title">Denbora zuzendu</h2><button class="btn secondary" id="score-time-cancel" type="button">Utzi</button></div>
         <form id="score-time-form" class="stack"><p class="muted" id="score-time-status" role="status">Kronoa pausatuta dago.</p><div class="score-time-inputs"><label>Minutuak<input id="score-time-minutes" type="number" inputmode="numeric" min="0" max="999" step="1" required></label><label>Segundoak<input id="score-time-seconds" type="number" inputmode="numeric" min="0" max="59" step="1" required></label></div>
@@ -976,8 +990,11 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=125" defer></script>
-<script src="i18n.js?v=125" defer></script>
-<script src="app.js?v=125" defer></script>
+<script src="locales/es.js?v=126" defer></script>
+<script src="i18n.js?v=126" defer></script>
+<script src="insights-data.js?v=126" defer></script>
+<script src="app.js?v=126" defer></script>
+<script src="report-pdf.js?v=126" defer></script>
+<script src="insights.js?v=126" defer></script>
 </body>
 </html>

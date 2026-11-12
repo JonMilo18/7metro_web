@@ -30,3 +30,9 @@ Probak: Node.js 24 edo berriagoa erabiliz, `npm ci` eta `npm test`.
 PostgreSQL motor lokala erabiltzen dute (PGlite), benetako datuak ukitu gabe.
 Editatzea, bikoiztea, baimenak, aldaketa gatazkatsuak eta gordetze-erroreen
 aurreko transakzio osoaren leheneratzea egiaztatzen dituzte.
+
+`report-actions.ts` moduluak `pwa_update_match_notes` ekintza gehitzen du.
+`metro-api`-k modulu horretako `saveMatchReportNotes` funtzioa deitzen du,
+autentifikazioa eta taldekidetasuna egiaztatu ondoren. `partidak.partida_analisia`
+eremua bakarrik eguneratzen du; aurreko balioarekin alderatzen du beste gailuko
+oharrak ustekabean gainidaztea eragozteko. Ez du beste migraziorik behar.

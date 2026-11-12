@@ -145,6 +145,7 @@ window.addEventListener("languagechange", function () {
   $("session-preview-play").textContent = t("Animazioa ikusi");
   clearTimeout(toastTimer); $("toast").classList.add("hidden");
   setMobileMenu($("nav").classList.contains("menu-open"));
+  if (window.InsightsUI) window.InsightsUI.refresh();
   window.scrollTo(scrollX, scrollY);
 });
 
@@ -1033,8 +1034,8 @@ function renderPlayers() {
     return '<li class="item"><div class="item-main"><strong>' +
       (player.dortsala != null ? "#" + esc(player.dortsala) + " " : "") + esc(playerName(player)) +
       '</strong><small>' + esc(t(player.posizioa) || t("Posiziorik gabe")) + " · " +
-      esc(t(player.egoera) || "") + '</small>' + attendanceMarkup + '</div><button class="btn danger" type="button" data-delete-player="' +
-      Number(player.id_jokalaria) + ("\">" + esc(t("Ezabatu")) + "</button></li>");
+      esc(t(player.egoera) || "") + '</small>' + attendanceMarkup + '</div><div class="player-row-actions"><button class="btn secondary" type="button" data-player-profile="' + Number(player.id_jokalaria) + '">' + esc(t("Fitxa")) + '</button><button class="btn danger" type="button" data-delete-player="' +
+      Number(player.id_jokalaria) + ("\">" + esc(t("Ezabatu")) + "</button></div></li>");
   }).join("") : '<li class="empty">' + (players.length ? t("Ez da jokalaririk aurkitu iragazki horiekin.") : t("Ez dago jokalaririk. Gehitu lehenengo jokalaria.")) + '</li>';
 
   var fields = [[t("Gol"), "golak"], [t("Jaurtiketa"), "jaurtiketak"], [t("Horia"), "horia"],
@@ -1592,7 +1593,7 @@ function renderMatches() {
     return '<li class="item"><div class="item-main"><strong>' + esc(match.aurkaria || t("Aurkaria")) +
       " · " + Number(match.emaitza_geurea || 0) + " - " + Number(match.emaitza_aurkaria || 0) +
       '</strong><small>' + esc(formatDate(match)) + " · " + esc(t(match.lekua) || "") +
-      '</small></div><span class="match-actions"><button class="btn secondary" type="button" data-match-stats="' +
+      '</small></div><span class="match-actions"><button class="btn secondary" type="button" data-match-report="' + Number(match.id_partida) + '">' + esc(t("Txostena")) + '</button><button class="btn secondary" type="button" data-match-stats="' +
       Number(match.id_partida) + ("\">" + esc(t("Estatistikak")) + "</button> <button class=\"btn secondary\" type=\"button\" data-match-stats=\"") +
       Number(match.id_partida) + ("\" data-match-stats-view=\"opponents\" aria-label=\"" + esc(t("Ikusi aurkariaren estatistikak")) + "\">" + esc(t("Aurkaria")) + "</button> <button class=\"btn secondary\" type=\"button\" data-edit-match=\"") +
       Number(match.id_partida) + ("\">" + esc(t("Editatu")) + "</button> <button class=\"btn danger\" type=\"button\" data-delete-match=\"") +
@@ -1734,6 +1735,9 @@ function renderOpponentIndividuals(selectedMatches, query) {
 }
 
 function renderStats() {
+  var reportButton = $("stats-match-report");
+  reportButton.hidden = !$("stats-match").value;
+  reportButton.dataset.matchReport = $("stats-match").value;
   var period = $("stats-period").value, today = new Date(); today.setHours(23, 59, 59, 999);
   var cutoff = null;
   if (period === "month" || period === "3months") { cutoff = new Date(); cutoff.setMonth(cutoff.getMonth() - (period === "month" ? 1 : 3)); }
@@ -1791,7 +1795,7 @@ function renderStats() {
     var totalG = sum(rows, "golak"), totalS = sum(rows, "jaurtiketak"), pg = goalCount(pshots.filter(isPenalty)), pshot = pshots.filter(isPenalty).length;
     var label = (p.dortsala != null ? "#" + p.dortsala + " " : "") + playerName(p);
     var matchCount = new Set(rows.map(function (r) { return Number(r.id_partida); })).size;
-    return { label: label, goals: totalG, shots: totalS, normalGoals: Math.max(0, totalG - pg), normalShots: Math.max(0, totalS - pshot), penaltyGoals: pg, penaltyShots: pshot, appearances: matchCount, yellow: ps.filter(function (s) { return s.mota === "horia"; }).length, two: ps.filter(function (s) { return s.mota === "2min"; }).length, red: ps.filter(function (s) { return s.mota === "gorria"; }).length, blue: ps.filter(function (s) { return s.mota === "urdina"; }).length };
+    return { id: Number(p.id_jokalaria), label: label, goals: totalG, shots: totalS, normalGoals: Math.max(0, totalG - pg), normalShots: Math.max(0, totalS - pshot), penaltyGoals: pg, penaltyShots: pshot, appearances: matchCount, yellow: ps.filter(function (s) { return s.mota === "horia"; }).length, two: ps.filter(function (s) { return s.mota === "2min"; }).length, red: ps.filter(function (s) { return s.mota === "gorria"; }).length, blue: ps.filter(function (s) { return s.mota === "urdina"; }).length };
   }).filter(function (s) { return (s.goals || s.shots || s.yellow || s.two || s.red || s.blue) && s.label.toLocaleLowerCase().includes(query); });
   $("stats-list").innerHTML = playerStats.length ? playerStats.map(function (s) { var pct = s.shots ? Math.round(s.goals / s.shots * 100) : 0, normalPct = s.normalShots ? Math.round(s.normalGoals / s.normalShots * 100) : 0, penaltyPct = s.penaltyShots ? Math.round(s.penaltyGoals / s.penaltyShots * 100) : 0; return '<li class="item"><div class="item-main"><strong>' + esc(s.label) + '</strong><small>' + s.appearances + t(" partida · Guztira: ") + s.goals + '/' + s.shots + ' (%' + pct + t(") · Jaurtiketa arruntak: ") + s.normalGoals + '/' + s.normalShots + ' (%' + normalPct + t(") · Penaltiak: ") + s.penaltyGoals + '/' + s.penaltyShots + ' (%' + penaltyPct + ')</small></div><span class="muted">🟨 ' + s.yellow + ' · 2\' ' + s.two + ' · 🟥 ' + s.red + ' · 🔵 ' + s.blue + '</span></li>'; }).join("") : ("<li class=\"empty\">" + esc(t("Ez dago iragazki hauekin bat datorren jokalari daturik.")) + "</li>");
   $("stats-players-visual").innerHTML = playerStats.length ? playerStats.map(function (s) {
@@ -1800,6 +1804,10 @@ function renderStats() {
     var penaltyPct = s.penaltyShots ? Math.round(s.penaltyGoals / s.penaltyShots * 100) : 0;
     return '<article class="player-visual-card"><div class="pv-head"><div class="pv-name"><strong>' + esc(s.label) + '</strong><small>' + s.appearances + (esc(t(" partida")) + "</small></div><div><div class=\"efficiency-ring\" style=\"--efficiency:") + pct + ("%\" role=\"img\" aria-label=\"" + esc(t("Eraginkortasuna %"))) + pct + '"><span>' + pct + ("%</span></div><div class=\"efficiency-label\">" + esc(t("eraginkortasuna")) + "</div></div></div><div class=\"pv-metrics\"><div class=\"pv-metric\"><strong>") + s.goals + ("</strong><small>" + esc(t("Golak")) + "</small></div><div class=\"pv-metric\"><strong>") + s.shots + ("</strong><small>" + esc(t("Jaurtiketak")) + "</small></div><div class=\"pv-metric\"><strong>") + s.appearances + ("</strong><small>" + esc(t("Partidak")) + "</small></div></div><div class=\"pv-section-title\">" + esc(t("Jaurtiketen banaketa")) + "</div><div class=\"pv-breakdown\"><strong>" + esc(t("Arruntak")) + "</strong><span>") + s.normalGoals + ' / ' + s.normalShots + ' · %' + normalPct + '</span><div class="pv-bar"><i style="width:' + normalPct + ("%\"></i></div></div><div class=\"pv-breakdown\"><strong>" + esc(t("Penaltiak")) + "</strong><span>") + s.penaltyGoals + ' / ' + s.penaltyShots + ' · %' + penaltyPct + '</span><div class="pv-bar"><i style="width:' + penaltyPct + '%"></i></div></div><div class="pv-sanctions"><span>🟨 ' + s.yellow + '</span><span>2\' ' + s.two + '</span><span>🟥 ' + s.red + '</span><span>🔵 ' + s.blue + '</span></div></article>';
   }).join("") : ("<div class=\"empty\">" + esc(t("Ez dago iragazki hauekin bat datorren jokalari estatistikarik.")) + "</div>");
+  $("stats-players-visual").querySelectorAll(".player-visual-card").forEach(function (card, index) {
+    var button = document.createElement("button"); button.type = "button"; button.className = "btn secondary profile-open-button";
+    button.dataset.playerProfile = String(playerStats[index].id); button.textContent = t("Fitxa"); card.appendChild(button);
+  });
   var rivalMap = {};
   filteredMatches.forEach(function (m) { var name = m.aurkaria || t("Aurkaria"), x = rivalMap[name] || (rivalMap[name] = { matches: 0, gf: 0, ga: 0 }); x.matches++; x.gf += Number(m.emaitza_geurea || 0); x.ga += Number(m.emaitza_aurkaria || 0); });
   $("stats-opponent-list").innerHTML = Object.keys(rivalMap).sort().map(function (name) { var x = rivalMap[name], rivalIds = new Set(filteredMatches.filter(function (m) { return String(m.aurkaria || t("Aurkaria")) === name; }).map(function (m) { return Number(m.id_partida); })), rs = opponentStatsShots.filter(function (s) { return rivalIds.has(Number(s.id_partida)); }); return '<li class="item"><div class="item-main"><strong>' + esc(name) + '</strong><small>' + x.matches + t(" partida · Emaitzak ") + x.gf + '-' + x.ga + t(" · Aurkariaren jaurtiketak: ") + (rs.length ? rs.length + ' (' + goalCount(rs) + t(" gol, %") + Math.round(goalCount(rs) / rs.length * 100) + ')' : t("daturik gabe")) + '</small></div></li>'; }).join("") || ("<li class=\"empty\">" + esc(t("Ez dago aurkari daturik.")) + "</li>");
@@ -2157,6 +2165,7 @@ async function refreshAll() {
     return String(b.data_ordua).localeCompare(String(a.data_ordua));
   });
   renderPlayers(); renderExercises(); renderSessions(); renderMatches(); renderStats(); renderCycles(); renderDashboard();
+  if (window.InsightsUI) window.InsightsUI.refresh();
 }
 
 function selectSection(id) {
@@ -2168,8 +2177,9 @@ function selectSection(id) {
     previewAnimation.canvas.closest("#saved-session-exercises")) stopExerciseAnimation();
   var primarySection = id === "v-home" ? "v-home" :
     (["v-sessions", "v-board", "v-session-view", "v-session-detail"].indexOf(id) !== -1 ? "v-sessions" :
-    (["v-matches", "v-scoreboard"].indexOf(id) !== -1 ? "v-matches" :
-      (["v-planning", "v-players", "v-stats"].indexOf(id) !== -1 ? id : "v-more")));
+    (["v-matches", "v-scoreboard", "v-match-report"].indexOf(id) !== -1 ? "v-matches" :
+    (id === "v-player-profile" ? "v-players" :
+      (["v-planning", "v-players", "v-stats"].indexOf(id) !== -1 ? id : "v-more"))));
   document.querySelectorAll("nav [data-v]").forEach(function (button) {
     button.setAttribute("aria-selected", String(button.dataset.v === primarySection));
   });
@@ -2294,6 +2304,8 @@ function scoreRender() {
   $("score-reset").disabled = scoreSaving;
   $("score-save-match").disabled = locked;
   $("score-opponent-stats").classList.toggle("hidden", !Number.isSafeInteger(scoreboard.savedMatchId) || scoreboard.savedMatchId < 1);
+  $("score-match-report").classList.toggle("hidden", !Number.isSafeInteger(scoreboard.savedMatchId) || scoreboard.savedMatchId < 1);
+  $("score-match-report").dataset.matchReport = String(scoreboard.savedMatchId || "");
   $("score-save-match").textContent = scoreSaving ? t("Gordetzen...") : scoreboard.savedMatchId ? t("Partida gordeta") : t("Partida hau gorde");
   $("shot-record").disabled = locked || !(shotOrigin() && shotTo);
   scoreRenderShotType();
@@ -3688,7 +3700,7 @@ $("score-save-match").addEventListener("click", async function () {
   catch (error) { notify(t("Partida gordeta dago, baina historiala ezin izan da birkargatu: ") + error.message, "error"); }
 });
 
-async function openMatchStats(matchId, view) {
+function ensureMatchStats(matchId) {
   var selected = matches.find(function (match) { return Number(match.id_partida) === Number(matchId); });
   if (!selected && scoreboard.savedMatchSnapshot && Number(scoreboard.savedMatchSnapshot.id_partida) === Number(matchId)) {
     selected = scoreboard.savedMatchSnapshot;
@@ -3706,6 +3718,11 @@ async function openMatchStats(matchId, view) {
     tables.partidu_zigorrak = records("partidu_zigorrak").filter(function (row) { return Number(row.id_partida) !== id; }).concat(sanctions);
     renderMatches();
   }
+  return selected || null;
+}
+
+async function openMatchStats(matchId, view) {
+  var selected = ensureMatchStats(matchId);
   if (!selected) { notify(t("Ezin izan da partida aurkitu. Birkargatu zerrenda."), "error"); return; }
   if (scoreMatchMode) await scoreExitMatchMode();
   $("stats-match").value = String(matchId);

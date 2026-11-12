@@ -31,6 +31,9 @@ jobs:
           node --check i18n.js
           node --check locales/es.js
           node --check sw.js
+          node --check insights-data.js
+          node --check insights.js
+          node --check report-pdf.js
 
       - name: Set up Node.js for backend tests
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -38,7 +41,7 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Verify training editing and duplication
+      - name: Verify application data and backend actions
         run: |
           npm ci --ignore-scripts
           npm test
@@ -46,8 +49,8 @@ jobs:
       - name: Prepare public files
         run: |
           mkdir -p _site
-          cp index.html app.js i18n.js sw.js manifest.json manifest.webmanifest _site/
-          cp -R icons irudiak locales _site/
+          cp index.html app.js i18n.js sw.js insights-data.js insights.js report-pdf.js insights.css manifest.json manifest.webmanifest _site/
+          cp -R icons irudiak locales vendor _site/
 
       - name: Configure Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
