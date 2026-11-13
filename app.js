@@ -214,6 +214,7 @@ async function requestImpl(payload, anonymous) {
 }
 
 function showLogin() {
+  if (window.PlayerStatistics) window.PlayerStatistics.reset();
   if (window.InboxUI) window.InboxUI.reset();
   if (window.WeeklyTraining) window.WeeklyTraining.reset();
   if (window.PushUI) window.PushUI.reset();
@@ -2197,6 +2198,7 @@ async function refreshAll() {
   renderPlayers(); renderExercises(); renderSessions(); renderMatches(); renderStats(); renderCycles(); renderDashboard();
   if (window.InsightsUI) window.InsightsUI.refresh();
   if (window.WeeklyTraining) window.WeeklyTraining.refresh();
+  if (window.PlayerStatistics) window.PlayerStatistics.refreshCoach();
 }
 
 function selectSection(id) {
@@ -2223,6 +2225,7 @@ function selectSection(id) {
   if (id === "v-player-management" && window.PlayerPortal) window.PlayerPortal.loadCoach();
   window.scrollTo(0, 0);
   if (id === "v-stats") renderStats();
+  if (id === "v-players" && window.PlayerStatistics) window.PlayerStatistics.refreshCoach();
 }
 
 var scoreboard = { home: 0, away: 0, seconds: 0, period: 0, running: false, events: [], lastTick: 0 };

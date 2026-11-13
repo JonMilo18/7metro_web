@@ -3,7 +3,8 @@
 (function (root, factory) {
   var api = factory();
   if (typeof module === "object" && module.exports) module.exports = api;
-  else root.SevenMetroInsights = api;
+  // Also expose the shared calculations when bundled for the Edge runtime.
+  root.SevenMetroInsights = api;
 })(typeof window === "undefined" ? globalThis : window, function () {
   var shotTypes = ["gol", "jaurtiketa", "penalti_gol", "penalti_jaurtiketa"];
   var sanctionTypes = ["horia", "2min", "gorria", "urdina"];

@@ -1,5 +1,17 @@
 # Entrenamenduak editatu eta bikoiztu
 
+Jokalarien estatistikak `migrations/20261113140000_player_statistics.sql` eta
+`player-statistics-actions.ts` fitxategietan daude. `metro-api`-k
+`playerStatisticsActions` ekintzak autentifikatu ondoren
+`handlePlayerStatisticsAction(payload, supabase, userId, jsonResponse)` funtziora
+bidaltzen ditu. Taldeko baimena hasieran desaktibatuta dago; taldekide diren
+entrenatzaileek alda dezakete. Jokalariaren lotura eta baimena eskaera bakoitzean
+egiaztatzen dira. Kalkuluak entrenatzailearen `insights-data.js` eredu bera
+erabiltzen du zerbitzarian. APIak norberaren laburpena eta historiako eremu
+zehatzak bakarrik itzultzen ditu; RPCaren kalkulu-sarrera gordinak `service_role`
+rolarentzat dira. Lehenik migrazioa aplikatu, gero `metro-api` hedatu, eta azkenik
+PWA argitaratu.
+
 Sarrera-ontzia eta deialdien oroigarriak
 `migrations/20261113130000_notification_inbox_reminders.sql` migrazioan daude.
 `metro-api`-k `inboxActions` saioa egiaztatu ondoren `handleInboxAction` funtziora

@@ -71,6 +71,7 @@ async function portalShow(boot) {
 }
 async function portalLoadPlayer() {
   var sequence = ++portalState.sequence, id = portalState.playerId;
+  if (window.PlayerStatistics) window.PlayerStatistics.refreshPlayer();
   portalState.data = null;
   ["portal-home", "portal-agenda", "portal-callups", "portal-notices"].forEach(function (view) { $(view).innerHTML = portalEmpty("Kargatzen…"); });
   try {
@@ -83,8 +84,8 @@ function portalSetTab(tab) {
   if (!portalState.playerId && tab !== "settings") tab = "settings";
   if (tab === "settings" && window.PushUI) window.PushUI.loadPlayerFriends();
   portalState.tab = tab;
-  ["home", "agenda", "callups", "notices", "settings"].forEach(function (name) { $("portal-" + name).hidden = name !== tab; });
-  document.querySelectorAll("[data-portal-tab]").forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.portalTab === tab)); });
+  ["home", "agenda", "callups", "notices", "settings", "stats"].forEach(function (name) { $("portal-" + name).hidden = name !== tab; });
+  document.querySelectorAll("[data-portal-tab]").forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.portalTab === (tab === "stats" ? "home" : tab))); });
 }
 function portalEventCard(event) {
   var data = portalState.data, kind = event.kind, row = event.row;
@@ -113,7 +114,7 @@ function portalRenderHome(events, pending, unread) {
   var next = eligible[0];
   var html = '<div class="portal-home-summary"><button type="button" data-portal-go="callups" class="portal-summary-action' + (pending.length ? ' needs-response' : '') + '"><strong>' + pending.length + '</strong><span>' + esc(t("Deialdi erantzuteko")) + '</span></button>' +
     '<button type="button" data-portal-go="notices" class="portal-summary-action"><strong>' + unread + '</strong><span>' + esc(t("Abisu irakurri gabe")) + '</span></button></div>';
-  html += '<div class="portal-section-heading"><h2>' + esc(t("Hurrengo jarduera")) + '</h2></div><div class="portal-next-event">' +
+  html += '<div id="portal-personal-stats-entry" hidden></div><div class="portal-section-heading"><h2>' + esc(t("Hurrengo jarduera")) + '</h2></div><div class="portal-next-event">' +
     (next ? portalEventCard(next) : '<div class="card portal-home-empty"><h3>' + esc(t("Ez dago hurrengo deialdirik")) + '</h3><button class="btn secondary" type="button" data-portal-go="agenda">' + esc(t("Egutegia ikusi")) + '</button></div>') + '</div>';
   var following = eligible.slice(1, 4);
   if (following.length) {
@@ -152,6 +153,7 @@ function portalRenderPlayer() {
     badge.textContent = entry[1]; badge.hidden = !entry[1];
   });
   portalSetTab(portalState.tab);
+  if (window.PlayerStatistics) window.PlayerStatistics.renderEntry();
 }
 function portalOpenResponse(key) {
   var bits = key.split(":"), kind = bits[0], id = Number(bits[1]), data = portalState.data;
