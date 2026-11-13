@@ -6,6 +6,7 @@ window.SevenMetroLocales.es = {
   "name": "Español",
   "locale": "es-ES",
   "messages": {
+    "Ez dago ariketarik hautatutako kategorietan.": "No hay ejercicios en las categorías seleccionadas.",
     "Azken 30 egunetako jakinarazpenak": "Notificaciones de los últimos 30 días",
     "Guztiak irakurrita markatu": "Marcar todas como leídas",
     "Ez duzu jakinarazpenik.": "No tienes notificaciones.",

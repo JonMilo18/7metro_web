@@ -2569,7 +2569,7 @@ $("session-share-form").addEventListener("submit", async function (event) {
 });
 
 var friendsCache = { friends: [], incoming: [], outgoing: [] };
-var shareExerciseSelection = new Set(), friendExerciseCategoryRelations = [];
+var shareExerciseSelection = new Set(), shareExerciseCategorySelection = new Set(), friendExerciseCategoryRelations = [];
 var friendExercises = [], friendTrainings = [], friendSharedExercises = [], friendSharedTrainings = [];
 function setFriendOptions(id, rows, placeholder) {
   var select = $(id);
@@ -2587,7 +2587,7 @@ function shareExerciseCategories(exercise) {
 function renderShareExerciseOptions() {
   var list = $("share-exercise-items"), filter = $("share-exercise-category");
   if (!list || !filter) return;
-  var prior = filter.value, categories = new Map(), uncategorized = false;
+  var categories = new Map(), uncategorized = false, categoryScroll = filter.scrollTop;
   var available = new Set(friendExercises.map(function (exercise) { return Number(exercise.id_ariketa); }));
   shareExerciseSelection.forEach(function (id) { if (!available.has(id)) shareExerciseSelection.delete(id); });
   friendExercises.forEach(function (exercise) {
@@ -2595,25 +2595,43 @@ function renderShareExerciseOptions() {
     if (!names.length) uncategorized = true;
     names.forEach(function (name) { categories.set("category:" + normalizeCategoryName(name), name); });
   });
-  filter.innerHTML = '<option value="">' + esc(t("Kategoria guztiak")) + '</option>' +
-    Array.from(categories).sort(function (a, b) { return a[1].localeCompare(b[1], I18n.locale()); }).map(function (entry) {
-      return '<option value="' + esc(entry[0]) + '">' + esc(entry[1]) + '</option>';
-    }).join("") + (uncategorized ? '<option value="uncategorized">' + esc(t("Kategoriarik gabe")) + '</option>' : '');
-  if (Array.from(filter.options).some(function (option) { return option.value === prior; })) filter.value = prior;
+  shareExerciseCategorySelection.forEach(function (key) {
+    if (!categories.has(key) && !(key === "uncategorized" && uncategorized)) shareExerciseCategorySelection.delete(key);
+  });
+  var categoryOptions = Array.from(categories).sort(function (a, b) { return a[1].localeCompare(b[1], I18n.locale()); });
+  if (uncategorized) categoryOptions.push(["uncategorized", t("Kategoriarik gabe")]);
+  filter.innerHTML = [["", t("Kategoria guztiak")]].concat(categoryOptions).map(function (entry) {
+    var checked = entry[0] ? shareExerciseCategorySelection.has(entry[0]) : shareExerciseCategorySelection.size === 0;
+    return '<label class="checkrow"><input type="checkbox" data-share-category="' + esc(entry[0]) + '"' +
+      (checked ? ' checked' : '') + '><span>' + esc(entry[1]) + '</span></label>';
+  }).join("");
+  filter.scrollTop = categoryScroll;
   var visible = friendExercises.filter(function (exercise) {
     var names = shareExerciseCategories(exercise);
-    return !filter.value || (filter.value === "uncategorized" ? !names.length : names.some(function (name) { return "category:" + normalizeCategoryName(name) === filter.value; }));
+    return shareExerciseCategorySelection.size === 0 ||
+      (!names.length && shareExerciseCategorySelection.has("uncategorized")) ||
+      names.some(function (name) { return shareExerciseCategorySelection.has("category:" + normalizeCategoryName(name)); });
   });
   list.innerHTML = visible.length ? visible.map(function (exercise) {
     var id = Number(exercise.id_ariketa);
     return '<label class="checkrow"><input type="checkbox" data-share-exercise="' + id + '"' + (shareExerciseSelection.has(id) ? ' checked' : '') + '><span>' + esc(exercise.izena || t("Ariketa")) + '</span></label>';
-  }).join("") : '<div class="empty">' + esc(t(friendExercises.length ? "Ez dago ariketarik kategoria honetan." : "Ez dago partekatzeko ariketarik.")) + '</div>';
+  }).join("") : '<div class="empty">' + esc(t(friendExercises.length ? "Ez dago ariketarik hautatutako kategorietan." : "Ez dago partekatzeko ariketarik.")) + '</div>';
   updateShareExerciseCount();
 }
 function selectedShareExerciseIds() {
   return Array.from(shareExerciseSelection);
 }
-$("share-exercise-category").addEventListener("change", renderShareExerciseOptions);
+$("share-exercise-category").addEventListener("change", function (event) {
+  var input = event.target.closest("[data-share-category]");
+  if (!input) return;
+  var key = input.dataset.shareCategory;
+  if (!key) shareExerciseCategorySelection.clear();
+  else if (input.checked) shareExerciseCategorySelection.add(key);
+  else shareExerciseCategorySelection.delete(key);
+  renderShareExerciseOptions();
+  var focused = Array.from(this.querySelectorAll("[data-share-category]")).find(function (checkbox) { return checkbox.dataset.shareCategory === key; });
+  if (focused) focused.focus({ preventScroll: true });
+});
 function updateShareExerciseCount() {
   var count = $("share-exercise-count");
   if (count) count.textContent = selectedShareExerciseIds().length + t(" hautatuta");
