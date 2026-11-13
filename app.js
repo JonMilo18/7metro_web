@@ -1600,12 +1600,13 @@ function renderSessions() {
       '</strong><small>' + esc(session.lekua || "") +
       (session.helburu_taktikoa ? " · " + esc(session.helburu_taktikoa) : "") +
       (names.length ? " · " + esc(names.join(", ")) : "") +
-      '</small></div><div class="session-actions"><button class="btn secondary" type="button" data-share-session="' + Number(session.id_saio) + '">' + esc(t("Partekatu")) + '</button><button class="btn secondary" type="button" data-view-session="' +
+      '</small></div><details class="session-options"><summary>' + esc(t("Aukerak")) + '</summary><div class="session-actions"><button class="btn secondary" type="button" data-view-session="' +
       Number(session.id_saio) + ("\">" + esc(t("Ikusi")) + "</button><button class=\"btn secondary\" type=\"button\" data-attendance-session=\"") +
       Number(session.id_saio) + ("\">" + esc(t("Asistentzia")) + "</button>") +
       '<button class="btn secondary" type="button" data-edit-session="' + Number(session.id_saio) + '">' + esc(t("Editatu")) + '</button>' +
       '<button class="btn secondary" type="button" data-duplicate-session="' + Number(session.id_saio) + '">' + esc(t("Bikoiztu")) + '</button>' +
-      '<button class="btn danger" type="button" data-delete-session="' + Number(session.id_saio) + '">' + esc(t("Ezabatu")) + '</button></div></li>';
+      '<button class="btn secondary" type="button" data-share-session="' + Number(session.id_saio) + '">' + esc(t("Partekatu")) + '</button>' +
+      '<button class="btn danger" type="button" data-delete-session="' + Number(session.id_saio) + '">' + esc(t("Ezabatu")) + '</button></div></details></li>';
   }).join("") : ("<li class=\"empty\">" + esc(t("Oraindik ez da entrenamendurik gorde.")) + "</li>");
   var select = $("attendance-session"), prior = select.value;
   select.innerHTML = ("<option value=\"\">" + esc(t("Aukeratu entrenamendua")) + "</option>") + sessions.map(function (session) {
