@@ -58,4 +58,9 @@ test('worker encrypts real Web Push messages, protects its endpoint and never in
   return new Response(JSON.stringify({reason:'BadWebPushTopic'}),{status:400});
  });
  assert.deepEqual(JSON.parse(JSON.stringify((await apple.json()).errors)),[{status:400,reason:'BadWebPushTopic'}]);
+ job.kind='callups';job.target={kind:'session',reason:'reminder',note:'PRIVATE NOTE'};job.language='eu';
+ const reminder=worker.pushPayload(job);
+ assert.equal(reminder.title,'Deialdiaren oroigarria');
+ assert.equal(reminder.body,'Ireki aplikazioa deialdiari erantzuteko.');
+ assert(!JSON.stringify(reminder).includes('PRIVATE NOTE'));
 });

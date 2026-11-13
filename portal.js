@@ -34,6 +34,7 @@ async function routeAuthenticatedSession(requested) {
   var mode = requested || readStore(portalModeKey()) || ((boot.links.length || boot.invites.length) && !boot.coach ? "player" : "coach");
   if (mode === "player") { portalSetMode("player"); await portalShow(boot); }
   else { portalSetMode("coach"); portalHide(); await loadTeams(true); }
+  if (window.InboxUI) window.InboxUI.start();
   if (window.PushUI) await window.PushUI.afterLogin();
 }
 async function portalShow(boot) {

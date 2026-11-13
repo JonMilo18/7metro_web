@@ -34,6 +34,21 @@ header{padding:calc(14px + env(safe-area-inset-top,0px)) 20px 14px;display:flex;
 header img{height:40px;width:auto;border-radius:8px;background:#fff;padding:2px 4px}
 header b{font-size:1.15rem;letter-spacing:-.01em}
 #account{margin-left:auto;color:var(--muted);font-size:.86rem}
+.notification-bell{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--bg2);color:var(--ink);font-size:1.25rem;cursor:pointer}
+.notification-bell[hidden]{display:none}
+.notification-badge{position:absolute;right:-5px;top:-5px;min-width:20px;padding:1px 4px;border-radius:12px;background:var(--blue);color:#fff;font-size:.7rem;font-weight:750}
+.inbox-dialog{width:min(600px,calc(100% - 20px));max-height:88dvh;overflow:auto;border:1px solid var(--line);border-radius:18px;padding:18px;background:var(--bg2);color:var(--ink)}
+.inbox-dialog::backdrop{background:#0009}
+.inbox-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.inbox-heading h2{margin:0;font-size:1.25rem}
+.inbox-heading .btn{width:auto;margin:0}
+.inbox-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.inbox-actions .btn{flex:1 1 150px;width:auto;margin:0}
+#inbox-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.inbox-item{display:grid;gap:6px;box-sizing:border-box;min-width:0;width:100%;text-align:left;padding:14px;border:1px solid var(--line);border-left:3px solid transparent;border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer;overflow-wrap:anywhere}
+.inbox-item>*{min-width:0}
+.inbox-item span,.inbox-item small{font-size:.84rem;color:var(--muted)}
+.inbox-unread{border-left-color:var(--blue);background:rgba(0,68,238,.08)}
 .menu-toggle{display:none;place-items:center;flex:none;width:42px;height:42px;padding:0;border:1px solid var(--line);border-radius:11px;background:var(--bg2);color:var(--ink);font-size:1.3rem;cursor:pointer}
 .menu-toggle[hidden]{display:none!important}
 main{flex:1;padding:22px calc(20px + env(safe-area-inset-right,0px)) 100px calc(20px + env(safe-area-inset-left,0px))}
@@ -606,11 +621,11 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=157"><link rel="stylesheet" href="portal.css?v=157">
+<link rel="stylesheet" href="insights.css?v=158"><link rel="stylesheet" href="portal.css?v=158">
 </head>
 <body>
 <div id="app">
-<header><button class="menu-toggle" id="mobile-menu-toggle" type="button" aria-label="Menua ireki" aria-controls="nav" aria-expanded="false" hidden>☰</button><img src="icons/icon-192.png" alt="" aria-hidden="true"><b>7metro</b><span id="account"></span></header>
+<header><button class="menu-toggle" id="mobile-menu-toggle" type="button" aria-label="Menua ireki" aria-controls="nav" aria-expanded="false" hidden>☰</button><img src="icons/icon-192.png" alt="" aria-hidden="true"><b>7metro</b><span id="account"></span><button class="notification-bell" id="notification-bell" type="button" aria-label="Jakinarazpenak" aria-haspopup="dialog" aria-controls="inbox-dialog" hidden><span aria-hidden="true">&#128276;</span><span class="notification-badge" id="notification-badge" aria-hidden="true" hidden></span></button></header>
 <main>
 <section id="v-login" class="on">
   <div class="help-heading"><h1>Saioa hasi</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-1" aria-label="Saioa hasi: informazioa"><span aria-hidden="true">i</span></button></div>
@@ -642,6 +657,14 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
   <button class="btn secondary portal-logout" id="portal-logout" type="button">Saioa itxi</button>
 </section>
 
+<dialog id="inbox-dialog" class="inbox-dialog" aria-labelledby="inbox-title">
+  <div class="inbox-heading"><h2 id="inbox-title">Jakinarazpenak</h2><button class="btn secondary" id="inbox-close" type="button">Itxi</button></div>
+  <p class="muted">Azken 30 egunetako jakinarazpenak</p>
+  <div class="inbox-actions"><button class="btn secondary" id="inbox-read-all" type="button">Guztiak irakurrita markatu</button><button class="btn secondary" id="inbox-reload" type="button">Birkargatu</button></div>
+  <p id="inbox-status" role="status" aria-live="polite"></p>
+  <ul id="inbox-list"></ul><p id="inbox-empty" class="muted">Ez duzu jakinarazpenik.</p>
+  <button class="btn secondary" id="inbox-more" type="button" hidden>Gehiago ikusi</button>
+</dialog>
 <dialog id="account-create-dialog" class="attendance-dialog" aria-labelledby="account-create-title">
   <div class="attendance-dialog-inner">
     <div class="attendance-dialog-head"><h2 id="account-create-title">Kontu berria sortu</h2><button class="btn secondary" id="account-create-close" type="button">Itxi</button></div>
@@ -1070,16 +1093,17 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=157" defer></script>
-<script src="i18n.js?v=157" defer></script>
-<script src="insights-data.js?v=157" defer></script>
-<script src="portal.js?v=157" defer></script>
-<script src="portal-events.js?v=157" defer></script>
-<script src="portal-calendar.js?v=157" defer></script>
-<script src="push.js?v=157" defer></script>
-<script src="app.js?v=157" defer></script>
-<script src="weekly-training.js?v=157" defer></script>
-<script src="report-pdf.js?v=157" defer></script>
-<script src="insights.js?v=157" defer></script>
+<script src="locales/es.js?v=158" defer></script>
+<script src="i18n.js?v=158" defer></script>
+<script src="insights-data.js?v=158" defer></script>
+<script src="portal.js?v=158" defer></script>
+<script src="portal-events.js?v=158" defer></script>
+<script src="portal-calendar.js?v=158" defer></script>
+<script src="push.js?v=158" defer></script>
+<script src="app.js?v=158" defer></script>
+<script src="weekly-training.js?v=158" defer></script>
+<script src="inbox.js?v=158" defer></script>
+<script src="report-pdf.js?v=158" defer></script>
+<script src="insights.js?v=158" defer></script>
 </body>
 </html>

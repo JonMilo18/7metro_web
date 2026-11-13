@@ -215,6 +215,7 @@ async function requestImpl(payload, anonymous) {
 }
 
 function showLogin() {
+  if (window.InboxUI) window.InboxUI.reset();
   if (window.WeeklyTraining) window.WeeklyTraining.reset();
   if (window.PushUI) window.PushUI.reset();
   if (window.PlayerPortal) window.PlayerPortal.reset();

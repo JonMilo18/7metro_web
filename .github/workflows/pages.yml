@@ -39,6 +39,7 @@ jobs:
           node --check portal-calendar.js
           node --check push.js
           node --check weekly-training.js
+          node --check inbox.js
 
       - name: Set up Node.js for backend tests
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
@@ -54,7 +55,7 @@ jobs:
       - name: Prepare public files
         run: |
           mkdir -p _site
-          cp index.html app.js i18n.js sw.js insights-data.js insights.js report-pdf.js insights.css portal.js portal-events.js portal-calendar.js push.js weekly-training.js portal.css manifest.json manifest.webmanifest _site/
+          cp index.html app.js i18n.js sw.js insights-data.js insights.js report-pdf.js insights.css portal.js portal-events.js portal-calendar.js push.js weekly-training.js inbox.js portal.css manifest.json manifest.webmanifest _site/
           cp -R icons irudiak locales vendor _site/
 
       - name: Configure Pages

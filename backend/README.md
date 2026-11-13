@@ -1,5 +1,16 @@
 # Entrenamenduak editatu eta bikoiztu
 
+Sarrera-ontzia eta deialdien oroigarriak
+`migrations/20261113130000_notification_inbox_reminders.sql` migrazioan daude.
+`metro-api`-k `inboxActions` saioa egiaztatu ondoren `handleInboxAction` funtziora
+bidaltzen ditu. `notification_inbox`-ek push gailuen harpidetzatik bereizita
+gordetzen ditu jakinarazpenak eta irakurketa-egoera. Migrazioa aplikatu eta
+`metro-api` eta `metro-push` hedatu ondoren, `reminder-scheduler.sql` exekutatu
+bost minutuko cron lana aktibatzeko. Ordutegi lokalak Europe/Madrid eremuan
+interpretatzen dira. Bidalketa bakoitza erabiltzaile, ekitaldi, data eta tartearen
+arabera deduplikatzen da. Ilaratik bidali aurretik erantzuna eta baimenak berriro
+egiaztatzen dira.
+
 Asteko ordutegia `weekly-training-actions.ts` eta
 `migrations/20261113120000_weekly_training_schedule.sql` fitxategiek kudeatzen dute.
 `metro-api`-k `weeklyTrainingActions` ekintzak saioa balioztatu ondoren

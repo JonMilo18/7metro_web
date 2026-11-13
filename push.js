@@ -26,9 +26,9 @@ function pushRender() {
     var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
     var standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
     var hint = !supported ? "Gailu edo arakatzaile honek ez ditu push jakinarazpenak onartzen." : permission === "denied" ? "Jakinarazpenak blokeatuta daude. Baimendu arakatzailearen edo telefonoaren ezarpenetan." : !pushState.configured ? "Jakinarazpenen zerbitzua prestatzen ari da." : pushState.active ? "Jakinarazpenak aktibatuta daude gailu honetan." : "Aktibatu jakinarazpenak gailu honetan jasotzeko.";
-    container.innerHTML = '<h2>' + esc(t("Jakinarazpenak")) + '</h2><p class="muted">' + esc(t(hint)) + '</p>' + (ios && !standalone ? '<p class="muted">' + esc(t("iPhonen edo iPaden, ireki aplikazioa hasierako pantailako ikonotik.")) + '</p>' : '') + '<p class="push-settings-status" role="status" aria-live="polite">' + esc(pushState.message) + '</p><div class="push-preferences">' + [["callups", "Deialdi berriak eta aldaketak"], ["schedule", "Ordutegi eta toki aldaketak"], ["notices", "Taldeko abisuak"], ["responses", "Jokalarien erantzunak"], ["friends", "Lagun-eskaerak"]].map(function (entry) {
+    container.innerHTML = '<h2>' + esc(t("Jakinarazpenak")) + '</h2><p class="muted">' + esc(t(hint)) + '</p>' + (ios && !standalone ? '<p class="muted">' + esc(t("iPhonen edo iPaden, ireki aplikazioa hasierako pantailako ikonotik.")) + '</p>' : '') + '<p class="push-settings-status" role="status" aria-live="polite">' + esc(pushState.message) + '</p><div class="push-preferences">' + [["callups", "Deialdi berriak, aldaketak eta oroigarriak"], ["schedule", "Ordutegi eta toki aldaketak"], ["notices", "Taldeko abisuak"], ["responses", "Jokalarien erantzunak"], ["friends", "Lagun-eskaerak"]].map(function (entry) {
       return '<label class="checkrow"><input type="checkbox" data-push-kind="' + entry[0] + '"' + (pushState.preferences[entry[0]] ? ' checked' : '') + (!pushState.active || pushState.busy ? ' disabled' : '') + '><span>' + esc(t(entry[1])) + '</span></label>';
-    }).join("") + '</div><div class="push-settings-actions"><button class="btn' + (pushState.active ? ' secondary' : '') + '" type="button" data-push-action="' + (pushState.active ? 'disable' : 'enable') + '"' + (pushState.busy || (!pushState.active && (!supported || permission === 'denied' || !pushState.configured)) ? ' disabled' : '') + '>' + esc(t(pushState.active ? "Desaktibatu gailu honetan" : "Aktibatu jakinarazpenak")) + '</button>' + (pushState.active ? '<button class="btn secondary" type="button" data-push-action="test"' + (pushState.busy ? ' disabled' : '') + '>' + esc(t("Proba bidali")) + '</button>' : '') + '<button class="btn secondary" type="button" data-push-action="refresh"' + (pushState.busy ? ' disabled' : '') + '>' + esc(t("Birkargatu")) + '</button></div>';
+    }).join("") + '</div><p class="muted">' + esc(t("Oroigarriak 24 ordu eta 3 ordu lehenago bidaltzen dira erantzun gabe daudenei.")) + '</p><div class="push-settings-actions"><button class="btn' + (pushState.active ? ' secondary' : '') + '" type="button" data-push-action="' + (pushState.active ? 'disable' : 'enable') + '"' + (pushState.busy || (!pushState.active && (!supported || permission === 'denied' || !pushState.configured)) ? ' disabled' : '') + '>' + esc(t(pushState.active ? "Desaktibatu gailu honetan" : "Aktibatu jakinarazpenak")) + '</button>' + (pushState.active ? '<button class="btn secondary" type="button" data-push-action="test"' + (pushState.busy ? ' disabled' : '') + '>' + esc(t("Proba bidali")) + '</button>' : '') + '<button class="btn secondary" type="button" data-push-action="refresh"' + (pushState.busy ? ' disabled' : '') + '>' + esc(t("Birkargatu")) + '</button></div>';
   });
 }
 async function pushSave(subscription, preferences) {
@@ -135,6 +135,32 @@ async function pushPlayerFriends() {
     }).join("") : portalEmpty("Ez dago sarrerako eskaerarik.");
   } catch (error) { if (token === sessionToken && sequence === pushState.friendSequence) $("portal-friend-requests").textContent = error.message; }
 }
+async function pushNavigate(result, sessionToken) {
+  var target = result.target;
+  if (token !== sessionToken) return;
+  if (target.mode === "player") {
+    var boot = await request({ action: "portal_bootstrap" });
+    if (token !== sessionToken) return;
+    if (!boot.links.some(function (link) { return Number(link.player_id) === Number(target.player_id); })) throw new Error(t("Jakinarazpena ez dago erabilgarri"));
+    portalState.playerId = Number(target.player_id); portalSetMode("player"); await portalShow(boot);
+    if (result.kind === "notices") portalSetTab("notices");
+    else {
+      portalSetTab("agenda");
+      var data = portalState.data, row = (target.kind === "session" ? data.sessions : data.matches).find(function (event) { return Number(event.id) === Number(target.event_id); });
+      if (row) { portalCalendarState.view = "calendar"; portalCalendarSelect(portalCalendarDate(row.date.slice(0, 10))); portalRenderAgenda(); }
+    }
+  } else if (target.mode === "coach") {
+    portalSetMode("coach"); portalHide(); await loadTeams(false);
+    if (!teams.some(function (row) { return Number(row.id_taldea) === Number(target.team_id); })) throw new Error(t("Jakinarazpena ez dago erabilgarri"));
+    await openTeam(target.team_id);
+    if (target.kind === "session") { if (renderSavedSession(target.event_id)) selectSection("v-session-detail"); }
+    else { selectSection("v-matches"); await portalOpenMatch(target.event_id); }
+  } else if (target.mode === "friends") {
+    if (document.body.classList.contains("player-mode")) { portalSetTab("settings"); await pushPlayerFriends(); }
+    else selectSection("v-friends");
+  } else if (document.body.classList.contains("player-mode")) portalSetTab("settings");
+  else selectSection("v-more");
+}
 async function pushOpen(id) {
   if (!Number.isSafeInteger(id) || id < 1) return;
   pushState.pending = id;
@@ -142,30 +168,11 @@ async function pushOpen(id) {
   if (!token) return;
   var sessionToken = token;
   try {
-    var result = await request({ action: "push_resolve", id: id }), target = result.target;
+    var result = await request({ action: "push_resolve", id: id });
     if (token !== sessionToken) return;
-    if (target.mode === "player") {
-      var boot = await request({ action: "portal_bootstrap" });
-      if (token !== sessionToken) return;
-      if (!boot.links.some(function (link) { return Number(link.player_id) === Number(target.player_id); })) throw new Error(t("Jakinarazpena ez dago erabilgarri"));
-      portalState.playerId = Number(target.player_id); portalSetMode("player"); await portalShow(boot);
-      if (result.kind === "notices") portalSetTab("notices");
-      else {
-        portalSetTab("agenda");
-        var data = portalState.data, row = (target.kind === "session" ? data.sessions : data.matches).find(function (event) { return Number(event.id) === Number(target.event_id); });
-        if (row) { portalCalendarState.view = "calendar"; portalCalendarSelect(portalCalendarDate(row.date.slice(0, 10))); portalRenderAgenda(); }
-      }
-    } else if (target.mode === "coach") {
-      portalSetMode("coach"); portalHide(); await loadTeams(false);
-      if (!teams.some(function (row) { return Number(row.id_taldea) === Number(target.team_id); })) throw new Error(t("Jakinarazpena ez dago erabilgarri"));
-      await openTeam(target.team_id);
-      if (target.kind === "session") { if (renderSavedSession(target.event_id)) selectSection("v-session-detail"); }
-      else { selectSection("v-matches"); await portalOpenMatch(target.event_id); }
-    } else if (target.mode === "friends") {
-      if (document.body.classList.contains("player-mode")) { portalSetTab("settings"); await pushPlayerFriends(); }
-      else selectSection("v-friends");
-    } else if (document.body.classList.contains("player-mode")) portalSetTab("settings");
-    else selectSection("v-more");
+    await pushNavigate(result, sessionToken);
+    if (token !== sessionToken) return;
+    if (window.InboxUI) window.InboxUI.refresh();
     pushState.pending = 0;
     var url = new URL(location.href); url.searchParams.delete("notification"); history.replaceState(null, "", url);
   } catch (error) {
@@ -180,7 +187,7 @@ window.PushUI = {
   beforeLogout: async function () { await pushStopLocal(pushState.binding, pushState.subscription, pushState.epoch).catch(function () {}); },
   afterLogin: async function () {
     await pushRefresh(); var id = pushState.pending || Number(new URL(location.href).searchParams.get("notification")); if (id) await pushOpen(id);
-  }, open: pushOpen
+  }, open: pushOpen, openTarget: function (result) { return pushNavigate(result, token); }
 };
 window.addEventListener("DOMContentLoaded", function () {
   pushRender();

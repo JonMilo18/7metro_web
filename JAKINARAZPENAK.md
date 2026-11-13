@@ -1,5 +1,17 @@
 # Telefonoaren jakinarazpenak
 
+Goiko kanpaiak entrenatzaileen eta jokalarien sarrera-ontzia irekitzen du.
+Azken 30 egunetako jakinarazpenak gordetzen dira, gailuko push baimena aktibatuta
+egon ala ez. Zenbakiak irakurri gabekoak adierazten ditu. Jakinarazpen bat
+irekitzean edo **Guztiak irakurrita markatu** sakatzean irakurrita geratzen da.
+
+Deialdien oroigarriak bost minuturo egiaztatzen dira. Entrenamendua edo partida
+hasi aurreko 24 orduko eta 3 orduko tarteetan behin bidaltzen dira, erantzun gabe
+dauden jokalari lotuei. Partidetan deialdian hautatutako jokalariek jasotzen
+dituzte. Erantzun guztiek, zalantza barne, oroigarriak gelditzen dituzte.
+Gailuko bidalketa **Deialdi berriak, aldaketak eta oroigarriak** kategoriatik
+kontrolatzen da.
+
 **Entrenatzailea:** Gehiago → Jakinarazpenak.  
 **Jokalaria:** Kontua → Jakinarazpenak.
 

@@ -5,13 +5,14 @@ type Vapid = { publicKey: string; privateKey: string; subject: string };
 export function pushPayload(job: Job): Record<string, unknown> {
   const es = job.language === "es", kind = job.kind;
   const titles: Record<string, string[]> = {
-    callups: job.target.kind === "session" ? ["Entrenamendu berria", "Nuevo entrenamiento"] : job.target.reason === "new" ? ["Deialdi berria", "Nueva convocatoria"] : ["Deialdia aldatu da", "La convocatoria ha cambiado"],
+    callups: job.target.reason === "reminder" ? ["Deialdiaren oroigarria", "Recordatorio de convocatoria"] : job.target.kind === "session" ? ["Entrenamendu berria", "Nuevo entrenamiento"] : job.target.reason === "new" ? ["Deialdi berria", "Nueva convocatoria"] : ["Deialdia aldatu da", "La convocatoria ha cambiado"],
     schedule: ["Ordutegia edo tokia aldatu da", "Han cambiado el horario o el lugar"],
     notices: ["Taldeko abisu berria", "Nuevo aviso del equipo"], responses: ["Bertaratze-erantzun berria", "Nueva respuesta de asistencia"],
     friends: ["Lagun-eskaera berria", "Nueva solicitud de amistad"], test: ["Probako jakinarazpena", "Notificación de prueba"],
   };
   return { title: (titles[kind] || ["7metro", "7metro"])[es ? 1 : 0],
     body: kind === "test" ? (es ? "Las notificaciones funcionan en este dispositivo." : "Jakinarazpenak ondo dabiltza gailu honetan.") :
+      job.target.reason === "reminder" ? (es ? "Abre la aplicación para responder a la convocatoria." : "Ireki aplikazioa deialdiari erantzuteko.") :
       (es ? "Abre la aplicación para ver los detalles." : "Ireki aplikazioa xehetasunak ikusteko."),
     notification_id: job.notification_id, binding: job.binding,
     tag: "7metro:" + kind + ":" + String(job.target.event_id || job.target.id || job.notification_id) };

@@ -29,6 +29,7 @@ export async function handlePushAction(payload: Record<string, unknown>, supabas
     if (!result.data) return respond(404, { error: "Jakinarazpena ez dago erabilgarri" });
     const check = await supabase.rpc("push_target_allowed", { p_user: userId, p_kind: result.data.kind, p_target: result.data.target });
     if (check.error || !check.data) return respond(404, { error: "Jakinarazpena ez dago erabilgarri" });
+    await supabase.rpc("notification_inbox_action", { p_user: userId, p_action: "ack_push", p_data: { id } });
     return respond(200, { ok: true, kind: result.data.kind, target: result.data.target });
   }
   if (typeof payload.device_secret !== "string" || !/^[0-9a-f]{64}$/.test(payload.device_secret)) return respond(400, { error: "Datuak ez dira baliozkoak" });
