@@ -6,6 +6,8 @@ window.SevenMetroLocales.es = {
   "name": "Español",
   "locale": "es-ES",
   "messages": {
+    "Modu argia": "Modo claro",
+    "Modu iluna": "Modo oscuro",
     "Deialdi erantzuteko": "Convocatorias por responder",
     "Abisu irakurri gabe": "Avisos sin leer",
     "Hurrengo jarduera": "Próxima actividad",

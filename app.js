@@ -99,9 +99,8 @@ function setColorTheme(theme, persist) {
   document.documentElement.style.colorScheme = mode;
   var themeColor = document.querySelector('meta[name="theme-color"]');
   if (themeColor) themeColor.content = mode === "light" ? "#FFFFFF" : "#060E1A";
-  ["light", "dark"].forEach(function (option) {
-    var button = $("theme-" + option);
-    if (button) button.setAttribute("aria-pressed", String(option === mode));
+  document.querySelectorAll("[data-theme-choice]").forEach(function (button) {
+    button.setAttribute("aria-pressed", String(button.dataset.themeChoice === mode));
   });
   if (persist) {
     try { localStorage.setItem("7metro-theme", mode); }
