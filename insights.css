@@ -50,7 +50,6 @@
 #sessions-list > .item{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;container:session-card / inline-size}
 #sessions-list .session-actions{justify-self:stretch;box-sizing:border-box;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;max-width:none;gap:8px;align-items:stretch;white-space:normal}
 #sessions-list .session-actions .btn{width:100%;min-width:0;min-height:44px;height:100%;margin:0;padding:10px 8px;font-size:.9rem;line-height:1.25;white-space:normal}
-@container session-card (min-width:40rem){#sessions-list .session-actions{grid-template-columns:repeat(5,minmax(0,1fr))}}
 
 .plan-create-actions{display:flex;align-items:end;flex-wrap:wrap;gap:10px;margin:16px 0}
 .plan-create-actions label{flex:1 1 180px;min-width:0;margin:0}
@@ -105,8 +104,6 @@
 .friend-search-option:hover,.friend-search-option:focus-visible{background:rgba(0,68,238,.15);outline:2px solid var(--blue);outline-offset:-2px}
 #friend-search-status{margin:0;font-size:.85rem}
 
-#sessions-list [data-share-session]{grid-column:1/-1}
-@container session-card (min-width:40rem){#sessions-list [data-share-session]{grid-column:auto}}
 #session-share-dialog{max-width:520px}
 #session-share-name{overflow-wrap:anywhere}
 #session-share-form .btn{margin:0}
