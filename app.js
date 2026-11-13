@@ -214,6 +214,7 @@ async function requestImpl(payload, anonymous) {
 }
 
 function showLogin() {
+  closeBoardFullscreen();
   if (window.PlayerStatistics) window.PlayerStatistics.reset();
   if (window.InboxUI) window.InboxUI.reset();
   if (window.WeeklyTraining) window.WeeklyTraining.reset();
@@ -2202,6 +2203,7 @@ async function refreshAll() {
 }
 
 function selectSection(id) {
+  if (id !== "v-board") closeBoardFullscreen();
   if (id !== "v-friends" && typeof friendSearchSequence === "number") clearFriendSearch();
   if (id !== "v-planning") closePlanningOptions();
   if (id !== "v-scoreboard" && scoreMatchMode) scoreExitMatchMode();
@@ -3446,6 +3448,57 @@ $("exercise-category-form").addEventListener("submit", async function (event) {
     notify('"' + name + t("\" kategoria sortu da"), "success");
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
+});
+
+var boardPageOverflow = "";
+
+function setBoardMenu(open) {
+  $("board-options").classList.toggle("is-open", open);
+  $("board-menu-toggle").setAttribute("aria-expanded", String(open));
+}
+
+function closeBoardFullscreen() {
+  if ($("board-fullscreen-dialog").open) $("board-fullscreen-dialog").close();
+}
+
+$("board-fullscreen-open").addEventListener("click", function () {
+  var dialog = $("board-fullscreen-dialog");
+  if (dialog.open) return;
+  boardPageOverflow = document.body.style.overflow;
+  boardPointer = null;
+  setBoardMenu(false);
+  dialog.appendChild($("board-editor"));
+  dialog.appendChild($("toast"));
+  dialog.showModal();
+  document.body.style.overflow = "hidden";
+  redrawBoard();
+});
+$("board-fullscreen-close").addEventListener("click", closeBoardFullscreen);
+$("board-menu-toggle").addEventListener("click", function () {
+  setBoardMenu(this.getAttribute("aria-expanded") !== "true");
+});
+$("board-fullscreen-dialog").addEventListener("cancel", function (event) {
+  if ($("board-options").classList.contains("is-open")) {
+    event.preventDefault();
+    setBoardMenu(false);
+    $("board-menu-toggle").focus();
+  }
+});
+$("board-fullscreen-dialog").addEventListener("close", function () {
+  stopBoardAnimation();
+  boardPointer = null;
+  setBoardMenu(false);
+  $("board-fullscreen-open").after($("board-editor"));
+  $("loading-indicator").before($("toast"));
+  document.body.style.overflow = boardPageOverflow;
+  redrawBoard();
+  if ($("v-board").classList.contains("on")) $("board-fullscreen-open").focus();
+});
+$("board-options").addEventListener("click", function (event) {
+  if (event.target.closest(".board-tools button") && $("board-fullscreen-dialog").open) {
+    setBoardMenu(false);
+    $("board-menu-toggle").focus();
+  }
 });
 
 document.querySelectorAll("[data-board-tool]").forEach(function (button) {
