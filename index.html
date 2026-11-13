@@ -606,7 +606,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=156"><link rel="stylesheet" href="portal.css?v=156">
+<link rel="stylesheet" href="insights.css?v=157"><link rel="stylesheet" href="portal.css?v=157">
 </head>
 <body>
 <div id="app">
@@ -743,25 +743,6 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
     <section id="v-sessions" class="on">
       <div class="session-page-heading"><div class="help-heading"><h1>Entrenamendua</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-8" aria-label="Entrenamendua: informazioa"><span aria-hidden="true">i</span></button></div><button class="btn session-create-button" id="session-create" type="button" aria-label="Entrenamendu berria sortu" title="Entrenamendu berria sortu" aria-controls="session-create-panel" aria-expanded="false"><span aria-hidden="true">+</span></button></div><p class="sub" id="help-text-8" hidden>Antolatu saioak, aukeratu ariketak eta prestatu ariketa berriak kantxan.</p>
       <div class="group-links"><button class="btn secondary" id="open-board" type="button">Ariketa-liburutegia eta arbela</button></div>
-      <details class="card" id="weekly-training">
-        <summary><strong>Asteko entrenamenduak</strong></summary>
-        <div class="weekly-training-content">
-          <p id="weekly-training-status" role="status" aria-live="polite"></p>
-          <details id="weekly-training-settings"><summary><strong>Ohiko ordutegia</strong></summary>
-            <form id="weekly-training-form"><fieldset id="weekly-training-fields">
-              <div id="weekly-training-slots"></div>
-              <div class="weekly-training-actions"><button class="btn secondary" id="weekly-training-add" type="button">Entrenamendu-eguna gehitu</button><button class="btn" id="weekly-training-save" type="submit">Ordutegia gorde</button></div>
-            </fieldset></form>
-          </details>
-          <form id="weekly-training-publish-form"><fieldset id="weekly-training-publish-fields">
-            <label>Astea<input id="weekly-training-week" type="date" required></label>
-            <p class="muted" id="weekly-training-range"></p>
-            <ul id="weekly-training-preview" class="list weekly-training-preview"></ul>
-            <p class="muted" id="weekly-training-dirty" hidden>Gorde ordutegiaren aldaketak argitaratu aurretik.</p>
-            <div class="weekly-training-actions"><button class="btn" id="weekly-training-publish" type="submit">Asteko entrenamenduak argitaratu</button><button class="btn secondary" id="weekly-training-reload" type="button">Birkargatu ordutegia</button></div>
-          </fieldset></form>
-        </div>
-      </details>
       <details class="card" id="session-create-panel"><summary><strong id="session-editor-title">Entrenamendu berria</strong></summary>
         <form id="session-form" tabindex="-1" class="stack" style="margin-top:14px">
           <div class="grid2"><label>Data eta ordua<input id="session-date" type="datetime-local" required></label><label>Tokia<input id="session-place" value="Kiroldegia"></label></div>
@@ -984,6 +965,25 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
     </section>
     <section id="v-planning">
       <div class="session-page-heading"><div class="help-heading"><h1>Denboraldiaren plangintza</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-20" aria-label="Denboraldiaren plangintza: informazioa"><span aria-hidden="true">i</span></button></div><button class="btn session-create-button" id="plan-create-toggle" type="button" aria-label="Gehitu plangintzan" title="Gehitu plangintzan" aria-controls="plan-create-options" aria-expanded="false"><span aria-hidden="true">+</span></button></div><p class="sub" id="help-text-20" hidden>Makrozikloak, mikrozikloak, entrenamenduak eta partidak hilabete-egutegi batean.</p>
+      <details class="card" id="weekly-training">
+        <summary><strong>Asteko entrenamenduak</strong></summary>
+        <div class="weekly-training-content">
+          <p id="weekly-training-status" role="status" aria-live="polite"></p>
+          <details id="weekly-training-settings"><summary><strong>Ohiko ordutegia</strong></summary>
+            <form id="weekly-training-form"><fieldset id="weekly-training-fields">
+              <div id="weekly-training-slots"></div>
+              <div class="weekly-training-actions"><button class="btn secondary" id="weekly-training-add" type="button">Entrenamendu-eguna gehitu</button><button class="btn" id="weekly-training-save" type="submit">Ordutegia gorde</button></div>
+            </fieldset></form>
+          </details>
+          <form id="weekly-training-publish-form"><fieldset id="weekly-training-publish-fields">
+            <label>Astea<input id="weekly-training-week" type="date" required></label>
+            <p class="muted" id="weekly-training-range"></p>
+            <ul id="weekly-training-preview" class="list weekly-training-preview"></ul>
+            <p class="muted" id="weekly-training-dirty" hidden>Gorde ordutegiaren aldaketak argitaratu aurretik.</p>
+            <div class="weekly-training-actions"><button class="btn" id="weekly-training-publish" type="submit">Asteko entrenamenduak argitaratu</button><button class="btn secondary" id="weekly-training-reload" type="button">Birkargatu ordutegia</button></div>
+          </fieldset></form>
+        </div>
+      </details>
       <div class="card" id="plan-card">
         <div class="plan-toolbar">
           <div class="plan-nav">
@@ -1000,6 +1000,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
             <button class="btn secondary" type="button" data-plan-new="micro">Mikrozikloa</button>
             <button class="btn secondary" id="plan-create-session" type="button">Entrenamendu berria</button>
             <button class="btn secondary" id="plan-create-match" type="button">Partida berria</button>
+            <button class="btn secondary" id="plan-create-weekly" type="button" aria-controls="weekly-training">Asteko entrenamenduak</button>
           </div>
         </div>
         <div class="plan-view-toggle" role="group" aria-label="Egutegiaren ikuspegia"><button type="button" data-plan-view="agenda">Agenda</button><button type="button" data-plan-view="month">Hilabetea</button></div>
@@ -1069,16 +1070,16 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=156" defer></script>
-<script src="i18n.js?v=156" defer></script>
-<script src="insights-data.js?v=156" defer></script>
-<script src="portal.js?v=156" defer></script>
-<script src="portal-events.js?v=156" defer></script>
-<script src="portal-calendar.js?v=156" defer></script>
-<script src="push.js?v=156" defer></script>
-<script src="app.js?v=156" defer></script>
-<script src="weekly-training.js?v=156" defer></script>
-<script src="report-pdf.js?v=156" defer></script>
-<script src="insights.js?v=156" defer></script>
+<script src="locales/es.js?v=157" defer></script>
+<script src="i18n.js?v=157" defer></script>
+<script src="insights-data.js?v=157" defer></script>
+<script src="portal.js?v=157" defer></script>
+<script src="portal-events.js?v=157" defer></script>
+<script src="portal-calendar.js?v=157" defer></script>
+<script src="push.js?v=157" defer></script>
+<script src="app.js?v=157" defer></script>
+<script src="weekly-training.js?v=157" defer></script>
+<script src="report-pdf.js?v=157" defer></script>
+<script src="insights.js?v=157" defer></script>
 </body>
 </html>

@@ -162,6 +162,15 @@
   document.addEventListener("DOMContentLoaded", function () {
     reset();
     $("weekly-training").addEventListener("toggle", function () { if (this.open) load(false); });
+    $("plan-create-weekly").addEventListener("click", function () {
+      if (state.busy || !$("plan-create-date").reportValidity()) return;
+      var wasOpen = $("weekly-training").open;
+      $("weekly-training-week").value = monday($("plan-create-date").value);
+      closePlanningOptions();
+      $("weekly-training").open = true;
+      if (wasOpen) load(false);
+      $("weekly-training").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
     $("weekly-training-week").addEventListener("change", function () {
       this.value = monday(this.value);
       if (this.value) load(false);
