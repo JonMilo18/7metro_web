@@ -1343,7 +1343,9 @@ function renderSessionPicker() {
   var groupLabel = $("session-current-group");
   if (groupLabel) groupLabel.textContent = t("Hurrengo ariketak: ") + (activeSessionGroup ? sessionGroupLabel(activeSessionGroup.name) : t("Tarterik gabe"));
   $("session-selected").innerHTML = sessionSelection.length ? sessionSelection.map(function (entry) {
-    if (entry.is_separator) return '<li class="session-group-row" data-session-drop-group="' + esc(entry.group_id) + '"><strong>' + esc(sessionGroupLabel(entry.taldea)) +
+    if (entry.is_separator) return '<li class="session-group-row" data-session-drop-group="' + esc(entry.group_id) +
+      '"><button class="session-drag-handle" type="button" data-session-drag-handle aria-label="' + esc(t("Arrastatu ordena aldatzeko: ")) + esc(sessionGroupLabel(entry.taldea)) +
+      '" title="' + esc(t("Arrastatu ordena aldatzeko")) + '">&#8942;&#8942;</button><strong>' + esc(sessionGroupLabel(entry.taldea)) +
       '</strong><button class="slot-remove" type="button" data-session-remove-group="' + esc(entry.group_id) + ("\" aria-label=\"" + esc(t("Kendu tartea")) + "\">" + esc(t("×")) + "</button></li>");
     var exercise = sessionExerciseById(entry.id_ariketa), id = sessionEntryKey(entry);
     if (!exercise) return "";
@@ -1427,6 +1429,34 @@ function dropSessionExercise(draggedId, target) {
     insertAt = targetIndex + (target.after ? 1 : 0);
   }
   sessionSelection.splice(insertAt, 0, entry);
+  renderSessionPicker();
+}
+
+function dropSessionGroup(groupId, target) {
+  var start = sessionSelection.findIndex(function (entry) { return entry.is_separator && entry.group_id === groupId; });
+  if (start < 0) return;
+  var end = start + 1;
+  while (end < sessionSelection.length && !sessionSelection[end].is_separator) end++;
+  var targetIndex = sessionSelection.findIndex(function (entry) {
+    return target.type === "group" ? entry.is_separator && entry.group_id === target.id :
+      !entry.is_separator && sessionEntryKey(entry) === Number(target.id);
+  });
+  if (targetIndex < 0 || (targetIndex >= start && targetIndex < end)) return;
+  if (target.type === "exercise") {
+    for (var index = targetIndex - 1; index >= 0; index--) {
+      if (sessionSelection[index].is_separator) { targetIndex = index; break; }
+    }
+  }
+  var insertAt = targetIndex;
+  if (target.after) {
+    insertAt++;
+    if (sessionSelection[targetIndex].is_separator) {
+      while (insertAt < sessionSelection.length && !sessionSelection[insertAt].is_separator) insertAt++;
+    }
+  }
+  var block = sessionSelection.splice(start, end - start);
+  if (insertAt > start) insertAt -= block.length;
+  sessionSelection.splice.apply(sessionSelection, [insertAt, 0].concat(block));
   renderSessionPicker();
 }
 
@@ -3773,9 +3803,10 @@ $("session-selected").addEventListener("input", function (event) {
 $("session-selected").addEventListener("pointerdown", function (event) {
   var handle = event.target.closest("[data-session-drag-handle]");
   if (!handle || (event.button !== undefined && event.button !== 0)) return;
-  var row = handle.closest("[data-session-drop-exercise]");
+  var row = handle.closest("[data-session-drop-exercise], [data-session-drop-group]");
   if (!row) return;
-  sessionDragState = { id: Number(row.dataset.sessionDropExercise), pointerId: event.pointerId,
+  sessionDragState = { type: row.hasAttribute("data-session-drop-group") ? "group" : "exercise",
+    id: row.dataset.sessionDropGroup || Number(row.dataset.sessionDropExercise), row: row, pointerId: event.pointerId,
     startX: event.clientX, startY: event.clientY, active: false, target: null };
   try { handle.setPointerCapture(event.pointerId); } catch (error) { /* pointer capture is optional */ }
 });
@@ -3784,20 +3815,26 @@ $("session-selected").addEventListener("pointermove", function (event) {
   if (!sessionDragState || event.pointerId !== sessionDragState.pointerId) return;
   if (!sessionDragState.active && Math.hypot(event.clientX - sessionDragState.startX, event.clientY - sessionDragState.startY) < 7) return;
   sessionDragState.active = true;
-  var source = this.querySelector('[data-session-drop-exercise="' + sessionDragState.id + '"]');
-  if (source) source.classList.add("is-dragging");
+  sessionDragState.row.classList.add("is-dragging");
   this.querySelectorAll(".session-drop-before,.session-drop-after").forEach(function (item) {
     item.classList.remove("session-drop-before", "session-drop-after");
   });
   var hovered = document.elementFromPoint(event.clientX, event.clientY);
   var target = hovered && hovered.closest("[data-session-drop-exercise], [data-session-drop-group]");
   if (!target || !this.contains(target)) { sessionDragState.target = null; return; }
-  if (target.dataset.sessionDropExercise && Number(target.dataset.sessionDropExercise) === sessionDragState.id) {
+  if (sessionDragState.type === "group" && target.hasAttribute("data-session-drop-exercise")) {
+    var previous = target.previousElementSibling;
+    while (previous && !previous.hasAttribute("data-session-drop-group")) previous = previous.previousElementSibling;
+    if (previous) target = previous;
+  }
+  if (target === sessionDragState.row) {
     sessionDragState.target = null; return;
   }
   if (target.dataset.sessionDropGroup) {
-    target.classList.add("session-drop-after");
-    sessionDragState.target = { type: "group", id: target.dataset.sessionDropGroup };
+    var groupRect = target.getBoundingClientRect();
+    var afterGroup = sessionDragState.type === "exercise" || event.clientY > groupRect.top + groupRect.height / 2;
+    target.classList.add(afterGroup ? "session-drop-after" : "session-drop-before");
+    sessionDragState.target = { type: "group", id: target.dataset.sessionDropGroup, after: afterGroup };
     return;
   }
   var rect = target.getBoundingClientRect();
@@ -3810,11 +3847,12 @@ function finishSessionDrag(event) {
   if (!sessionDragState || event.pointerId !== sessionDragState.pointerId) return;
   var drag = sessionDragState;
   sessionDragState = null;
-  if (drag.active && drag.target) dropSessionExercise(drag.id, drag.target);
-  else {
-    $("session-selected").querySelectorAll(".session-drop-before,.session-drop-after,.is-dragging").forEach(function (item) {
-      item.classList.remove("session-drop-before", "session-drop-after", "is-dragging");
-    });
+  $("session-selected").querySelectorAll(".session-drop-before,.session-drop-after,.is-dragging").forEach(function (item) {
+    item.classList.remove("session-drop-before", "session-drop-after", "is-dragging");
+  });
+  if (drag.active && drag.target) {
+    if (drag.type === "group") dropSessionGroup(drag.id, drag.target);
+    else dropSessionExercise(drag.id, drag.target);
   }
 }
 
