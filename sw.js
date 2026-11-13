@@ -1,11 +1,11 @@
 // 7metro - service worker probisionala
 // Aldaketak argitaratzean, aldatu CACHE bertsioa.
-const CACHE = "7metro-v158";
+const CACHE = "7metro-v159";
 const SHELL = ["./", "./index.html", "./manifest.json",
-  "./inbox.js?v=158",
-  "./weekly-training.js?v=158",
-  "./locales/es.js?v=158", "./i18n.js?v=158", "./app.js?v=158", "./insights-data.js?v=158", "./insights.js?v=158",
-  "./portal.js?v=158", "./portal-events.js?v=158", "./portal-calendar.js?v=158", "./push.js?v=158", "./portal.css?v=158", "./report-pdf.js?v=158", "./insights.css?v=158", "./vendor/jspdf.umd.min.js",
+  "./inbox.js?v=159",
+  "./weekly-training.js?v=159",
+  "./locales/es.js?v=159", "./i18n.js?v=159", "./app.js?v=159", "./insights-data.js?v=159", "./insights.js?v=159",
+  "./portal.js?v=159", "./portal-events.js?v=159", "./portal-calendar.js?v=159", "./push.js?v=159", "./portal.css?v=159", "./report-pdf.js?v=159", "./insights.css?v=159", "./vendor/jspdf.umd.min.js",
   "./vendor/fonts/NotoSans-Regular.ttf", "./vendor/fonts/NotoSans-Bold.ttf",
   "./irudiak/Zelaia.png", "./irudiak/Zelai-erdia.png",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];
