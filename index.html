@@ -214,6 +214,8 @@ textarea{min-height:84px;resize:vertical}
 .session-time-warn.show{display:block}
 .session-time-seg{height:100%;min-width:2px;transition:width .2s ease;box-shadow:inset -1px 0 0 rgba(0,0,0,.18);background:var(--blue)}
 .session-slot .slot-name{display:-webkit-box;flex:1;min-width:0;max-width:230px;overflow:hidden;overflow-wrap:anywhere;white-space:normal;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:.9rem}
+#session-selected .session-slot{flex-wrap:wrap}
+#session-selected .session-slot .slot-name{display:block;flex:1 1 calc(100% - 40px);overflow:visible;-webkit-line-clamp:unset}
 .exercise-picker #session-library .slot-name{max-width:none}
 .session-slot input{width:70px;flex:none;min-height:38px;padding:6px}
 .exercise-picker .btn{width:auto;min-height:36px;margin:0;padding:6px 10px;font-size:.85rem}
@@ -651,7 +653,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=169"><link rel="stylesheet" href="portal.css?v=169">
+<link rel="stylesheet" href="insights.css?v=170"><link rel="stylesheet" href="portal.css?v=170">
 </head>
 <body>
 <div id="app">
@@ -1135,18 +1137,18 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=169" defer></script>
-<script src="i18n.js?v=169" defer></script>
-<script src="insights-data.js?v=169" defer></script>
-<script src="portal.js?v=169" defer></script>
-<script src="portal-events.js?v=169" defer></script>
-<script src="portal-calendar.js?v=169" defer></script>
-<script src="push.js?v=169" defer></script>
-<script src="app.js?v=169" defer></script>
-<script src="player-statistics.js?v=169" defer></script>
-<script src="weekly-training.js?v=169" defer></script>
-<script src="inbox.js?v=169" defer></script>
-<script src="report-pdf.js?v=169" defer></script>
-<script src="insights.js?v=169" defer></script>
+<script src="locales/es.js?v=170" defer></script>
+<script src="i18n.js?v=170" defer></script>
+<script src="insights-data.js?v=170" defer></script>
+<script src="portal.js?v=170" defer></script>
+<script src="portal-events.js?v=170" defer></script>
+<script src="portal-calendar.js?v=170" defer></script>
+<script src="push.js?v=170" defer></script>
+<script src="app.js?v=170" defer></script>
+<script src="player-statistics.js?v=170" defer></script>
+<script src="weekly-training.js?v=170" defer></script>
+<script src="inbox.js?v=170" defer></script>
+<script src="report-pdf.js?v=170" defer></script>
+<script src="insights.js?v=170" defer></script>
 </body>
 </html>
