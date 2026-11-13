@@ -116,3 +116,66 @@ test('the API validates writes and passes authenticated team context to the tran
   db.rpc=async()=>({error:{code:'40001',message:'Conflict'}});
   result=await context.handle(payload,db,7,9,respond);assert.equal(result.status,409);
 });
+
+test('deleting a training is atomic, team scoped and cleans linked data while preserving exercises', async () => {
+  const db = await fixture();
+  try {
+    await db.exec(`
+      DROP TABLE saio_plangintzak;
+      ALTER TABLE saio_xehetasuna DROP CONSTRAINT saio_xehetasuna_id_saio_fkey;
+      ALTER TABLE saio_xehetasuna ADD FOREIGN KEY(id_saio) REFERENCES saioak ON DELETE CASCADE;
+      ALTER TABLE saio_bertaratzea DROP CONSTRAINT saio_bertaratzea_id_saio_fkey;
+      ALTER TABLE saio_bertaratzea ADD FOREIGN KEY(id_saio) REFERENCES saioak ON DELETE CASCADE;
+      CREATE TABLE portal_event_responses(kind text,event_id integer,response text);
+      CREATE TABLE training_shares(training_id integer REFERENCES saioak ON DELETE CASCADE);
+      CREATE TABLE team_training_publications(session_id integer REFERENCES saioak ON DELETE SET NULL);
+      INSERT INTO portal_event_responses VALUES('session',1,'yes'),('match',1,'no'),('session',2,'maybe');
+      INSERT INTO training_shares VALUES(1);
+      INSERT INTO team_training_publications VALUES(1);
+    `);
+    await db.exec(fs.readFileSync(path.join(__dirname,'../migrations/20261113160000_delete_training.sql'),'utf8'));
+    const remove = (team, user, id) => db.query('SELECT delete_team_session($1,$2,$3)',[team,user,id]);
+    await assert.rejects(remove(7,11,1), {code:'42501'});
+    await assert.rejects(remove(7,9,2), {code:'P0002'});
+    await db.exec(`CREATE FUNCTION fail_test_delete() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN
+      RAISE EXCEPTION 'Storage failure'; END $$;
+      CREATE TRIGGER fail_test_delete BEFORE DELETE ON saioak FOR EACH ROW EXECUTE FUNCTION fail_test_delete();`);
+    await assert.rejects(remove(7,9,1), /Storage failure/);
+    assert.equal((await db.query("SELECT * FROM portal_event_responses WHERE kind='session' AND event_id=1")).rows.length,1);
+    assert.equal((await snapshot(db)).details.length,5);
+    await db.exec('DROP TRIGGER fail_test_delete ON saioak;');
+    await remove(7,10,1);
+    assert.equal((await db.query('SELECT * FROM saioak WHERE id_saio=1')).rows.length,0);
+    for (const table of ['saio_xehetasuna','saio_bertaratzea','training_shares']) {
+      assert.equal((await db.query('SELECT * FROM '+table)).rows.length,0);
+    }
+    assert.deepEqual((await db.query('SELECT * FROM team_training_publications')).rows,[{session_id:null}]);
+    assert.equal((await db.query('SELECT * FROM ariketak')).rows.length,3);
+    assert.equal((await db.query('SELECT * FROM saioak WHERE id_saio=2')).rows.length,1);
+    assert.equal((await db.query('SELECT * FROM portal_event_responses')).rows.length,2);
+    await assert.rejects(remove(7,9,1), {code:'P0002'});
+    await assert.rejects(db.exec("INSERT INTO portal_event_responses VALUES('session',1,'yes')"),{code:'42501'});
+    await db.exec("INSERT INTO portal_event_responses VALUES('session',2,'yes')");
+    const permissions=(await db.query("SELECT has_function_privilege('anon','delete_team_session(integer,integer,integer)','EXECUTE') AS anon,has_function_privilege('authenticated','delete_team_session(integer,integer,integer)','EXECUTE') AS authenticated,has_function_privilege('service_role','delete_team_session(integer,integer,integer)','EXECUTE') AS service")).rows[0];
+    assert.deepEqual(permissions,{anon:false,authenticated:false,service:true});
+  } finally { await db.close(); }
+});
+
+test('delete API uses the authenticated context and reports missing and failed deletions', async () => {
+  const source=stripTypeScriptTypes(fs.readFileSync(path.join(__dirname,'../session-actions.ts'),'utf8')).replace('export async function','async function');
+  const context={};vm.createContext(context);vm.runInContext(source+'\nthis.handle=handleSessionAction;',context);
+  const calls=[];
+  const db={rpc:async(name,args)=>{calls.push({name,args});return{error:null};}};
+  const respond=(status,body)=>({status,body});
+  const payload={action:'pwa_delete_session',id:1,team_id:8,user_id:11};
+  assert.equal((await context.handle(payload,db,7,9,respond)).status,200);
+  assert.equal(calls[0].name,'delete_team_session');
+  assert.equal(calls[0].args.p_team_id,7);assert.equal(calls[0].args.p_user_id,9);
+  assert.equal((await context.handle({...payload,id:-1},db,7,9,respond)).status,400);
+  for (const [code,status] of [['42501',403],['P0002',404],['XX000',500]]) {
+    db.rpc=async()=>({error:{code,message:'private storage detail'}});
+    const result=await context.handle(payload,db,7,9,respond);
+    assert.equal(result.status,status);
+    if(status===500)assert.notEqual(result.body.error,'private storage detail');
+  }
+});

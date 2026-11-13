@@ -13,6 +13,17 @@ export async function handleSessionAction(
     return jsonResponse(400, { error: "Entrenamendua ez da baliozkoa" });
   }
 
+  if (payload.action === "pwa_delete_session") {
+    const { error } = await supabase.rpc("delete_team_session", {
+      p_team_id: teamId, p_user_id: userId, p_session_id: sourceId,
+    });
+    if (error) {
+      const status = ({ "42501": 403, "P0002": 404 } as Record<string, number>)[error.code];
+      return jsonResponse(status || 500, { error: status ? error.message : "Ezin izan da entrenamendua ezabatu" });
+    }
+    return jsonResponse(200, { ok: true });
+  }
+
   if (payload.action === "pwa_get_session") {
     const { data: session, error: sessionError } = await supabase.from("saioak")
       .select("*").eq("id_saio", sourceId).eq("id_taldea", teamId).maybeSingle();

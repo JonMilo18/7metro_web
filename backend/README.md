@@ -45,17 +45,17 @@ saioa eta taldekidetasuna egiaztatu ondoren. Emaitzaz eta estatistikez gain,
 bertsio zaharrek lehengo tokia mantentzen dute. `metro-api` ere hedatu behar da;
 ez du datu-baseko migraziorik behar.
 
-`session-actions.ts` moduluak `pwa_get_session`, `pwa_update_session` eta
-`pwa_duplicate_session` ekintzak kudeatzen ditu. Ez da PWAren fitxategi publikoetan
+`session-actions.ts` moduluak `pwa_get_session`, `pwa_update_session`,
+`pwa_duplicate_session` eta `pwa_delete_session` ekintzak kudeatzen ditu. Ez da PWAren fitxategi publikoetan
 argitaratzen; Supabaseko `metro-api` funtzioan erabiltzen da.
 
 Proiektu nagusiko `supabase/functions/metro-api/index.ts` fitxategiak modulua
 inportatzen du `../../../pwa/7metro_web/backend/session-actions.ts` bidetik.
-Hiru ekintzak `teamActions` eta `pwaActions` zerrendetan egon behar dira.
+Lau ekintzak `teamActions` eta `pwaActions` zerrendetan egon behar dira.
 Autentifikazioa eta taldekidetasuna egiaztatu ondoren:
 
 ```ts
-if (["pwa_get_session", "pwa_update_session", "pwa_duplicate_session"].includes(String(payload.action))) {
+if (["pwa_get_session", "pwa_update_session", "pwa_duplicate_session", "pwa_delete_session"].includes(String(payload.action))) {
   return await handleSessionAction(payload, supabase, teamId, userId, jsonResponse);
 }
 ```
@@ -153,3 +153,7 @@ harpidetza iraungia kentzen dute. Jakinarazpenak ez dira 24 ordutik aurrera berr
 bidaltzen; providerreko TTL ordu batekoa da. Zazpi eguneko garbiketa dago.
 Probak: `npm test` (PostgreSQL ilara, baimenak, erreplay babesa eta benetako Web
 Push zifratze/deszifratzea). Erabilera: [JAKINARAZPENAK.md](../JAKINARAZPENAK.md).
+
+Entrenamenduak ezabatzeko, aplikatu `migrations/20261113160000_delete_training.sql`.
+`delete_team_session` funtzioak taldekidetasuna egiaztatzen du eta entrenamendua,
+bertaratze-datuak, ariketen loturak eta deialdiaren erantzunak transakzio berean ezabatzen ditu.

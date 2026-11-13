@@ -1110,7 +1110,7 @@ function renderSessionEditor() {
     editing ? t("Aldaketak gorde") : copying ? t("Kopia gorde") : t("Gorde entrenamendua");
   $("session-form").inert = Boolean(sessionEditorBusy);
   $("session-form").setAttribute("aria-busy", String(Boolean(sessionEditorBusy)));
-  document.querySelectorAll("[data-edit-session],[data-duplicate-session],#session-create,#session-submit,#session-cancel")
+  document.querySelectorAll("[data-edit-session],[data-duplicate-session],[data-delete-session],#session-create,#session-submit,#session-cancel")
     .forEach(function (button) { button.disabled = Boolean(sessionEditorBusy); });
 }
 
@@ -1528,6 +1528,7 @@ function renderSavedSession(sessionId) {
   $("saved-session-edit").dataset.editSession = String(sessionId);
   $("saved-session-duplicate").dataset.duplicateSession = String(sessionId);
   $("saved-session-share").dataset.shareSession = String(sessionId);
+  $("saved-session-delete").dataset.deleteSession = String(sessionId);
   var micro = records("mikrozikloak").find(function (item) {
     return Number(item.id_mikroziklo) === Number(session.id_mikroziklo);
   });
@@ -1603,7 +1604,8 @@ function renderSessions() {
       Number(session.id_saio) + ("\">" + esc(t("Ikusi")) + "</button><button class=\"btn secondary\" type=\"button\" data-attendance-session=\"") +
       Number(session.id_saio) + ("\">" + esc(t("Asistentzia")) + "</button>") +
       '<button class="btn secondary" type="button" data-edit-session="' + Number(session.id_saio) + '">' + esc(t("Editatu")) + '</button>' +
-      '<button class="btn secondary" type="button" data-duplicate-session="' + Number(session.id_saio) + '">' + esc(t("Bikoiztu")) + '</button></div></li>';
+      '<button class="btn secondary" type="button" data-duplicate-session="' + Number(session.id_saio) + '">' + esc(t("Bikoiztu")) + '</button>' +
+      '<button class="btn danger" type="button" data-delete-session="' + Number(session.id_saio) + '">' + esc(t("Ezabatu")) + '</button></div></li>';
   }).join("") : ("<li class=\"empty\">" + esc(t("Oraindik ez da entrenamendurik gorde.")) + "</li>");
   var select = $("attendance-session"), prior = select.value;
   select.innerHTML = ("<option value=\"\">" + esc(t("Aukeratu entrenamendua")) + "</option>") + sessions.map(function (session) {
@@ -4112,6 +4114,40 @@ $("save-attendance").addEventListener("click", async function () {
 document.addEventListener("click", async function (event) {
   var target = event.target.closest("button");
   if (!target) return;
+  if (target.hasAttribute("data-delete-session")) {
+    if (sessionEditorBusy) return;
+    var deleteSessionId = Number(target.dataset.deleteSession);
+    var deletingSession = sessions.find(function (item) { return Number(item.id_saio) === deleteSessionId; });
+    if (!deletingSession) return;
+    if (!confirm(formatDay(deletingSession) + "\n" + t("Entrenamendu hau ezabatu nahi duzu? Bertaratze-datuak eta deialdiaren erantzunak ere ezabatuko dira."))) return;
+    var deletingTeamId = teamId;
+    sessionEditorBusy = true;
+    renderSessionEditor();
+    try {
+      await request({ action: "pwa_delete_session", team_id: deletingTeamId, id: deleteSessionId });
+      if (teamId !== deletingTeamId) return;
+      sessions = sessions.filter(function (item) { return Number(item.id_saio) !== deleteSessionId; });
+      ["saioak", "saio_xehetasuna", "saio_bertaratzea"].forEach(function (name) {
+        if (Array.isArray(tables[name])) tables[name] = tables[name].filter(function (item) { return Number(item.id_saio) !== deleteSessionId; });
+      });
+      if (sessionEditor.source && Number(sessionEditor.source.id_saio) === deleteSessionId) {
+        resetSessionEditor();
+        $("session-create-panel").open = false;
+        $("session-create").setAttribute("aria-expanded", "false");
+      }
+      if (Number($("v-session-detail").dataset.sessionId) === deleteSessionId) {
+        stopExerciseAnimation();
+        delete $("v-session-detail").dataset.sessionId;
+        $("saved-session-exercises").replaceChildren();
+        if ($("v-session-detail").classList.contains("on")) selectSection("v-sessions");
+      }
+      renderSessions(); renderCycles(); renderDashboard();
+      notify(t("Entrenamendua ezabatu da"), "success");
+      await refreshAll();
+    } catch (error) { notify(error.message, "error"); }
+    finally { sessionEditorBusy = false; renderSessionEditor(); }
+    return;
+  }
   if (target.hasAttribute("data-edit-session") || target.hasAttribute("data-duplicate-session")) {
     openSessionEditor(target.dataset.editSession || target.dataset.duplicateSession, target.hasAttribute("data-duplicate-session"));
     return;
