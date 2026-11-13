@@ -215,6 +215,7 @@ async function requestImpl(payload, anonymous) {
 }
 
 function showLogin() {
+  if (window.WeeklyTraining) window.WeeklyTraining.reset();
   if (window.PushUI) window.PushUI.reset();
   if (window.PlayerPortal) window.PlayerPortal.reset();
   if (scoreMatchMode) scoreExitMatchMode();
@@ -319,6 +320,7 @@ async function openTeam(id) {
   var selected = teams.find(function (item) { return Number(item.id_taldea) === Number(id); });
   if (!selected) throw new Error(t("Aukeratutako taldea ez da aurkitu"));
   if (teamId !== Number(selected.id_taldea)) {
+    if (window.WeeklyTraining) window.WeeklyTraining.reset();
     sessionLoadSequence++; sessionEditorBusy = false; sessionReferenceExercises = [];
     resetSessionEditor();
   }
@@ -2194,6 +2196,7 @@ async function refreshAll() {
   });
   renderPlayers(); renderExercises(); renderSessions(); renderMatches(); renderStats(); renderCycles(); renderDashboard();
   if (window.InsightsUI) window.InsightsUI.refresh();
+  if (window.WeeklyTraining) window.WeeklyTraining.refresh();
 }
 
 function selectSection(id) {

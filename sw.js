@@ -1,9 +1,10 @@
 // 7metro - service worker probisionala
 // Aldaketak argitaratzean, aldatu CACHE bertsioa.
-const CACHE = "7metro-v155";
+const CACHE = "7metro-v156";
 const SHELL = ["./", "./index.html", "./manifest.json",
-  "./locales/es.js?v=155", "./i18n.js?v=155", "./app.js?v=155", "./insights-data.js?v=155", "./insights.js?v=155",
-  "./portal.js?v=155", "./portal-events.js?v=155", "./portal-calendar.js?v=155", "./push.js?v=155", "./portal.css?v=155", "./report-pdf.js?v=155", "./insights.css?v=155", "./vendor/jspdf.umd.min.js",
+  "./weekly-training.js?v=156",
+  "./locales/es.js?v=156", "./i18n.js?v=156", "./app.js?v=156", "./insights-data.js?v=156", "./insights.js?v=156",
+  "./portal.js?v=156", "./portal-events.js?v=156", "./portal-calendar.js?v=156", "./push.js?v=156", "./portal.css?v=156", "./report-pdf.js?v=156", "./insights.css?v=156", "./vendor/jspdf.umd.min.js",
   "./vendor/fonts/NotoSans-Regular.ttf", "./vendor/fonts/NotoSans-Bold.ttf",
   "./irudiak/Zelaia.png", "./irudiak/Zelai-erdia.png",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];

@@ -1,5 +1,14 @@
 # Entrenamenduak editatu eta bikoiztu
 
+Asteko ordutegia `weekly-training-actions.ts` eta
+`migrations/20261113120000_weekly_training_schedule.sql` fitxategiek kudeatzen dute.
+`metro-api`-k `weeklyTrainingActions` ekintzak saioa balioztatu ondoren
+`handleWeeklyTrainingAction(payload, supabase, userId, jsonResponse)` funtziora
+bidaltzen ditu. SQL funtzioak taldekidetasuna egiaztatzen du eta asteko saioak
+transakzio berean sortzen ditu. Argitalpen-erregistroak errepikatutako eskaerak
+eta gero data aldatu zaien entrenamenduak ez bikoizteko erabiltzen dira.
+Lehenik migrazioa aplikatu, gero `metro-api` hedatu eta azkenik PWA argitaratu.
+
 `login-actions.ts` modulua `metro-api`-ko kredentzial bidezko sarreran deitzen da,
 `login(payload, supabase, jsonResponse)` erabiliz. `p_keep_signed_in: true`
 aukerak `api_sessions.expires_at` eremuan PostgreSQLko `Infinity` gordetzen du.
