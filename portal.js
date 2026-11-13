@@ -1,6 +1,6 @@
 "use strict";
 
-var portalState = { bootstrap: null, playerId: 0, data: null, tab: "agenda", coachTab: "accounts", coachData: null, coachTeam: 0, coachMatch: 0, coachEvent: "", sequence: 0, coachSequence: 0, routeSequence: 0, response: null };
+var portalState = { bootstrap: null, playerId: 0, data: null, tab: "home", coachTab: "accounts", coachData: null, coachTeam: 0, coachMatch: 0, coachEvent: "", sequence: 0, coachSequence: 0, routeSequence: 0, response: null };
 function portalModeKey() { return "7metro-mode:" + (user && user.izena || userName || ""); }
 function portalSetMode(mode) { saveLocal(portalModeKey(), mode); $("login-mode").value = mode; }
 function portalError(id, message) { var el = $(id); el.textContent = message || ""; el.hidden = !message; }
@@ -23,7 +23,7 @@ function portalReset() {
   if ($("portal-event-dialog").open) $("portal-event-dialog").close();
   if ($("portal-response-dialog").open) $("portal-response-dialog").close();
   $("portal-response-note").value = "";
-  ["portal-agenda", "portal-callups", "portal-notices", "portal-invites", "portal-coach-content", "portal-event-content", "saved-session-responses"].forEach(function (id) { $(id).innerHTML = ""; });
+  ["portal-home", "portal-agenda", "portal-callups", "portal-notices", "portal-invites", "portal-coach-content", "portal-event-content", "saved-session-responses"].forEach(function (id) { $(id).innerHTML = ""; });
   document.querySelectorAll("[data-att-response]").forEach(function (label) { label.textContent = ""; });
 }
 async function routeAuthenticatedSession(requested) {
@@ -52,26 +52,27 @@ async function portalShow(boot) {
   $("portal-no-link").hidden = !!boot.links.length; $("portal-linked-content").hidden = false;
   document.querySelectorAll("[data-portal-tab]").forEach(function (button) { button.disabled = !boot.links.length && button.dataset.portalTab !== "settings"; });
   $("portal-team-label").hidden = boot.links.length < 2;
-  $("portal-coach-mode").hidden = !boot.coach; $("portal-return-coach").hidden = !boot.coach;
+  $("portal-coach-mode").hidden = !boot.coach;
   $("portal-invites").innerHTML = boot.invites.map(function (invite) {
     return '<div class="card"><h2>' + esc(invite.team_name) + '</h2><p>' + esc(t("Jokalari-fitxa lotzeko gonbidapena")) + ': ' + esc(portalName(invite)) + '</p><div class="portal-inline-actions"><button type="button" class="btn" data-portal-invite="' + Number(invite.id) + '" data-accept="true">' + esc(t("Onartu")) + '</button><button type="button" class="btn secondary" data-portal-invite="' + Number(invite.id) + '" data-accept="false">' + esc(t("Baztertu")) + '</button></div></div>';
   }).join("");
   var previousPlayer = portalState.playerId;
   if (!boot.links.some(function (link) { return link.player_id === portalState.playerId; })) portalState.playerId = boot.links.length ? boot.links[0].player_id : 0;
-  if (!previousPlayer && portalState.playerId) portalState.tab = "agenda";
+  if (!previousPlayer && portalState.playerId) portalState.tab = "home";
   $("portal-team").innerHTML = boot.links.map(function (link) { return '<option value="' + Number(link.player_id) + '">' + esc(link.team_name) + '</option>'; }).join("");
   $("portal-team").value = String(portalState.playerId);
   if (portalState.playerId) await portalLoadPlayer();
   else {
+    $("portal-greeting").textContent = t("Nire kontua");
     $("portal-player-name").textContent = ""; portalState.data = null;
-    ["portal-agenda", "portal-callups", "portal-notices"].forEach(function (id) { $(id).innerHTML = ""; });
+    ["portal-home", "portal-agenda", "portal-callups", "portal-notices"].forEach(function (id) { $(id).innerHTML = ""; });
     portalSetTab("settings");
   }
 }
 async function portalLoadPlayer() {
   var sequence = ++portalState.sequence, id = portalState.playerId;
   portalState.data = null;
-  $("portal-agenda").innerHTML = $("portal-callups").innerHTML = $("portal-notices").innerHTML = portalEmpty("Kargatzen…");
+  ["portal-home", "portal-agenda", "portal-callups", "portal-notices"].forEach(function (view) { $(view).innerHTML = portalEmpty("Kargatzen…"); });
   try {
     var data = await request({ action: "portal_player_snapshot", player_id: id });
     if (sequence !== portalState.sequence || !token) return;
@@ -82,7 +83,7 @@ function portalSetTab(tab) {
   if (!portalState.playerId && tab !== "settings") tab = "settings";
   if (tab === "settings" && window.PushUI) window.PushUI.loadPlayerFriends();
   portalState.tab = tab;
-  ["agenda", "callups", "notices", "settings"].forEach(function (name) { $("portal-" + name).hidden = name !== tab; });
+  ["home", "agenda", "callups", "notices", "settings"].forEach(function (name) { $("portal-" + name).hidden = name !== tab; });
   document.querySelectorAll("[data-portal-tab]").forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.portalTab === tab)); });
 }
 function portalEventCard(event) {
@@ -90,27 +91,66 @@ function portalEventCard(event) {
   var response = data.responses.find(function (r) { return r.kind === kind && Number(r.event_id) === Number(row.id); });
   var past = String(row.date).slice(0, 10) < planKey(new Date());
   var called = kind === "match" && row.callup;
-  var html = '<article class="card portal-event"><span class="portal-kind">' + esc(t(kind === "session" ? "Entrenamendua" : "Partida")) + '</span><h3>' + esc(kind === "session" ? row.title || t("Entrenamendua") : row.opponent || t("Aurkaria")) + '</h3><p class="portal-event-date">' + esc(portalDate(row.date)) + '</p><p class="muted">' + esc(kind === "session" ? row.place || "" : t(row.place) || "") + '</p>';
+  var date = new Date(row.date), validDate = Number.isFinite(date.getTime());
+  var html = '<article class="card portal-event"><div class="portal-event-heading"><div class="portal-event-day" aria-hidden="true"><strong>' +
+    (validDate ? date.getDate() : '–') + '</strong><span>' + esc(validDate ? t(PLAN_MONTHS[date.getMonth()]).slice(0, 3) : '') + '</span></div><div class="portal-event-main"><span class="portal-kind portal-kind-' + kind + '">' + esc(t(kind === "session" ? "Entrenamendua" : "Partida")) + '</span><h3>' + esc(kind === "session" ? row.title || t("Entrenamendua") : row.opponent || t("Aurkaria")) + '</h3><p class="portal-event-date">' + esc(portalDate(row.date)) + '</p>' +
+    (row.place ? '<p class="muted">' + esc(kind === "session" ? row.place : t(row.place)) + '</p>' : '') + '</div></div>';
   if (called) html += '<div class="portal-meeting"><strong>' + esc(t("Deialdian zaude")) + '</strong>' + (row.callup.meeting_time ? '<p>' + esc(t("Elkartzeko ordua")) + ': ' + esc(portalDate(row.callup.meeting_time)) + '</p>' : '') + (row.callup.meeting_place ? '<p>' + esc(t("Elkartzeko tokia")) + ': ' + esc(row.callup.meeting_place) + '</p>' : '') + (row.callup.note ? '<p class="portal-authored">' + esc(row.callup.note) + '</p>' : '') + '</div>';
   if (kind === "session" || called) {
     html += '<p class="portal-response ' + (response ? response.response : '') + '">' + esc(portalResponseLabel(response && response.response)) + '</p>';
     if (response && response.note) html += '<p class="portal-authored muted">' + esc(response.note) + '</p>';
-    if (!past) html += '<button class="btn secondary" type="button" data-portal-respond="' + kind + ':' + Number(row.id) + '">' + esc(t(response ? "Erantzuna aldatu" : "Bertaratzea baieztatu")) + '</button>';
+    if (!past) html += '<button class="btn' + (response ? ' secondary' : '') + '" type="button" data-portal-respond="' + kind + ':' + Number(row.id) + '">' + esc(t(response ? "Erantzuna aldatu" : "Bertaratzea baieztatu")) + '</button>';
   } else html += '<p class="muted">' + esc(t("Deialdirik gabe")) + '</p>';
   return html + '</article>';
 }
+function portalHasResponse(event) {
+  return portalState.data.responses.some(function (response) { return response.kind === event.kind && Number(response.event_id) === Number(event.row.id); });
+}
+function portalRenderHome(events, pending, unread) {
+  var eligible = events.filter(function (event) {
+    return (event.kind === "session" || event.row.callup) && new Date(event.row.date).getTime() >= Date.now();
+  });
+  var next = eligible[0];
+  var html = '<div class="portal-home-summary"><button type="button" data-portal-go="callups" class="portal-summary-action' + (pending.length ? ' needs-response' : '') + '"><strong>' + pending.length + '</strong><span>' + esc(t("Deialdi erantzuteko")) + '</span></button>' +
+    '<button type="button" data-portal-go="notices" class="portal-summary-action"><strong>' + unread + '</strong><span>' + esc(t("Abisu irakurri gabe")) + '</span></button></div>';
+  html += '<div class="portal-section-heading"><h2>' + esc(t("Hurrengo jarduera")) + '</h2></div><div class="portal-next-event">' +
+    (next ? portalEventCard(next) : '<div class="card portal-home-empty"><h3>' + esc(t("Ez dago hurrengo deialdirik")) + '</h3><button class="btn secondary" type="button" data-portal-go="agenda">' + esc(t("Egutegia ikusi")) + '</button></div>') + '</div>';
+  var following = eligible.slice(1, 4);
+  if (following.length) {
+    html += '<div class="portal-section-heading"><h2>' + esc(t("Ondoren")) + '</h2><button type="button" data-portal-go="agenda">' + esc(t("Egutegia ikusi")) + '</button></div><div class="portal-upcoming">' + following.map(function (event) {
+      return '<button type="button" class="portal-upcoming-event" data-portal-open-event="' + event.kind + ':' + Number(event.row.id) + '"><span><strong>' + esc(event.kind === "session" ? event.row.title || t("Entrenamendua") : event.row.opponent || t("Partida")) + '</strong><small>' + esc(portalDate(event.row.date)) + '</small></span><span class="portal-upcoming-kind">' + esc(t(event.kind === "session" ? "Entrenamendua" : "Partida")) + '</span></button>';
+    }).join("") + '</div>';
+  }
+  var notice = portalState.data.notices.find(function (item) { return !item.read; });
+  if (notice) html += '<div class="portal-section-heading"><h2>' + esc(t("Azken abisua")) + '</h2></div><button class="card portal-home-notice" type="button" data-portal-go="notices"><strong>' + esc(notice.title) + '</strong><span>' + esc(notice.body) + '</span><small>' + esc(t("Abisuak ikusi")) + '</small></button>';
+  $("portal-home").innerHTML = html;
+}
 function portalRenderPlayer() {
   var data = portalState.data; if (!data) return;
-  $("portal-player-name").textContent = [portalName(data.player), data.player.number == null ? "" : "#" + data.player.number, data.player.team_name].filter(Boolean).join(" · ");
+  $("portal-greeting").textContent = t("Kaixo, {name}", { name: data.player.name || portalName(data.player) });
+  $("portal-player-name").textContent = [data.player.team_name, data.player.number == null ? "" : "#" + data.player.number].filter(Boolean).join(" · ");
   var events = data.sessions.map(function (s) { return { kind: "session", row: s }; }).concat(data.matches.map(function (m) { return { kind: "match", row: m }; })).sort(function (a, b) { return a.row.date.localeCompare(b.row.date); });
   portalRenderAgenda(events);
-  var callups = events.filter(function (event) { return event.kind === "match" && event.row.callup; });
-  $("portal-callups").innerHTML = '<h2>' + esc(t("Nire deialdiak")) + '</h2>' + (callups.length ? callups.map(portalEventCard).join("") : portalEmpty("Oraindik ez duzu deialdirik."));
+  var today = planKey(new Date());
+  var callups = events.filter(function (event) { return event.kind === "session" || event.row.callup; });
+  var upcoming = callups.filter(function (event) { return String(event.row.date).slice(0, 10) >= today; });
+  var pending = upcoming.filter(function (event) { return !portalHasResponse(event); });
+  var answered = upcoming.filter(portalHasResponse);
+  var past = callups.filter(function (event) { return String(event.row.date).slice(0, 10) < today; });
+  $("portal-callups").innerHTML = '<h2>' + esc(t("Nire deialdiak")) + '</h2>' +
+    (pending.length ? '<h3 class="portal-subheading">' + esc(t("Erantzuteko")) + ' · ' + pending.length + '</h3>' + pending.map(portalEventCard).join("") : upcoming.length ? '<p class="portal-caught-up">' + esc(t("Deialdi guztiak erantzunda dituzu")) + '</p>' : '') +
+    (answered.length ? '<details class="portal-history"><summary>' + esc(t("Erantzunda")) + ' · ' + answered.length + '</summary>' + answered.map(portalEventCard).join("") + '</details>' : '') +
+    (past.length ? '<details class="portal-history"><summary>' + esc(t("Aurreko deialdiak")) + ' · ' + past.length + '</summary>' + past.map(portalEventCard).join("") + '</details>' : '') +
+    (!callups.length ? portalEmpty("Oraindik ez duzu deialdirik.") : '');
   $("portal-notices").innerHTML = '<h2>' + esc(t("Taldeko abisuak")) + '</h2>' + (data.notices.length ? data.notices.map(function (notice) {
     return '<article class="card"><span class="portal-kind">' + esc(portalDate(notice.created_at)) + '</span><h3>' + esc(notice.title) + '</h3><p class="portal-authored">' + esc(notice.body) + '</p>' + (notice.read ? '<p class="portal-response yes">' + esc(t("Irakurrita")) + '</p>' : '<button class="btn secondary" type="button" data-portal-read="' + Number(notice.id) + '">' + esc(t("Irakurrita markatu")) + '</button>') + '</article>';
   }).join("") : portalEmpty("Ez dago taldeko abisurik."));
   var unread = data.notices.filter(function (notice) { return !notice.read; }).length;
-  document.querySelector('[data-portal-tab="notices"]').textContent = t("Abisuak") + (unread ? " (" + unread + ")" : "");
+  portalRenderHome(events, pending, unread);
+  [["callups", pending.length], ["notices", unread]].forEach(function (entry) {
+    var badge = document.querySelector('[data-portal-count="' + entry[0] + '"]');
+    badge.textContent = entry[1]; badge.hidden = !entry[1];
+  });
   portalSetTab(portalState.tab);
 }
 function portalOpenResponse(key) {
@@ -123,7 +163,14 @@ function portalOpenResponse(key) {
   $("portal-response-name").textContent = (event.title || event.opponent || t("Entrenamendua")) + " · " + portalDate(event.date);
   $("portal-response-value").value = response && response.response || "yes";
   $("portal-response-note").value = response && response.note || "";
+  $("portal-response-note-details").open = Boolean(response && response.note);
+  portalSyncAnswerButtons();
   portalError("portal-response-error", ""); $("portal-response-dialog").showModal();
+}
+function portalSyncAnswerButtons() {
+  document.querySelectorAll("[data-portal-answer]").forEach(function (button) {
+    button.setAttribute("aria-pressed", String(button.dataset.portalAnswer === $("portal-response-value").value));
+  });
 }
 
 function portalCoachEvents() {
@@ -193,13 +240,26 @@ window.PlayerPortal = { reset: portalReset, hide: portalHide, loadCoach: portalL
 window.addEventListener("DOMContentLoaded", function () {
   $("login-mode").value = readStore(portalModeKey());
   $("open-player-mode").addEventListener("click", async function () { try { portalSetMode("player"); await portalShow(); } catch (error) { notify(error.message, "error"); } });
-  ["portal-coach-mode", "portal-return-coach"].forEach(function (id) { $(id).addEventListener("click", async function () { try { portalSetMode("coach"); portalHide(); await loadTeams(true); } catch (error) { notify(error.message, "error"); } }); });
+  $("portal-coach-mode").addEventListener("click", async function () { try { portalSetMode("coach"); portalHide(); await loadTeams(true); } catch (error) { notify(error.message, "error"); } });
   $("portal-logout").addEventListener("click", function () { $("logout").click(); });
   $("portal-refresh").addEventListener("click", async function () { try { await portalShow(); } catch (error) { portalError("portal-error", error.message); } });
   $("portal-team").addEventListener("change", function () { portalState.playerId = Number(this.value); portalLoadPlayer(); });
-  document.querySelectorAll("[data-portal-tab]").forEach(function (button) { button.addEventListener("click", function () { portalSetTab(button.dataset.portalTab); }); });
+  document.querySelectorAll("[data-portal-tab]").forEach(function (button) { button.addEventListener("click", function () {
+    if (button.dataset.portalTab === "agenda") { portalCalendarState.view = "calendar"; portalRenderAgenda(); }
+    portalSetTab(button.dataset.portalTab);
+  }); });
   document.querySelectorAll("[data-coach-tab]").forEach(function (button) { button.addEventListener("click", function () { portalState.coachTab = button.dataset.coachTab; portalRenderCoach(); }); });
   $("player-portal").addEventListener("click", async function (event) {
+    var destination = event.target.closest("[data-portal-go]"), openEvent = event.target.closest("[data-portal-open-event]");
+    if (destination) {
+      if (destination.dataset.portalGo === "agenda") { portalCalendarState.view = "calendar"; portalRenderAgenda(); }
+      portalSetTab(destination.dataset.portalGo); window.scrollTo(0, 0); return;
+    }
+    if (openEvent) {
+      var key = openEvent.dataset.portalOpenEvent, activity = portalAgendaEvents().find(function (item) { return item.kind + ':' + item.row.id === key; });
+      if (activity) { portalCalendarState.view = "calendar"; portalCalendarSelect(portalCalendarDate(activity.row.date.slice(0, 10))); portalRenderAgenda(); portalSetTab("agenda"); window.scrollTo(0, 0); }
+      return;
+    }
     var invite = event.target.closest("[data-portal-invite]"), read = event.target.closest("[data-portal-read]"), respond = event.target.closest("[data-portal-respond]");
     if (respond) { portalOpenResponse(respond.dataset.portalRespond); return; }
     var button = invite || read; if (!button || button.disabled) return;
@@ -217,9 +277,14 @@ window.addEventListener("DOMContentLoaded", function () {
     try {
       await request(Object.assign({ action: "portal_respond", response: $("portal-response-value").value, note: $("portal-response-note").value }, portalState.response));
       $("portal-response-dialog").close(); await portalLoadPlayer();
+      if (window.InboxUI) window.InboxUI.refresh();
     } catch (error) { portalError("portal-response-error", error.message); }
     finally { form.inert = false; $("portal-response-close").disabled = false; }
   });
+  document.querySelectorAll("[data-portal-answer]").forEach(function (button) { button.addEventListener("click", function () {
+    $("portal-response-value").value = button.dataset.portalAnswer; portalSyncAnswerButtons();
+  }); });
+  $("portal-response-value").addEventListener("change", portalSyncAnswerButtons);
   $("portal-response-close").addEventListener("click", function () { if (!$("portal-response-form").inert) $("portal-response-dialog").close(); });
   $("portal-response-dialog").addEventListener("cancel", function (event) { if ($("portal-response-form").inert) event.preventDefault(); });
   $("portal-coach-content").addEventListener("change", function (event) {
