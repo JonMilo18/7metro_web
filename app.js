@@ -3199,7 +3199,8 @@ $("login-form").addEventListener("submit", async function (event) {
   try {
     var result = await request({
       p_usuario: $("username").value.trim().toLowerCase(),
-      p_pasahitza: $("password").value
+      p_pasahitza: $("password").value,
+      p_keep_signed_in: $("keep-signed-in").checked
     }, true);
     if (!result.token || !result.user) throw new Error(t("Supabasek ez du saio baliodunik itzuli"));
     token = result.token; user = result.user;
@@ -3233,7 +3234,7 @@ $("account-create-form").addEventListener("submit", async function (event) {
   button.disabled = true;
   try {
     await request({ action: "register", p_usuario: username, p_pasahitza: password }, true);
-    var result = await request({ p_usuario: username, p_pasahitza: password }, true);
+    var result = await request({ p_usuario: username, p_pasahitza: password, p_keep_signed_in: $("keep-signed-in").checked }, true);
     if (!result.token || !result.user) throw new Error(t("Kontua sortu da, baina ezin izan da saioa hasi"));
     token = result.token;
     user = result.user;

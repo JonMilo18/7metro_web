@@ -963,6 +963,7 @@ window.SevenMetroLocales.es = {
     "saio": "sesiones",
     "Saio honek ez dauka lotutako ariketarik.": "Esta sesión no tiene ejercicios asociados.",
     "Saioa hasi": "Iniciar sesión",
+    "Saioa irekita mantendu": "Mantener la sesión iniciada",
     "Saioa hasi: informazioa": "Iniciar sesión: información",
     "Saioa iraungi da; hasi berriro": "La sesión ha caducado; vuelve a iniciar sesión",
     "Saioa itxi": "Cerrar sesión",

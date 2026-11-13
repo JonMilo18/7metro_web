@@ -1,5 +1,11 @@
 # Entrenamenduak editatu eta bikoiztu
 
+`login-actions.ts` modulua `metro-api`-ko kredentzial bidezko sarreran deitzen da,
+`login(payload, supabase, jsonResponse)` erabiliz. `p_keep_signed_in: true`
+aukerak `api_sessions.expires_at` eremuan PostgreSQLko `Infinity` gordetzen du.
+Bestela, saioak 12 ordu irauten du. Saioaren egiaztapenek eta push garbiketak
+iraungitze-konparazio bera erabiltzen dute. Ez du migraziorik behar.
+
 `match-actions.ts` moduluak `pwa_update_match` ekintza kudeatzen du.
 `metro-api`-k `updateMatch(payload, supabase, teamId, jsonResponse)` deitzen du,
 saioa eta taldekidetasuna egiaztatu ondoren. Emaitzaz eta estatistikez gain,
