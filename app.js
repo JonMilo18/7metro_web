@@ -599,7 +599,14 @@ function loadBoardBackgrounds() {
 }
 
 function boardPoint(event) {
-  var rect = $("exercise-board").getBoundingClientRect();
+  var canvas = $("exercise-board");
+  var rect = canvas.getBoundingClientRect();
+  if (getComputedStyle(canvas).transform !== "none") {
+    return {
+      x: Math.max(0, Math.min(800, (event.clientY - rect.top) * 800 / rect.height)),
+      y: Math.max(0, Math.min(500, (rect.right - event.clientX) * 500 / rect.width))
+    };
+  }
   return {
     x: Math.max(0, Math.min(800, (event.clientX - rect.left) * 800 / rect.width)),
     y: Math.max(0, Math.min(500, (event.clientY - rect.top) * 500 / rect.height))

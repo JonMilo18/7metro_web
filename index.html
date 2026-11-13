@@ -149,6 +149,10 @@ textarea{min-height:84px;resize:vertical}
 #board-fullscreen-dialog .board-wrap{order:0;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:var(--bg2);container-type:size}
 #board-fullscreen-dialog #exercise-board{width:min(100%,calc((100dvh - 90px)*1.6));max-width:100%;height:auto;border-radius:8px}
 @supports(width:1cqw){#board-fullscreen-dialog #exercise-board{width:min(100cqw,160cqh)}}
+@media(max-width:767px) and (orientation:portrait){
+ #board-fullscreen-dialog #exercise-board{flex-shrink:0;max-width:none;width:min(calc(100dvh - 90px),calc((100vw - 16px)*1.6));transform:rotate(90deg)}
+ @supports(width:1cqw){#board-fullscreen-dialog #exercise-board{width:min(100cqh,160cqw)}}
+}
 #board-fullscreen-dialog .board-options{display:none;position:absolute;z-index:1;top:calc(60px + env(safe-area-inset-top,0px));right:calc(8px + env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));width:min(360px,calc(100% - 16px));overflow:auto;overscroll-behavior:contain;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--bg2);box-shadow:0 12px 36px #0006}
 #board-fullscreen-dialog .board-options.is-open{display:grid;align-content:start;gap:16px}
 #board-fullscreen-dialog .board-options .board-tools button{min-height:44px}
@@ -641,7 +645,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=165"><link rel="stylesheet" href="portal.css?v=165">
+<link rel="stylesheet" href="insights.css?v=166"><link rel="stylesheet" href="portal.css?v=166">
 </head>
 <body>
 <div id="app">
@@ -1125,18 +1129,18 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=165" defer></script>
-<script src="i18n.js?v=165" defer></script>
-<script src="insights-data.js?v=165" defer></script>
-<script src="portal.js?v=165" defer></script>
-<script src="portal-events.js?v=165" defer></script>
-<script src="portal-calendar.js?v=165" defer></script>
-<script src="push.js?v=165" defer></script>
-<script src="app.js?v=165" defer></script>
-<script src="player-statistics.js?v=165" defer></script>
-<script src="weekly-training.js?v=165" defer></script>
-<script src="inbox.js?v=165" defer></script>
-<script src="report-pdf.js?v=165" defer></script>
-<script src="insights.js?v=165" defer></script>
+<script src="locales/es.js?v=166" defer></script>
+<script src="i18n.js?v=166" defer></script>
+<script src="insights-data.js?v=166" defer></script>
+<script src="portal.js?v=166" defer></script>
+<script src="portal-events.js?v=166" defer></script>
+<script src="portal-calendar.js?v=166" defer></script>
+<script src="push.js?v=166" defer></script>
+<script src="app.js?v=166" defer></script>
+<script src="player-statistics.js?v=166" defer></script>
+<script src="weekly-training.js?v=166" defer></script>
+<script src="inbox.js?v=166" defer></script>
+<script src="report-pdf.js?v=166" defer></script>
+<script src="insights.js?v=166" defer></script>
 </body>
 </html>
