@@ -149,6 +149,6 @@ body.player-mode main{padding-top:22px;padding-bottom:calc(120px + env(safe-area
 .portal-personal-attendance{max-height:340px;overflow:auto}
 .portal-personal-attendance .item{display:grid;grid-template-columns:minmax(0,1fr);gap:5px;font-size:.85rem}
 #player-stats-permission{padding-top:16px;margin-top:16px;border-top:1px solid var(--line)}
-#player-stats-permission .checkrow{min-height:44px}
-#player-stats-permission .toolbar{margin-bottom:0}
-#player-stats-permission .toolbar .btn{width:auto;min-height:40px;margin:0;padding:7px 12px;font-size:.85rem}
+[data-player-stats-permission] .checkrow{min-height:44px}
+[data-player-stats-permission] .toolbar{margin-bottom:0}
+[data-player-stats-permission] .toolbar .btn{width:auto;min-height:40px;margin:0;padding:7px 12px;font-size:.85rem}

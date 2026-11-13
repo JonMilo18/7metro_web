@@ -2225,7 +2225,7 @@ function selectSection(id) {
   if (id === "v-player-management" && window.PlayerPortal) window.PlayerPortal.loadCoach();
   window.scrollTo(0, 0);
   if (id === "v-stats") renderStats();
-  if (id === "v-players" && window.PlayerStatistics) window.PlayerStatistics.refreshCoach();
+  if (["v-players", "v-player-management"].includes(id) && window.PlayerStatistics) window.PlayerStatistics.refreshCoach();
 }
 
 var scoreboard = { home: 0, away: 0, seconds: 0, period: 0, running: false, events: [], lastTick: 0 };

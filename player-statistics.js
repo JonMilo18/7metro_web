@@ -6,11 +6,13 @@
   var timer = 0;
 
   function renderCoach() {
-    $("player-stats-permission").innerHTML = '<label class="checkrow"><input id="player-stats-enabled" type="checkbox"' +
+    document.querySelectorAll("[data-player-stats-permission]").forEach(function (container) {
+      container.innerHTML = '<label class="checkrow"><input id="' + esc(container.dataset.playerStatsPermission) + '" data-stats-enabled type="checkbox"' +
       (coach.enabled ? ' checked' : '') + (coach.busy || coach.team !== teamId ? ' disabled' : '') + '><span>' +
       esc(t("Jokalariek beren estatistikak ikustea")) + '</span></label><div class="toolbar"><p class="muted" role="status">' +
       esc(coach.message) + '</p><button class="btn secondary" type="button" data-stats-permission-reload' +
       (coach.busy ? ' disabled' : '') + '>' + esc(t("Birkargatu")) + '</button></div>';
+    });
   }
 
   async function refreshCoach() {
@@ -146,8 +148,10 @@
   };
   document.addEventListener("DOMContentLoaded", function () {
     renderCoach(); renderEntry();
-    $("player-stats-permission").addEventListener("change", function (event) { if (event.target.id === "player-stats-enabled") savePermission(event.target.checked); });
-    $("player-stats-permission").addEventListener("click", function (event) { if (event.target.closest("[data-stats-permission-reload]")) refreshCoach(); });
+    document.querySelectorAll("[data-player-stats-permission]").forEach(function (container) {
+      container.addEventListener("change", function (event) { if (event.target.matches("[data-stats-enabled]")) savePermission(event.target.checked); });
+      container.addEventListener("click", function (event) { if (event.target.closest("[data-stats-permission-reload]")) refreshCoach(); });
+    });
     $("player-portal").addEventListener("click", function (event) {
       if (event.target.closest("[data-open-personal-stats]")) open();
       if (event.target.closest("[data-personal-stats-more]")) { player.limit += 10; renderStats(); }

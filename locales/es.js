@@ -6,6 +6,7 @@ window.SevenMetroLocales.es = {
   "name": "Español",
   "locale": "es-ES",
   "messages": {
+    "Estatistiken sarbidea": "Acceso a las estadísticas",
     "Itzuli": "Volver",
     "Aldia": "Periodo",
     "Bertaratuta": "Presente",

@@ -622,7 +622,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=163"><link rel="stylesheet" href="portal.css?v=163">
+<link rel="stylesheet" href="insights.css?v=164"><link rel="stylesheet" href="portal.css?v=164">
 </head>
 <body>
 <div id="app">
@@ -853,7 +853,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
       <ul id="players-list" class="list"></ul>
       <div class="card"><div class="help-heading"><h2>Asistentzia</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-11" aria-label="Asistentzia: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-11" hidden>Aukeratu entrenamendua eta apuntatu bertaratzea, berandutzeak eta haien arrazoiak.</p><div class="grid2"><label>Entrenamendua<select id="attendance-session"></select></label><button class="btn" id="attendance-open" type="button" disabled>Asistentzia apuntatu</button></div></div>
 
-      <div class="card"><h2>Jokalarien aplikazioa</h2><p class="muted">Kontuak, deialdiak, abisuak eta bertaratze-baieztapenak.</p><button class="btn secondary" type="button" data-open-section="v-player-management">Jokalarien sarbidea kudeatu</button><div id="player-stats-permission"></div></div>
+      <div class="card"><h2>Jokalarien aplikazioa</h2><p class="muted">Kontuak, deialdiak, abisuak eta bertaratze-baieztapenak.</p><button class="btn secondary" type="button" data-open-section="v-player-management">Jokalarien sarbidea kudeatu</button><div id="player-stats-permission" data-player-stats-permission="player-stats-enabled"></div></div>
       <details class="card" id="team-management">
         <summary><strong>Taldearen kudeaketa</strong></summary>
         <div class="stack" style="margin-top:14px">
@@ -869,6 +869,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
     <section id="v-player-management">
       <button class="btn secondary insight-back" type="button" data-open-section="v-players">← Taldera itzuli</button>
       <h1>Jokalarien aplikazioa</h1><p class="muted">Gonbidatu jokalariak, argitaratu deialdiak eta kudeatu taldeko abisuak.</p>
+      <div class="card"><h2>Estatistiken sarbidea</h2><div id="player-stats-management" data-player-stats-permission="player-stats-management-enabled"><p class="muted">Kargatzen...</p></div></div>
       <p id="portal-coach-error" class="notice error" role="alert" hidden></p>
       <div class="portal-coach-tabs" role="group" aria-label="Jokalarien aplikazioaren kudeaketa"><button type="button" data-coach-tab="accounts" aria-pressed="true">Kontuak</button><button type="button" data-coach-tab="callups" aria-pressed="false">Deialdiak</button><button type="button" data-coach-tab="notices" aria-pressed="false">Abisuak</button><button type="button" data-coach-tab="responses" aria-pressed="false">Bertaratzeak</button></div>
       <div id="portal-coach-content"></div>
@@ -1098,18 +1099,18 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=163" defer></script>
-<script src="i18n.js?v=163" defer></script>
-<script src="insights-data.js?v=163" defer></script>
-<script src="portal.js?v=163" defer></script>
-<script src="portal-events.js?v=163" defer></script>
-<script src="portal-calendar.js?v=163" defer></script>
-<script src="push.js?v=163" defer></script>
-<script src="app.js?v=163" defer></script>
-<script src="player-statistics.js?v=163" defer></script>
-<script src="weekly-training.js?v=163" defer></script>
-<script src="inbox.js?v=163" defer></script>
-<script src="report-pdf.js?v=163" defer></script>
-<script src="insights.js?v=163" defer></script>
+<script src="locales/es.js?v=164" defer></script>
+<script src="i18n.js?v=164" defer></script>
+<script src="insights-data.js?v=164" defer></script>
+<script src="portal.js?v=164" defer></script>
+<script src="portal-events.js?v=164" defer></script>
+<script src="portal-calendar.js?v=164" defer></script>
+<script src="push.js?v=164" defer></script>
+<script src="app.js?v=164" defer></script>
+<script src="player-statistics.js?v=164" defer></script>
+<script src="weekly-training.js?v=164" defer></script>
+<script src="inbox.js?v=164" defer></script>
+<script src="report-pdf.js?v=164" defer></script>
+<script src="insights.js?v=164" defer></script>
 </body>
 </html>
