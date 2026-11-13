@@ -214,6 +214,7 @@ async function requestImpl(payload, anonymous) {
 }
 
 function showLogin() {
+  sessionReferenceExercises = [];
   closeBoardFullscreen();
   if (window.PlayerStatistics) window.PlayerStatistics.reset();
   if (window.InboxUI) window.InboxUI.reset();
@@ -881,7 +882,7 @@ function stopExerciseAnimation(finalState) {
 }
 
 function playExerciseAnimation(id, targetCanvas, targetButton) {
-  var exercise = exercises.find(function (item) { return Number(item.id_ariketa) === Number(id); });
+  var exercise = sessionExerciseById(id);
   var board = exercise && parseBoardData(exercise.arbela_datuak);
   var canvas = targetCanvas || document.querySelector('[data-board-preview="' + Number(id) + '"]');
   if (!board || board.animazioa.length < 2 || !canvas) {
@@ -936,7 +937,7 @@ function sessionViewExercises() {
 
 function currentSessionBoard() {
   var id = sessionView.ids[sessionView.index];
-  var exercise = exercises.find(function (item) { return Number(item.id_ariketa) === Number(id); });
+  var exercise = sessionExerciseById(id);
   return { id: id, exercise: exercise, board: exercise && parseBoardData(exercise.arbela_datuak) };
 }
 
@@ -986,7 +987,7 @@ function openSessionBoard(id, exerciseIds, returnSection) {
 
 function openSessionExercisePreview(id) {
   id = Number(id);
-  var exercise = exercises.find(function (item) { return Number(item.id_ariketa) === id; });
+  var exercise = sessionExerciseById(id);
   var board = exercise && parseBoardData(exercise.arbela_datuak);
   if (!exercise || !board) return notify(t("Ariketa honek ez dauka arbelarik gordeta"), "error");
   stopExerciseAnimation();
@@ -2223,6 +2224,7 @@ function openAttendanceDialog(sessionId) {
 async function refreshAll() {
   var result = await request({ action: "team_snapshot", team_id: teamId });
   tables = result.tables || {};
+  sessionReferenceExercises = records("saio_reference_ariketak").slice();
   players = records("jokalariak").slice().sort(function (a, b) {
     return Number(a.dortsala || 999) - Number(b.dortsala || 999) ||
       playerName(a).localeCompare(playerName(b));

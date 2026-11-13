@@ -1,5 +1,22 @@
 # Entrenamenduak editatu eta bikoiztu
 
+`session-references.ts` moduluak taldeko entrenamenduetan lotutako ariketak
+kargatzen ditu `tables.saio_reference_ariketak` eremuan, beste entrenatzaile batek
+sortutakoak barne. `metro-api`-ko `team_snapshot` eta `pwa_snapshot` ekintzek,
+taldekidetasuna egiaztatu eta seme-taulak kargatu ondoren, hau exekutatzen dute:
+
+```ts
+const referenceError = await addSessionExerciseReferences(tables,
+  ids => allForIds(supabase, "ariketak", "id_ariketa", ids));
+if (referenceError) return jsonResponse(500, { error: referenceError });
+```
+
+Inportatu `addSessionExerciseReferences` `../../../pwa/7metro_web/backend/session-references.ts`
+bidetik. Ondorengo `childParents.saio_xehetasuna` iragazkiak `id_saio` bakarrik
+egiaztatzen du, moduluak ariketen erreferentziak jada egiaztatu dituelako.
+PWAk erreferentzia horiek entrenamenduen izenak, arbelak eta animazioak ikusteko
+erabiltzen ditu.
+
 Jokalarien estatistikak `migrations/20261113140000_player_statistics.sql` eta
 `player-statistics-actions.ts` fitxategietan daude. `metro-api`-k
 `playerStatisticsActions` ekintzak autentifikatu ondoren
