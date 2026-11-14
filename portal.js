@@ -71,7 +71,7 @@ async function portalShow(boot) {
   if (portalState.playerId) await portalLoadPlayer();
   else {
     $("portal-greeting").textContent = t("Nire kontua");
-    $("portal-player-name").textContent = ""; portalState.data = null;
+    portalState.data = null;
     ["portal-home", "portal-agenda", "portal-callups", "portal-notices"].forEach(function (id) { $(id).innerHTML = ""; });
     portalSetTab("settings");
   }
@@ -94,6 +94,8 @@ function portalSetTab(tab) {
   var entering = portalState.tab !== tab;
   if (tab === "settings" && window.PushUI) window.PushUI.loadPlayerFriends();
   portalState.tab = tab;
+  $("portal-greeting").parentElement.hidden = tab !== "home";
+  $("portal-greeting").closest(".portal-heading").classList.toggle("portal-heading-home", tab === "home");
   ["home", "agenda", "callups", "notices", "settings", "stats"].forEach(function (name) { $("portal-" + name).hidden = name !== tab; });
   if (entering && window.AppMotion) window.AppMotion.enter($("portal-" + tab));
   document.querySelectorAll("[data-portal-tab]").forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.portalTab === (tab === "stats" ? "home" : tab))); });
@@ -119,11 +121,16 @@ function portalHasResponse(event) {
   return portalState.data.responses.some(function (response) { return response.kind === event.kind && Number(response.event_id) === Number(event.row.id); });
 }
 function portalRenderHome(events, pending, unread) {
+  var player = portalState.data.player;
+  var hasNumber = player.number != null && String(player.number).trim() !== "";
+  var identity = player.team_name || hasNumber ? '<div class="portal-player-identity">' +
+    (hasNumber ? '<div class="portal-player-number"><small>' + esc(t("Dortsala")) + '</small><strong>' + esc(player.number) + '</strong></div>' : '') +
+    (player.team_name ? '<div class="portal-player-team"><small>' + esc(t("Taldea")) + '</small><strong>' + esc(player.team_name) + '</strong></div>' : '') + '</div>' : '';
   var eligible = events.filter(function (event) {
     return (event.kind === "session" || event.row.callup) && new Date(event.row.date).getTime() >= Date.now();
   });
   var next = eligible[0];
-  var html = '<div class="portal-home-summary"><button type="button" data-portal-go="callups" class="portal-summary-action' + (pending.length ? ' needs-response' : '') + '"><strong>' + pending.length + '</strong><span>' + esc(t("Deialdi erantzuteko")) + '</span></button>' +
+  var html = identity + '<div class="portal-home-summary"><button type="button" data-portal-go="callups" class="portal-summary-action' + (pending.length ? ' needs-response' : '') + '"><strong>' + pending.length + '</strong><span>' + esc(t("Deialdi erantzuteko")) + '</span></button>' +
     '<button type="button" data-portal-go="notices" class="portal-summary-action"><strong>' + unread + '</strong><span>' + esc(t("Abisu irakurri gabe")) + '</span></button></div>';
   html += '<div id="portal-personal-stats-entry" hidden></div><div class="portal-section-heading"><h2>' + esc(t("Hurrengo jarduera")) + '</h2></div><div class="portal-next-event">' +
     (next ? portalEventCard(next) : '<div class="card portal-home-empty"><h3>' + esc(t("Ez dago hurrengo deialdirik")) + '</h3><button class="btn secondary" type="button" data-portal-go="agenda">' + esc(t("Egutegia ikusi")) + '</button></div>') + '</div>';
@@ -141,7 +148,6 @@ function portalRenderPlayer() {
   var data = portalState.data; if (!data) return;
   renderAccountIdentity(user && user.izena || userName, data.player.team_name);
   $("portal-greeting").textContent = t("Kaixo, {name}", { name: data.player.name || portalName(data.player) });
-  $("portal-player-name").textContent = [data.player.team_name, data.player.number == null ? "" : "#" + data.player.number].filter(Boolean).join(" · ");
   var events = data.sessions.map(function (s) { return { kind: "session", row: s }; }).concat(data.matches.map(function (m) { return { kind: "match", row: m }; })).sort(function (a, b) { return a.row.date.localeCompare(b.row.date); });
   portalRenderAgenda(events);
   var today = planKey(new Date());
