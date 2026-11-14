@@ -3699,7 +3699,7 @@ function setBoardMenu(open) {
   var entering = open && !$("board-options").classList.contains("is-open");
   $("board-options").classList.toggle("is-open", open);
   $("board-menu-toggle").setAttribute("aria-expanded", String(open));
-  if (entering && window.AppMotion) window.AppMotion.enter($("board-options"));
+  if (entering && window.AppMotion) window.AppMotion.enter($("board-options"), -6);
 }
 
 function closeBoardFullscreen() {

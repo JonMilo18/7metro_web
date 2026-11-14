@@ -19,8 +19,9 @@
     return animation;
   }
 
-  function enter(element) {
-    animate(element, [{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "translateY(0)" }]);
+  function enter(element, distance) {
+    var offset = typeof distance === "number" ? distance : 10;
+    animate(element, [{ opacity: 0, transform: "translateY(" + offset + "px)" }, { opacity: 1, transform: "translateY(0)" }]);
   }
 
   function indicator(container) {
