@@ -835,6 +835,7 @@ function updateBoardPlaybackControls() {
   button.querySelector("[data-board-play-icon]").hidden = playing;
   button.querySelector("[data-board-stop-icon]").hidden = !playing;
   $("board-quick-frame-add").disabled = playing;
+  $("board-quick-frame-delete").disabled = playing || boardFrameIndex < 0;
   var highlighted = playing ? boardPlaybackFrame : boardFrameIndex;
   $("board-frame-thumbnails").querySelectorAll("[data-board-frame]").forEach(function (item) {
     item.setAttribute("aria-pressed", String(Number(item.dataset.boardFrame) === highlighted));
@@ -3897,12 +3898,19 @@ $("board-frame-update").addEventListener("click", function () {
   updateBoardAnimationControls();
   notify(t("Pausoa eguneratu da"), "success");
 });
-$("board-frame-delete").addEventListener("click", function () {
+function deleteBoardFrame() {
   stopBoardAnimation();
   if (boardFrameIndex < 0) return;
-  boardState.animazioa.splice(boardFrameIndex, 1);
-  boardFrameIndex = -1;
-  updateBoardAnimationControls();
+  var index = boardFrameIndex;
+  boardState.animazioa.splice(index, 1);
+  selectBoardFrame(Math.min(index, boardState.animazioa.length - 1));
+  revealBoardThumbnail(boardFrameIndex);
+}
+$("board-frame-delete").addEventListener("click", deleteBoardFrame);
+$("board-quick-frame-delete").addEventListener("click", function () {
+  deleteBoardFrame();
+  var target = this.disabled ? $("board-quick-frame-add") : this;
+  target.focus({ preventScroll: true });
 });
 $("board-animation-play").addEventListener("click", playBoardAnimation);
 $("board-quick-play").addEventListener("click", playBoardAnimation);
