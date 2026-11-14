@@ -35,6 +35,19 @@ var macros = [], micros = [], playerStats = [], toastTimer, installPrompt = null
 var loadingCount = 0, loadingDelay = 0;
 var boardState = { fondo: "Zelaia", posizioak: {}, marrazkiak: [], animazioa: [] };
 var boardTool = "move", boardSelection = null, boardPointer = null, boardImages = {};
+var boardRenderings = new WeakMap();
+var boardResizeObserver = new ResizeObserver(function (entries) {
+  entries.forEach(function (entry) {
+    var canvas = entry.target, rendering = boardRenderings.get(canvas);
+    if (!canvas.isConnected) { boardResizeObserver.unobserve(canvas); boardRenderings.delete(canvas); return; }
+    if (rendering && canvas.clientWidth && canvas.clientHeight) drawBoard(canvas, rendering.state, rendering.selection);
+  });
+});
+var boardResizeFrame = 0;
+window.addEventListener("resize", function () {
+  cancelAnimationFrame(boardResizeFrame);
+  boardResizeFrame = requestAnimationFrame(redrawVisibleBoards);
+});
 var boardCurve = 0;
 var boardFrameIndex = -1, boardAnimationRaf = 0;
 var previewAnimation = null, previewAnimationFrame = 0;
@@ -402,9 +415,24 @@ function parseBoardData(value) {
 
 function drawBoard(canvas, state, selection) {
   if (!canvas) return;
+  if (!boardRenderings.has(canvas)) boardResizeObserver.observe(canvas);
+  boardRenderings.set(canvas, { state: state, selection: selection });
+  if (canvas.clientWidth && canvas.clientHeight) {
+    var density = Math.min(4, Math.max(1, window.devicePixelRatio || 1));
+    var pixelWidth = Math.min(4096, Math.ceil(canvas.clientWidth * density));
+    var pixelHeight = Math.round(pixelWidth * 5 / 8);
+    if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+      canvas.width = pixelWidth; canvas.height = pixelHeight;
+    }
+  }
   var ctx = canvas.getContext("2d");
-  var width = canvas.width, height = canvas.height;
-  ctx.clearRect(0, 0, width, height);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.scale(canvas.width / 800, canvas.height / 500);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  var width = 800, height = 500;
   var background = boardImages[state.fondo];
   if (background && background.complete && background.naturalWidth) {
     ctx.drawImage(background, 0, 0, width, height);
@@ -426,8 +454,6 @@ function drawBoard(canvas, state, selection) {
     ctx.setLineDash([]);
   }
 
-  ctx.save();
-  ctx.scale(width / 800, height / 500);
   (state.marrazkiak || []).forEach(function (shape, index) {
     if (!shape || !Array.isArray(shape.coords) || shape.coords.length < 2 ||
         !shape.coords.every(Number.isFinite)) return;
@@ -596,14 +622,21 @@ function redrawBoard() {
   drawBoard($("exercise-board"), boardState, boardSelection);
 }
 
+function redrawVisibleBoards() {
+  document.querySelectorAll("canvas").forEach(function (canvas) {
+    var rendering = boardRenderings.get(canvas);
+    if (rendering && canvas.clientWidth && canvas.clientHeight) drawBoard(canvas, rendering.state, rendering.selection);
+  });
+}
+
 function loadBoardBackgrounds() {
-  [["Zelaia", "./irudiak/Zelaia.png"], ["Zelai-erdia", "./irudiak/Zelai-erdia.png"]]
+  [["Zelaia", "./irudiak/Zelaia.svg"], ["Zelai-erdia", "./irudiak/Zelai-erdia.svg"]]
     .forEach(function (entry) {
       var image = new Image();
       image.onload = function () {
         redrawBoard();
         renderExercises();
-        if (sessionView.ids.length) drawSessionBoard();
+        redrawVisibleBoards();
       };
       image.onerror = function (error) {
         console.error(t("Ezin izan da programako kantxaren irudia kargatu: ") + entry[1], error);
