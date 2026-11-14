@@ -134,6 +134,9 @@ function languageDraft() {
 }
 
 window.addEventListener("languagechange", function () {
+  if ($("account-settings-dialog").open) {
+    $("account-settings-title").textContent = t($("account-password-form").hidden ? "Erabiltzaile-izena aldatu" : "Pasahitza aldatu");
+  }
   var restore = languageDraft(), scrollX = window.scrollX, scrollY = window.scrollY;
   var editor = $("match-edit-form"), editingMatch = editor && editor.dataset.matchEditId;
   stopExerciseAnimation(); stopBoardAnimation();
@@ -3308,9 +3311,14 @@ document.querySelectorAll("[data-open-account]").forEach(function (button) {
     if (!token || $("account-settings-dialog").open) return;
     var sequence = ++accountSettingsSequence, sessionToken = token;
     accountSettingsBusy = "load";
-    $("account-settings-form").reset();
-    $("account-settings-form").inert = true;
-    $("account-settings-save").disabled = true;
+    var passwordMode = button.dataset.openAccount === "password";
+    var form = $(passwordMode ? "account-password-form" : "account-settings-form");
+    $("account-settings-title").textContent = t(passwordMode ? "Pasahitza aldatu" : "Erabiltzaile-izena aldatu");
+    document.querySelectorAll("#account-settings-dialog form").forEach(function (item) {
+      item.reset(); item.hidden = item !== form;
+    });
+    form.inert = true;
+    form.querySelector('[type="submit"]').disabled = true;
     $("account-settings-error").hidden = true;
     $("account-settings-loading").textContent = t("Kargatzen...");
     $("account-settings-loading").hidden = false;
@@ -3321,7 +3329,7 @@ document.querySelectorAll("[data-open-account]").forEach(function (button) {
       updateAccountUser(result.user);
       accountExpectedUsername = result.user.izena;
       $("account-settings-username").value = result.user.izena;
-      $("account-settings-save").disabled = false;
+      form.querySelector('[type="submit"]').disabled = false;
     } catch (error) {
       if (sequence === accountSettingsSequence) {
         $("account-settings-error").textContent = error.message;
@@ -3330,7 +3338,7 @@ document.querySelectorAll("[data-open-account]").forEach(function (button) {
     } finally {
       if (sequence === accountSettingsSequence) {
         accountSettingsBusy = "";
-        $("account-settings-form").inert = false;
+        form.inert = false;
         $("account-settings-loading").hidden = true;
       }
     }
@@ -3345,52 +3353,56 @@ $("account-settings-dialog").addEventListener("cancel", function (event) {
 $("account-settings-dialog").addEventListener("close", function () {
   accountSettingsSequence++;
   accountSettingsBusy = ""; accountExpectedUsername = "";
-  $("account-settings-form").reset();
-  $("account-settings-form").inert = false;
+  document.querySelectorAll("#account-settings-dialog form").forEach(function (form) {
+    form.reset(); form.inert = false;
+  });
   $("account-settings-close").disabled = false;
   $("account-settings-confirm").setCustomValidity("");
 });
-$("account-settings-form").addEventListener("input", function () {
+$("account-password-form").addEventListener("input", function () {
   $("account-settings-confirm").setCustomValidity("");
 });
-$("account-settings-form").addEventListener("submit", async function (event) {
-  event.preventDefault();
-  if (accountSettingsBusy || !accountExpectedUsername) return;
-  var password = $("account-settings-password").value;
-  if (password !== $("account-settings-confirm").value) {
-    $("account-settings-confirm").setCustomValidity(t("Pasahitz berriak ez datoz bat"));
-    $("account-settings-confirm").reportValidity();
-    return;
-  }
-  var sequence = accountSettingsSequence, sessionToken = token;
-  accountSettingsBusy = "save";
-  this.inert = true;
-  $("account-settings-loading").textContent = t("Gordetzen...");
-  $("account-settings-loading").hidden = false;
-  $("account-settings-close").disabled = true;
-  $("account-settings-error").hidden = true;
-  try {
-    var result = await request({ action: "account_update", expected_username: accountExpectedUsername,
-      username: $("account-settings-username").value, current_password: $("account-settings-current").value,
-      new_password: password || null });
-    if (sequence !== accountSettingsSequence || token !== sessionToken) return;
-    updateAccountUser(result.user);
-    $("account-settings-dialog").close();
-    notify(t("Kontuaren aldaketak gorde dira"), "success");
-  } catch (error) {
-    if (sequence === accountSettingsSequence) {
-      $("account-settings-error").textContent = error.message;
-      $("account-settings-error").hidden = false;
-      $("account-settings-current").value = "";
+document.querySelectorAll("#account-settings-dialog form").forEach(function (form) {
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    if (accountSettingsBusy || !accountExpectedUsername) return;
+    var passwordMode = this.id === "account-password-form";
+    var password = passwordMode ? $("account-settings-password").value : null;
+    if (passwordMode && password !== $("account-settings-confirm").value) {
+      $("account-settings-confirm").setCustomValidity(t("Pasahitz berriak ez datoz bat"));
+      $("account-settings-confirm").reportValidity();
+      return;
     }
-  } finally {
-    if (sequence === accountSettingsSequence) {
-      accountSettingsBusy = "";
-      this.inert = false;
-      $("account-settings-loading").hidden = true;
-      $("account-settings-close").disabled = false;
+    var sequence = accountSettingsSequence, sessionToken = token;
+    accountSettingsBusy = "save";
+    this.inert = true;
+    $("account-settings-loading").textContent = t("Gordetzen...");
+    $("account-settings-loading").hidden = false;
+    $("account-settings-close").disabled = true;
+    $("account-settings-error").hidden = true;
+    try {
+      var result = await request({ action: "account_update", expected_username: accountExpectedUsername,
+        username: passwordMode ? accountExpectedUsername : $("account-settings-username").value,
+        current_password: this.elements.current_password.value, new_password: password });
+      if (sequence !== accountSettingsSequence || token !== sessionToken) return;
+      updateAccountUser(result.user);
+      $("account-settings-dialog").close();
+      notify(t("Kontuaren aldaketak gorde dira"), "success");
+    } catch (error) {
+      if (sequence === accountSettingsSequence) {
+        $("account-settings-error").textContent = error.message;
+        $("account-settings-error").hidden = false;
+        this.elements.current_password.value = "";
+      }
+    } finally {
+      if (sequence === accountSettingsSequence) {
+        accountSettingsBusy = "";
+        this.inert = false;
+        $("account-settings-loading").hidden = true;
+        $("account-settings-close").disabled = false;
+      }
     }
-  }
+  });
 });
 
 $("create-account").addEventListener("click", async function () {
