@@ -242,6 +242,7 @@ async function requestImpl(payload, anonymous) {
 
 function showLogin() {
   if ($("account-settings-dialog").open) $("account-settings-dialog").close();
+  closeSessionExercisePreview();
   sessionReferenceExercises = [];
   closeBoardFullscreen();
   if (window.PlayerStatistics) window.PlayerStatistics.reset();
@@ -1117,6 +1118,11 @@ function openSessionExercisePreview(id) {
   play.classList.toggle("hidden", board.animazioa.length < 2);
   var dialog = $("session-preview-dialog");
   if (!dialog.open) dialog.showModal();
+}
+
+function closeSessionExercisePreview() {
+  if (previewAnimation && previewAnimation.canvas === $("session-preview-canvas")) stopExerciseAnimation();
+  if ($("session-preview-dialog").open) $("session-preview-dialog").close();
 }
 
 function playSessionAnimation() {
@@ -2355,6 +2361,7 @@ async function refreshAll() {
 }
 
 function selectSection(id) {
+  closeSessionExercisePreview();
   var entering = !$(id).classList.contains("on");
   if (id !== "v-board") closeBoardFullscreen();
   if (id !== "v-friends" && typeof friendSearchSequence === "number") clearFriendSearch();
@@ -4108,7 +4115,7 @@ $("session-preview-play").addEventListener("click", function () {
   else playExerciseAnimation(id, canvas, this);
 });
 $("session-preview-close").addEventListener("click", function () {
-  $("session-preview-dialog").close();
+  closeSessionExercisePreview();
 });
 $("session-preview-dialog").addEventListener("click", function (event) {
   if (event.target === this) this.close();
@@ -4535,8 +4542,10 @@ document.addEventListener("click", async function (event) {
   }
   if (target.hasAttribute("data-play-exercise")) {
     var exerciseId = Number(target.dataset.playExercise);
-    if (previewAnimation && previewAnimation.button === target) stopExerciseAnimation();
-    else playExerciseAnimation(exerciseId);
+    openSessionExercisePreview(exerciseId);
+    if ($("session-preview-dialog").open) {
+      playExerciseAnimation(exerciseId, $("session-preview-canvas"), $("session-preview-play"));
+    }
     return;
   }
   if (target.hasAttribute("data-play-training-animation")) {
