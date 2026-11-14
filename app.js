@@ -214,6 +214,7 @@ async function requestImpl(payload, anonymous) {
 }
 
 function showLogin() {
+  if ($("account-settings-dialog").open) $("account-settings-dialog").close();
   sessionReferenceExercises = [];
   closeBoardFullscreen();
   if (window.PlayerStatistics) window.PlayerStatistics.reset();
@@ -3282,6 +3283,114 @@ $("login-form").addEventListener("submit", async function (event) {
     localStorage.removeItem("7metro-supabase-token");
     notify(error.message, "error");
   } finally { button.disabled = false; }
+});
+
+var accountSettingsSequence = 0, accountSettingsBusy = "", accountExpectedUsername = "";
+
+function updateAccountUser(accountUser) {
+  var oldModeKey = portalModeKey(), mode = readStore(oldModeKey);
+  user = accountUser;
+  userName = accountUser.izena;
+  try {
+    localStorage.setItem("7metro-username", userName);
+    if (mode) localStorage.setItem(portalModeKey(), mode);
+    if (oldModeKey !== portalModeKey()) localStorage.removeItem(oldModeKey);
+  } catch (error) { /* The server-saved account remains usable without local preferences. */ }
+  $("username").value = userName;
+  $("portal-username").textContent = userName;
+  $("account").textContent = document.body.classList.contains("player-mode") || !team
+    ? userName : userName + " · " + team.izena;
+  if (team) renderDashboard();
+}
+
+document.querySelectorAll("[data-open-account]").forEach(function (button) {
+  button.addEventListener("click", async function () {
+    if (!token || $("account-settings-dialog").open) return;
+    var sequence = ++accountSettingsSequence, sessionToken = token;
+    accountSettingsBusy = "load";
+    $("account-settings-form").reset();
+    $("account-settings-form").inert = true;
+    $("account-settings-save").disabled = true;
+    $("account-settings-error").hidden = true;
+    $("account-settings-loading").textContent = t("Kargatzen...");
+    $("account-settings-loading").hidden = false;
+    $("account-settings-dialog").showModal();
+    try {
+      var result = await request({ action: "account_get" });
+      if (sequence !== accountSettingsSequence || token !== sessionToken) return;
+      updateAccountUser(result.user);
+      accountExpectedUsername = result.user.izena;
+      $("account-settings-username").value = result.user.izena;
+      $("account-settings-save").disabled = false;
+    } catch (error) {
+      if (sequence === accountSettingsSequence) {
+        $("account-settings-error").textContent = error.message;
+        $("account-settings-error").hidden = false;
+      }
+    } finally {
+      if (sequence === accountSettingsSequence) {
+        accountSettingsBusy = "";
+        $("account-settings-form").inert = false;
+        $("account-settings-loading").hidden = true;
+      }
+    }
+  });
+});
+$("account-settings-close").addEventListener("click", function () {
+  if (accountSettingsBusy !== "save") $("account-settings-dialog").close();
+});
+$("account-settings-dialog").addEventListener("cancel", function (event) {
+  if (accountSettingsBusy === "save") event.preventDefault();
+});
+$("account-settings-dialog").addEventListener("close", function () {
+  accountSettingsSequence++;
+  accountSettingsBusy = ""; accountExpectedUsername = "";
+  $("account-settings-form").reset();
+  $("account-settings-form").inert = false;
+  $("account-settings-close").disabled = false;
+  $("account-settings-confirm").setCustomValidity("");
+});
+$("account-settings-form").addEventListener("input", function () {
+  $("account-settings-confirm").setCustomValidity("");
+});
+$("account-settings-form").addEventListener("submit", async function (event) {
+  event.preventDefault();
+  if (accountSettingsBusy || !accountExpectedUsername) return;
+  var password = $("account-settings-password").value;
+  if (password !== $("account-settings-confirm").value) {
+    $("account-settings-confirm").setCustomValidity(t("Pasahitz berriak ez datoz bat"));
+    $("account-settings-confirm").reportValidity();
+    return;
+  }
+  var sequence = accountSettingsSequence, sessionToken = token;
+  accountSettingsBusy = "save";
+  this.inert = true;
+  $("account-settings-loading").textContent = t("Gordetzen...");
+  $("account-settings-loading").hidden = false;
+  $("account-settings-close").disabled = true;
+  $("account-settings-error").hidden = true;
+  try {
+    var result = await request({ action: "account_update", expected_username: accountExpectedUsername,
+      username: $("account-settings-username").value, current_password: $("account-settings-current").value,
+      new_password: password || null });
+    if (sequence !== accountSettingsSequence || token !== sessionToken) return;
+    updateAccountUser(result.user);
+    $("account-settings-dialog").close();
+    notify(t("Kontuaren aldaketak gorde dira"), "success");
+  } catch (error) {
+    if (sequence === accountSettingsSequence) {
+      $("account-settings-error").textContent = error.message;
+      $("account-settings-error").hidden = false;
+      $("account-settings-current").value = "";
+    }
+  } finally {
+    if (sequence === accountSettingsSequence) {
+      accountSettingsBusy = "";
+      this.inert = false;
+      $("account-settings-loading").hidden = true;
+      $("account-settings-close").disabled = false;
+    }
+  }
 });
 
 $("create-account").addEventListener("click", async function () {

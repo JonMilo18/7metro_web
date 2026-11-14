@@ -1,5 +1,15 @@
 # Entrenamenduak editatu eta bikoiztu
 
+Kontuaren erabiltzaile-izena eta pasahitza `account-actions.ts` moduluak kudeatzen
+ditu. `metro-api`-k `accountActions` zerrendako `account_get` eta `account_update`
+ekintzak saio bidez autentifikatu ondoren `handleAccountAction(payload, supabase,
+userId, request.headers.get("x-7metro-session") || "", jsonResponse)` funtziora
+bidaltzen ditu. Lehenik aplikatu `migrations/20261114100000_account_credentials.sql`
+eta gero hedatu `metro-api`. SQL funtzioak oraingo pasahitza eta saioaren jabetza
+egiaztatzen ditu. Pasahitza aldatzean beste saioak ezabatzen ditu, uneko saioaren
+iraungitzea mantenduz. Erabiltzailearen identifikatzailea eta lotutako datuak
+mantentzen dira. Pasahitz berriek bcrypt-en 72 byteko muga betetzen dute.
+
 `session-references.ts` moduluak taldeko entrenamenduetan lotutako ariketak
 kargatzen ditu `tables.saio_reference_ariketak` eremuan, beste entrenatzaile batek
 sortutakoak barne. `metro-api`-ko `team_snapshot` eta `pwa_snapshot` ekintzek,
