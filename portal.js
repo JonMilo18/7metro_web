@@ -14,6 +14,9 @@ function portalEmpty(message) { return '<p class="report-empty">' + esc(t(messag
 function portalResponseLabel(value) { return t({ yes: "Banoa", no: "Ezin dut", maybe: "Zalantzan" }[value] || "Erantzun gabe"); }
 function portalHide() {
   portalState.sequence++; portalState.coachSequence++; portalState.routeSequence++;
+  setMobileMenu(false);
+  $("nav").classList.add("hidden");
+  $("mobile-menu-toggle").hidden = true;
   document.body.classList.remove("player-mode");
   $("player-portal").classList.add("hidden"); $("player-portal").classList.remove("on");
 }
@@ -40,10 +43,14 @@ async function routeAuthenticatedSession(requested) {
 async function portalShow(boot) {
   var sessionToken = token, sequence = ++portalState.sequence;
   if (scoreMatchMode) scoreExitMatchMode();
-  setMobileMenu(false); $("mobile-menu-toggle").hidden = true;
-  $("workspace").classList.add("hidden"); $("nav").classList.add("hidden"); $("nav").inert = true;
+  setMobileMenu(false);
+  $("workspace").classList.add("hidden");
   $("v-login").classList.remove("on"); $("player-portal").classList.remove("hidden"); $("player-portal").classList.add("on");
-  document.body.classList.add("player-mode"); renderAccountIdentity(user && user.izena || userName, "");
+  document.body.classList.add("player-mode");
+  $("nav").classList.remove("hidden");
+  $("mobile-menu-toggle").hidden = false;
+  setMobileMenu(false);
+  renderAccountIdentity(user && user.izena || userName, "");
   portalError("portal-error", "");
   boot = boot || await request({ action: "portal_bootstrap" });
   if (!token || token !== sessionToken || sequence !== portalState.sequence) return;
@@ -254,6 +261,7 @@ window.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll("[data-portal-tab]").forEach(function (button) { button.addEventListener("click", function () {
     if (button.dataset.portalTab === "agenda") { portalCalendarState.view = "calendar"; portalRenderAgenda(); }
     portalSetTab(button.dataset.portalTab);
+    setMobileMenu(false);
   }); });
   document.querySelectorAll("[data-coach-tab]").forEach(function (button) { button.addEventListener("click", function () { portalState.coachTab = button.dataset.coachTab; portalRenderCoach(); }); });
   $("player-portal").addEventListener("click", async function (event) {
