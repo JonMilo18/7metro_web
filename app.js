@@ -49,7 +49,7 @@ window.addEventListener("resize", function () {
   boardResizeFrame = requestAnimationFrame(redrawVisibleBoards);
 });
 var boardCurve = 0;
-var boardFrameIndex = -1, boardAnimationRaf = 0;
+var boardFrameIndex = -1, boardAnimationRaf = 0, boardPlaybackFrame = -1;
 var previewAnimation = null, previewAnimationFrame = 0;
 var sessionView = { ids: [], index: 0, raf: 0 };
 var sessionViewReturn = "v-sessions";
@@ -793,7 +793,10 @@ function prepareBoardForSave() {
   if (!boardState.animazioa.length) return;
   var current = captureBoardFrame();
   var last = boardState.animazioa[boardState.animazioa.length - 1];
-  if (JSON.stringify(current) !== JSON.stringify(last)) {
+  var normalized = JSON.stringify(animationFrameState(current, boardState.fondo));
+  var selected = boardFrameIndex >= 0 ? boardState.animazioa[boardFrameIndex] : last;
+  if (normalized === JSON.stringify(animationFrameState(selected, boardState.fondo))) return;
+  if (normalized !== JSON.stringify(animationFrameState(last, boardState.fondo))) {
     boardState.animazioa.push(current);
     boardFrameIndex = boardState.animazioa.length - 1;
     updateBoardAnimationControls();
@@ -810,12 +813,46 @@ function updateBoardAnimationControls() {
   $("board-frame-delete").disabled = boardFrameIndex < 0;
   $("board-animation-play").disabled = frames.length < 2;
   $("board-animation-status").textContent = frames.length + t(" pauso gordeta. Animazioa sortzeko gutxienez 2 behar dira.");
+  var strip = $("board-frame-thumbnails"), scrollLeft = strip.scrollLeft;
+  strip.innerHTML = frames.length ? frames.map(function (_, index) {
+    return '<button class="board-frame-thumb" type="button" data-board-frame="' + index + '" aria-pressed="' +
+      String(index === boardFrameIndex) + '" aria-label="' + esc((index + 1) + t(". pausoa")) + '" title="' +
+      esc((index + 1) + t(". pausoa")) + '"><span class="board-frame-image"><canvas width="144" height="90" aria-hidden="true"></canvas></span><span class="board-frame-number" aria-hidden="true">' + (index + 1) + '</span></button>';
+  }).join("") : '<span class="board-frame-empty">' + esc(t("Gehitu lehen pausoa")) + '</span>';
+  strip.querySelectorAll("canvas").forEach(function (canvas, index) {
+    drawBoard(canvas, animationFrameState(frames[index], boardState.fondo), null);
+  });
+  strip.scrollLeft = scrollLeft;
+  updateBoardPlaybackControls();
+}
+
+function updateBoardPlaybackControls() {
+  var playing = Boolean(boardAnimationRaf), button = $("board-quick-play");
+  button.disabled = boardState.animazioa.length < 2;
+  button.setAttribute("aria-pressed", String(playing));
+  button.setAttribute("aria-label", t(playing ? "Gelditu" : "Animazioa ikusi"));
+  button.title = t(playing ? "Gelditu" : "Animazioa ikusi");
+  button.querySelector("[data-board-play-icon]").hidden = playing;
+  button.querySelector("[data-board-stop-icon]").hidden = !playing;
+  $("board-quick-frame-add").disabled = playing;
+  var highlighted = playing ? boardPlaybackFrame : boardFrameIndex;
+  $("board-frame-thumbnails").querySelectorAll("[data-board-frame]").forEach(function (item) {
+    item.setAttribute("aria-pressed", String(Number(item.dataset.boardFrame) === highlighted));
+  });
+}
+
+function revealBoardThumbnail(index) {
+  if (!$("board-fullscreen-dialog").open) return;
+  var item = $("board-frame-thumbnails").querySelector('[data-board-frame="' + index + '"]');
+  if (item) item.scrollIntoView({ block: "nearest", inline: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
 }
 
 function stopBoardAnimation() {
   cancelAnimationFrame(boardAnimationRaf);
   boardAnimationRaf = 0;
+  boardPlaybackFrame = -1;
   $("board-animation-play").textContent = t("Animazioa ikusi");
+  updateBoardPlaybackControls();
   redrawBoard();
 }
 
@@ -830,12 +867,18 @@ function playBoardAnimation() {
     var elapsed = (timestamp - started) / 650;
     var index = Math.floor(elapsed), last = boardState.animazioa.length - 1;
     if (index >= last) { stopBoardAnimation(); return; }
+    if (boardPlaybackFrame !== index) {
+      boardPlaybackFrame = index;
+      updateBoardPlaybackControls();
+      revealBoardThumbnail(index);
+    }
     drawBoard($("exercise-board"), interpolateAnimationFrames(
       boardState.animazioa[index], boardState.animazioa[index + 1], elapsed - index, boardState.fondo
     ), null);
     boardAnimationRaf = requestAnimationFrame(animate);
   }
   boardAnimationRaf = requestAnimationFrame(animate);
+  updateBoardPlaybackControls();
 }
 
 function resetBoard() {
@@ -3750,6 +3793,7 @@ $("board-fullscreen-open").addEventListener("click", function () {
   dialog.showModal();
   document.body.style.overflow = "hidden";
   redrawBoard();
+  revealBoardThumbnail(boardFrameIndex);
 });
 $("board-fullscreen-close").addEventListener("click", closeBoardFullscreen);
 $("board-menu-toggle").addEventListener("click", function () {
@@ -3791,6 +3835,7 @@ document.querySelectorAll("[data-board-tool]").forEach(function (button) {
 $("board-background").addEventListener("change", function () {
   boardState.fondo = this.value;
   redrawBoard();
+  updateBoardAnimationControls();
 });
 $("exercise-board").addEventListener("pointerdown", boardPointerDown);
 $("exercise-board").addEventListener("pointermove", boardPointerMove);
@@ -3808,17 +3853,25 @@ $("board-clear").addEventListener("click", function () {
   if (!confirm(t("Arbel guztia garbitu nahi duzu?"))) return;
   resetBoard();
 });
-$("board-frame-add").addEventListener("click", function () {
+function addBoardFrame(quiet) {
   stopBoardAnimation();
   boardState.animazioa.push(captureBoardFrame());
   boardFrameIndex = boardState.animazioa.length - 1;
   document.querySelector('[data-board-tool="move"]').click();
   updateBoardAnimationControls();
-  notify((boardFrameIndex + 1) + t(". pausoa gehitu da. Mugitu elementuak hurrengo pausorako."), "success");
+  revealBoardThumbnail(boardFrameIndex);
+  $("board-quick-status").textContent = (boardFrameIndex + 1) + t(". pausoa");
+  if (!quiet) notify((boardFrameIndex + 1) + t(". pausoa gehitu da. Mugitu elementuak hurrengo pausorako."), "success");
+}
+$("board-frame-add").addEventListener("click", function () { addBoardFrame(false); });
+$("board-quick-frame-add").addEventListener("click", function () {
+  addBoardFrame(true);
+  this.focus({ preventScroll: true });
 });
-$("board-frames").addEventListener("change", function () {
+function selectBoardFrame(index) {
+  if (!Number.isInteger(index) || index < -1 || index >= boardState.animazioa.length) return;
   stopBoardAnimation();
-  boardFrameIndex = Number(this.value);
+  boardFrameIndex = index;
   if (boardFrameIndex >= 0) {
     var state = animationFrameState(boardState.animazioa[boardFrameIndex], boardState.fondo);
     boardState.posizioak = JSON.parse(JSON.stringify(state.posizioak));
@@ -3827,6 +3880,15 @@ $("board-frames").addEventListener("change", function () {
   }
   updateBoardAnimationControls();
   redrawBoard();
+}
+$("board-frames").addEventListener("change", function () { selectBoardFrame(Number(this.value)); });
+$("board-frame-thumbnails").addEventListener("click", function (event) {
+  var button = event.target.closest("[data-board-frame]");
+  if (!button) return;
+  var index = Number(button.dataset.boardFrame);
+  selectBoardFrame(index);
+  var selected = this.querySelector('[data-board-frame="' + index + '"]');
+  if (selected) selected.focus({ preventScroll: true });
 });
 $("board-frame-update").addEventListener("click", function () {
   stopBoardAnimation();
@@ -3843,6 +3905,7 @@ $("board-frame-delete").addEventListener("click", function () {
   updateBoardAnimationControls();
 });
 $("board-animation-play").addEventListener("click", playBoardAnimation);
+$("board-quick-play").addEventListener("click", playBoardAnimation);
 updateBoardAnimationControls();
 loadBoardBackgrounds();
 redrawBoard();
