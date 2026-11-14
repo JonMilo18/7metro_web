@@ -43,7 +43,7 @@ async function portalShow(boot) {
   setMobileMenu(false); $("mobile-menu-toggle").hidden = true;
   $("workspace").classList.add("hidden"); $("nav").classList.add("hidden"); $("nav").inert = true;
   $("v-login").classList.remove("on"); $("player-portal").classList.remove("hidden"); $("player-portal").classList.add("on");
-  document.body.classList.add("player-mode"); $("account").textContent = user && user.izena || userName;
+  document.body.classList.add("player-mode"); renderAccountIdentity(user && user.izena || userName, "");
   portalError("portal-error", "");
   boot = boot || await request({ action: "portal_bootstrap" });
   if (!token || token !== sessionToken || sequence !== portalState.sequence) return;
@@ -71,6 +71,8 @@ async function portalShow(boot) {
 }
 async function portalLoadPlayer() {
   var sequence = ++portalState.sequence, id = portalState.playerId;
+  var activeLink = (portalState.bootstrap && portalState.bootstrap.links || []).find(function (link) { return Number(link.player_id) === Number(id); });
+  renderAccountIdentity(user && user.izena || userName, activeLink && activeLink.team_name);
   if (window.PlayerStatistics) window.PlayerStatistics.refreshPlayer();
   portalState.data = null;
   ["portal-home", "portal-agenda", "portal-callups", "portal-notices"].forEach(function (view) { $(view).innerHTML = portalEmpty("Kargatzen…"); });
@@ -130,6 +132,7 @@ function portalRenderHome(events, pending, unread) {
 }
 function portalRenderPlayer() {
   var data = portalState.data; if (!data) return;
+  renderAccountIdentity(user && user.izena || userName, data.player.team_name);
   $("portal-greeting").textContent = t("Kaixo, {name}", { name: data.player.name || portalName(data.player) });
   $("portal-player-name").textContent = [data.player.team_name, data.player.number == null ? "" : "#" + data.player.number].filter(Boolean).join(" · ");
   var events = data.sessions.map(function (s) { return { kind: "session", row: s }; }).concat(data.matches.map(function (m) { return { kind: "match", row: m }; })).sort(function (a, b) { return a.row.date.localeCompare(b.row.date); });

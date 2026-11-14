@@ -510,6 +510,7 @@ window.SevenMetroLocales.es = {
     "Erabiltzaile- edo ariketa-zerrendan ID baliogabe bat dago": "La lista de usuarios o ejercicios contiene un identificador no válido",
     "Erabiltzaile-izena": "Nombre de usuario",
     "Erabiltzailea": "Usuario",
+    "Talde aktiboa": "Equipo activo",
     "Erabiltzailea edo pasahitza ez da baliozkoa": "El usuario o la contraseña no es válido",
     "eraginkortasuna": "eficacia",
     "Eraginkortasuna %": "Eficacia %",

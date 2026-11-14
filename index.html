@@ -33,7 +33,15 @@ button,input,select,textarea{font:inherit}
 header{padding:calc(14px + env(safe-area-inset-top,0px)) 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);background:rgba(6,14,26,.94);backdrop-filter:blur(16px)}
 header img{height:40px;width:auto;border-radius:8px;background:#fff;padding:2px 4px}
 header b{font-size:1.15rem;letter-spacing:-.01em}
-#account{margin-left:auto;color:var(--muted);font-size:.86rem}
+#account{display:flex;align-items:center;gap:9px;min-width:0;margin-left:auto;padding:7px 10px;border:1px solid var(--line);border-radius:13px;background:var(--bg2);line-height:1.3}
+#account:empty{display:none}
+.account-avatar{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:10px;background:rgba(0,68,238,.16);color:var(--ink);font-size:.75rem;font-weight:750;letter-spacing:.02em}
+.account-copy{display:grid;gap:3px;min-width:0}
+.account-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.82rem;font-weight:650;color:var(--ink)}
+.account-team{display:flex;align-items:center;gap:5px;min-width:0;font-size:.73rem;color:var(--muted)}
+.account-team::before{content:"";width:6px;height:6px;flex:none;border-radius:50%;background:var(--blue)}
+.account-team>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:420px){body.has-account header>b{display:none}}
 .notification-bell{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--bg2);color:var(--ink);font-size:1.25rem;cursor:pointer}
 .notification-bell[hidden]{display:none}
 .notification-bell svg{display:block;width:22px;height:22px;flex:none}
@@ -277,8 +285,8 @@ textarea{min-height:84px;resize:vertical}
 @media(min-width:768px){
  header{position:fixed;left:0;top:0;width:240px;border:0;padding:calc(22px + env(safe-area-inset-top,0px)) 24px 12px;z-index:4}
  header img{height:48px}
- #account{position:fixed;left:24px;top:80px;margin:0}
- nav{top:120px;bottom:0;left:0;right:auto;width:240px;border:0;border-right:1px solid var(--line);padding:8px 12px calc(16px + env(safe-area-inset-bottom,0px));background:rgba(6,14,26,.92)}
+ #account{position:fixed;left:16px;top:calc(88px + env(safe-area-inset-top,0px));width:208px;margin:0}
+ nav{top:calc(164px + env(safe-area-inset-top,0px));bottom:0;left:0;right:auto;width:240px;border:0;border-right:1px solid var(--line);padding:8px 12px calc(16px + env(safe-area-inset-bottom,0px));background:rgba(6,14,26,.92);overflow-y:auto}
  nav div{max-width:none;grid-template-columns:1fr;gap:4px;align-content:start}
  nav button{text-align:left;padding:12px 16px;border-radius:10px;font-size:1rem;min-height:48px}
  nav button[aria-selected="true"]{box-shadow:none;background:rgba(0,68,238,.2);color:#fff}
@@ -402,7 +410,7 @@ textarea{min-height:84px;resize:vertical}
  header{gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px}
  header img{height:36px}
  header b{font-size:1.1rem}
- #account{min-width:0;max-width:38vw;overflow-wrap:anywhere;font-size:.84rem}
+ #account{flex:1;max-width:260px;padding:6px 8px;gap:7px}
  main{padding:18px max(14px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
  main>section,#team-picker{width:100%;min-width:0}
  h1{font-size:clamp(1.65rem,7vw,2rem);line-height:1.18}
@@ -686,7 +694,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=182"><link rel="stylesheet" href="portal.css?v=182"><link rel="stylesheet" href="motion.css?v=182">
+<link rel="stylesheet" href="insights.css?v=183"><link rel="stylesheet" href="portal.css?v=183"><link rel="stylesheet" href="motion.css?v=183">
 </head>
 <body>
 <div id="app">
@@ -1207,19 +1215,19 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=182" defer></script>
-<script src="i18n.js?v=182" defer></script>
-<script src="insights-data.js?v=182" defer></script>
-<script src="portal.js?v=182" defer></script>
-<script src="portal-events.js?v=182" defer></script>
-<script src="portal-calendar.js?v=182" defer></script>
-<script src="push.js?v=182" defer></script>
-<script src="motion.js?v=182" defer></script>
-<script src="app.js?v=182" defer></script>
-<script src="player-statistics.js?v=182" defer></script>
-<script src="weekly-training.js?v=182" defer></script>
-<script src="inbox.js?v=182" defer></script>
-<script src="report-pdf.js?v=182" defer></script>
-<script src="insights.js?v=182" defer></script>
+<script src="locales/es.js?v=183" defer></script>
+<script src="i18n.js?v=183" defer></script>
+<script src="insights-data.js?v=183" defer></script>
+<script src="portal.js?v=183" defer></script>
+<script src="portal-events.js?v=183" defer></script>
+<script src="portal-calendar.js?v=183" defer></script>
+<script src="push.js?v=183" defer></script>
+<script src="motion.js?v=183" defer></script>
+<script src="app.js?v=183" defer></script>
+<script src="player-statistics.js?v=183" defer></script>
+<script src="weekly-training.js?v=183" defer></script>
+<script src="inbox.js?v=183" defer></script>
+<script src="report-pdf.js?v=183" defer></script>
+<script src="insights.js?v=183" defer></script>
 </body>
 </html>

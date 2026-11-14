@@ -148,6 +148,7 @@ function languageDraft() {
 }
 
 window.addEventListener("languagechange", function () {
+  renderAccountIdentity();
   if ($("account-settings-dialog").open) {
     $("account-settings-title").textContent = t(!$("account-delete-form").hidden ? "Kontua ezabatu" : $("account-password-form").hidden ? "Erabiltzaile-izena aldatu" : "Pasahitza aldatu");
     if (accountDeletionPreview) renderAccountDeletionPreview();
@@ -254,8 +255,26 @@ function showLogin() {
   $("mobile-menu-toggle").hidden = true;
   $("workspace").classList.add("hidden");
   $("nav").classList.add("hidden");
-  $("account").textContent = "";
+  renderAccountIdentity("", "");
   $("v-login").classList.add("on");
+}
+
+var accountIdentity = { name: "", team: "" };
+
+function renderAccountIdentity(name, activeTeam) {
+  if (arguments.length) accountIdentity = { name: String(name || ""), team: String(activeTeam || "") };
+  var identity = accountIdentity, account = $("account");
+  document.body.classList.toggle("has-account", Boolean(identity.name));
+  if (!identity.name) { account.replaceChildren(); account.removeAttribute("aria-label"); return; }
+  var words = identity.name.trim().split(/\s+/);
+  var initials = Array.from(words[0] || "").slice(0, 1).join("") +
+    (words.length > 1 ? Array.from(words[words.length - 1]).slice(0, 1).join("") : "");
+  account.setAttribute("role", "group");
+  account.setAttribute("aria-label", t("Erabiltzailea") + ": " + identity.name +
+    (identity.team ? " · " + t("Talde aktiboa") + ": " + identity.team : ""));
+  account.innerHTML = '<span class="account-avatar" aria-hidden="true" translate="no">' + esc(initials.toLocaleUpperCase()) +
+    '</span><span class="account-copy"><span class="account-name" translate="no" title="' + esc(identity.name) + '">' + esc(identity.name) + '</span>' +
+    (identity.team ? '<span class="account-team" title="' + esc(t("Talde aktiboa") + ": " + identity.team) + '"><span translate="no">' + esc(identity.team) + '</span></span>' : "") + '</span>';
 }
 
 function showTeamPicker() {
@@ -267,7 +286,7 @@ function showTeamPicker() {
   $("team-app").classList.add("hidden");
   $("nav").classList.add("hidden");
   $("v-login").classList.remove("on");
-  $("account").textContent = user ? user.izena : "";
+  renderAccountIdentity(user ? user.izena : "", "");
   $("team-select").innerHTML = teams.map(function (item) {
     return '<option value="' + Number(item.id_taldea) + '">' + esc(item.izena) + (item._role === "owner" ? t(" · Jabea") : t(" · Kidea")) + "</option>";
   }).join("");
@@ -370,7 +389,7 @@ async function openTeam(id) {
   setMobileMenu(false);
   $("nav").setAttribute("aria-hidden", "false");
   $("nav").inert = false;
-  $("account").textContent = (user ? user.izena + " · " : "") + selected.izena;
+  renderAccountIdentity(user ? user.izena : "", selected.izena);
   selectSection("v-home");
 }
 
@@ -3399,8 +3418,7 @@ function updateAccountUser(accountUser) {
   } catch (error) { /* The server-saved account remains usable without local preferences. */ }
   $("username").value = userName;
   $("portal-username").textContent = userName;
-  $("account").textContent = document.body.classList.contains("player-mode") || !team
-    ? userName : userName + " · " + team.izena;
+  renderAccountIdentity(userName, accountIdentity.team);
   if (team) renderDashboard();
 }
 
@@ -3630,7 +3648,7 @@ $("team-rename-form").addEventListener("submit", async function (event) {
     $("team-select").value = selectedId;
     if (Number(teamId) === Number(updated.id_taldea)) {
       team = updated;
-      $("account").textContent = (user ? user.izena + " · " : "") + updated.izena;
+      renderAccountIdentity(user ? user.izena : "", updated.izena);
     }
     $("team-rename-dialog").close();
     notify(t("Taldearen izena aldatu da"), "success");

@@ -1,6 +1,6 @@
 #player-portal [hidden],#portal-response-error[hidden],#portal-coach-error[hidden]{display:none!important}
 body.player-mode header{position:relative;width:100%;padding:14px 20px;display:flex;border-bottom:1px solid var(--line)}
-body.player-mode #account{position:static;margin-left:auto;font-size:.85rem;overflow-wrap:anywhere}
+body.player-mode #account{position:static;width:auto;max-width:320px;margin-left:auto}
 body.player-mode main{margin-left:0;padding:24px 16px 120px}
 body.player-mode main>#player-portal{width:100%;max-width:760px;margin:auto}
 .portal-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
