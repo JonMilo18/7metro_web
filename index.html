@@ -42,8 +42,9 @@ header b{font-size:1.15rem;letter-spacing:-.01em}
 .account-team::before{content:"";width:6px;height:6px;flex:none;border-radius:50%;background:var(--blue)}
 .account-team>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:420px){body.has-account header:has(#account)>b{display:none}}
-.notification-bell{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--bg2);color:var(--ink);font-size:1.25rem;cursor:pointer}
+.notification-bell{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;margin-left:auto;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--bg2);color:var(--ink);font-size:1.25rem;cursor:pointer}
 .notification-bell[hidden]{display:none}
+body:has(#v-login.on) .notification-bell{display:none}
 .notification-bell svg{display:block;width:22px;height:22px;flex:none}
 .notification-badge{position:absolute;right:-5px;top:-5px;min-width:20px;padding:1px 4px;border-radius:12px;background:var(--blue);color:#fff;font-size:.7rem;font-weight:750}
 .inbox-dialog{width:min(600px,calc(100% - 20px));max-height:88dvh;overflow:auto;border:1px solid var(--line);border-radius:18px;padding:18px;background:var(--bg2);color:var(--ink)}
@@ -283,14 +284,15 @@ textarea{min-height:84px;resize:vertical}
 .steps{padding-left:20px;margin:8px 0 20px}.steps li{margin-bottom:8px}
 #toast{position:fixed;z-index:5;left:16px;right:16px;bottom:calc(70px + env(safe-area-inset-bottom,0px));max-width:580px;margin:auto;box-shadow:0 6px 24px #0002}
 @media(min-width:768px){
- header{position:fixed;left:0;top:0;width:240px;border:0;padding:calc(22px + env(safe-area-inset-top,0px)) 24px 12px;z-index:4}
+ header{position:fixed;left:0;top:0;width:240px;border:0;padding:calc(22px + env(safe-area-inset-top,0px)) 24px 12px;z-index:4;backdrop-filter:none}
+ .notification-bell{position:fixed;top:calc(22px + env(safe-area-inset-top,0px));right:calc(24px + env(safe-area-inset-right,0px))}
  header img{height:48px}
  header #account{max-width:208px}
  nav{top:calc(96px + env(safe-area-inset-top,0px));bottom:0;left:0;right:auto;width:240px;border:0;border-right:1px solid var(--line);padding:8px 12px calc(16px + env(safe-area-inset-bottom,0px));background:rgba(6,14,26,.92)}
  nav div{max-width:none;grid-template-columns:1fr;gap:4px;align-content:start}
  nav button{text-align:left;padding:12px 16px;border-radius:10px;font-size:1rem;min-height:48px}
  nav button[aria-selected="true"]{box-shadow:none;background:rgba(0,68,238,.2);color:#fff}
- main{margin-left:240px;padding:42px 40px 56px}
+ main{margin-left:240px;padding:90px 40px 56px}
  main>section{max-width:1000px;margin:0}
  h1{font-size:2rem}
  #toast{left:260px;right:20px;bottom:20px}
@@ -702,7 +704,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=185"><link rel="stylesheet" href="portal.css?v=185"><link rel="stylesheet" href="motion.css?v=185">
+<link rel="stylesheet" href="insights.css?v=186"><link rel="stylesheet" href="portal.css?v=186"><link rel="stylesheet" href="motion.css?v=186">
 </head>
 <body>
 <div id="app">
@@ -1223,19 +1225,19 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=185" defer></script>
-<script src="i18n.js?v=185" defer></script>
-<script src="insights-data.js?v=185" defer></script>
-<script src="portal.js?v=185" defer></script>
-<script src="portal-events.js?v=185" defer></script>
-<script src="portal-calendar.js?v=185" defer></script>
-<script src="push.js?v=185" defer></script>
-<script src="motion.js?v=185" defer></script>
-<script src="app.js?v=185" defer></script>
-<script src="player-statistics.js?v=185" defer></script>
-<script src="weekly-training.js?v=185" defer></script>
-<script src="inbox.js?v=185" defer></script>
-<script src="report-pdf.js?v=185" defer></script>
-<script src="insights.js?v=185" defer></script>
+<script src="locales/es.js?v=186" defer></script>
+<script src="i18n.js?v=186" defer></script>
+<script src="insights-data.js?v=186" defer></script>
+<script src="portal.js?v=186" defer></script>
+<script src="portal-events.js?v=186" defer></script>
+<script src="portal-calendar.js?v=186" defer></script>
+<script src="push.js?v=186" defer></script>
+<script src="motion.js?v=186" defer></script>
+<script src="app.js?v=186" defer></script>
+<script src="player-statistics.js?v=186" defer></script>
+<script src="weekly-training.js?v=186" defer></script>
+<script src="inbox.js?v=186" defer></script>
+<script src="report-pdf.js?v=186" defer></script>
+<script src="insights.js?v=186" defer></script>
 </body>
 </html>

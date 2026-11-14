@@ -20,7 +20,7 @@
   }
 
   function render() {
-    $("notification-bell").hidden = !token;
+    $("notification-bell").hidden = !token || $("v-login").classList.contains("on");
     $("notification-badge").hidden = state.unread === 0;
     $("notification-badge").textContent = state.unread > 99 ? "99+" : String(state.unread);
     $("notification-bell").setAttribute("aria-label", state.unread ? t("{count} jakinarazpen irakurri gabe", { count: state.unread }) : t("Jakinarazpenak"));
@@ -110,7 +110,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     render();
     $("notification-bell").addEventListener("click", function () {
-      if (!token) return;
+      if (!token || $("v-login").classList.contains("on")) return;
       $("inbox-dialog").showModal();
       refresh(false);
     });
