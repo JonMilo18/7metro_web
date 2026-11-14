@@ -1439,30 +1439,26 @@ function dropSessionExercise(draggedId, target) {
 }
 
 function dropSessionGroup(groupId, target) {
-  var start = sessionSelection.findIndex(function (entry) { return entry.is_separator && entry.group_id === groupId; });
-  if (start < 0) return;
-  var end = start + 1;
-  while (end < sessionSelection.length && !sessionSelection[end].is_separator) end++;
+  var sourceIndex = sessionSelection.findIndex(function (entry) { return entry.is_separator && entry.group_id === groupId; });
+  if (sourceIndex < 0) return;
   var targetIndex = sessionSelection.findIndex(function (entry) {
     return target.type === "group" ? entry.is_separator && entry.group_id === target.id :
       !entry.is_separator && sessionEntryKey(entry) === Number(target.id);
   });
-  if (targetIndex < 0 || (targetIndex >= start && targetIndex < end)) return;
-  if (target.type === "exercise") {
-    for (var index = targetIndex - 1; index >= 0; index--) {
-      if (sessionSelection[index].is_separator) { targetIndex = index; break; }
+  if (targetIndex < 0 || targetIndex === sourceIndex) return;
+  var insertAt = targetIndex + (target.after ? 1 : 0);
+  if (insertAt > sourceIndex) insertAt--;
+  if (insertAt === sourceIndex) return;
+  var separator = sessionSelection.splice(sourceIndex, 1)[0];
+  sessionSelection.splice(insertAt, 0, separator);
+  var group = null;
+  sessionSelection.forEach(function (entry) {
+    if (entry.is_separator) group = entry;
+    else {
+      entry.group_id = group ? group.group_id : null;
+      entry.taldea = group ? group.taldea : null;
     }
-  }
-  var insertAt = targetIndex;
-  if (target.after) {
-    insertAt++;
-    if (sessionSelection[targetIndex].is_separator) {
-      while (insertAt < sessionSelection.length && !sessionSelection[insertAt].is_separator) insertAt++;
-    }
-  }
-  var block = sessionSelection.splice(start, end - start);
-  if (insertAt > start) insertAt -= block.length;
-  sessionSelection.splice.apply(sessionSelection, [insertAt, 0].concat(block));
+  });
   renderSessionPicker();
 }
 
@@ -4013,11 +4009,6 @@ $("session-selected").addEventListener("pointermove", function (event) {
   var hovered = document.elementFromPoint(event.clientX, event.clientY);
   var target = hovered && hovered.closest("[data-session-drop-exercise], [data-session-drop-group]");
   if (!target || !this.contains(target)) { sessionDragState.target = null; return; }
-  if (sessionDragState.type === "group" && target.hasAttribute("data-session-drop-exercise")) {
-    var previous = target.previousElementSibling;
-    while (previous && !previous.hasAttribute("data-session-drop-group")) previous = previous.previousElementSibling;
-    if (previous) target = previous;
-  }
   if (target === sessionDragState.row) {
     sessionDragState.target = null; return;
   }
