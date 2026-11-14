@@ -86,6 +86,8 @@ body.player-mode main{padding-top:22px;padding-bottom:calc(120px + env(safe-area
 .portal-heading p{margin-top:7px;font-size:.9rem}
 .portal-tabs{grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;bottom:0;width:100%;max-width:760px;padding:8px 10px max(8px,env(safe-area-inset-bottom));border-radius:18px 18px 0 0;box-shadow:0 -8px 30px #0002}
 .portal-tabs button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:0;background:transparent;min-height:60px;padding:7px 2px;font-size:.73rem;font-weight:650;line-height:1.2;border-radius:12px;overflow-wrap:normal}
+html[lang="es"] .portal-tabs{grid-template-columns:minmax(0,1fr) minmax(0,1.35fr) minmax(0,1.75fr) minmax(0,1fr) minmax(0,1fr)}
+.portal-tabs button>span:not(.portal-tab-count){max-width:100%;min-width:0;overflow-wrap:anywhere}
 .portal-tabs button[aria-pressed=true]{background:rgba(0,68,238,.12);color:var(--ink)}
 .portal-tabs button[aria-pressed=true] .portal-nav-icon{color:var(--blue)}
 .portal-nav-icon{display:block;flex:none;width:22px;height:22px}
