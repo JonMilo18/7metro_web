@@ -1,5 +1,19 @@
 # Entrenamenduak editatu eta bikoiztu
 
+Kontua ezabatzeko, aplikatu `migrations/20261114110000_delete_account.sql` eta
+berriro hedatu `metro-api`. `account-actions.ts` moduluak `account_delete_preview`
+eta `account_delete` ekintzak autentifikatutako erabiltzailearen eta saioaren
+hasharekin bidaltzen ditu `account_deletion_action` funtziora. Aurrebistak talde
+bakoitzaren ondorioa erakusten du. Jabetza lehenengo gonbidatutako hartzaileari
+pasatzen zaio, taldean sarbidea badu; gonbidapen historikorik ez badago,
+taldekidetzaren data erabiltzen da. Beste kiderik gabeko taldeak ezabatzen dira.
+Ezabatzeak oraingo pasahitza eta erabiltzaile-izena idatziz baieztatzea eskatzen
+du. Taldekideak edo hartzailea aldatzen badira, aurrebista berrikustea eskatzen
+da. Dena transakzio berean egiten da, `delete_team_owned` laguntzailea erabiliz.
+Talde partekatuetako datuak eta beste erabiltzaileek gordetako ariketak mantendu
+egiten dira; ezabatutako kontuaren egiletza-lotura kentzen da. Saio guztiak eta
+kontuaren sarbideak ezabatzen dira, eta PWA saioa hasteko pantailara itzultzen da.
+
 Kontuaren erabiltzaile-izena eta pasahitza `account-actions.ts` moduluak kudeatzen
 ditu. `metro-api`-k `accountActions` zerrendako `account_get` eta `account_update`
 ekintzak saio bidez autentifikatu ondoren `handleAccountAction(payload, supabase,

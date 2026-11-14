@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-export const accountActions = new Set(["account_get", "account_update"]);
+export const accountActions = new Set(["account_get", "account_update", "account_delete_preview", "account_delete"]);
 
 export async function handleAccountAction(
   payload: Record<string, unknown>, supabase: SupabaseClient, userId: number, sessionToken: string,
@@ -11,6 +11,31 @@ export async function handleAccountAction(
       .select("id_erabiltzailea,izena").eq("id_erabiltzailea", userId).maybeSingle();
     if (error || !data) return respond(500, { error: "Ezin izan dira kontuaren datuak kargatu" });
     return respond(200, { ok: true, user: data });
+  }
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(sessionToken));
+  const sessionHash = Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, "0")).join("");
+  if (payload.action === "account_delete_preview" || payload.action === "account_delete") {
+    if (payload.action === "account_delete" && (
+      typeof payload.current_password !== "string" || !payload.current_password || payload.current_password.length > 1024 ||
+      typeof payload.confirmation !== "string" || payload.confirmation.length > 200 ||
+      !payload.preview || typeof payload.preview !== "object" || Array.isArray(payload.preview))) {
+      return respond(400, { error: "Kontuaren datuak ez dira baliozkoak" });
+    }
+    const { data, error } = await supabase.rpc("account_deletion_action", {
+      p_user_id: userId, p_session_hash: sessionHash, p_action: payload.action,
+      p_payload: { current_password: payload.current_password, confirmation: payload.confirmation, preview: payload.preview },
+    });
+    if (error) {
+      const messages: Record<string, [number, string]> = {
+        "42501": [401, "Saioa iraungi da; hasi berriro"],
+        "28000": [403, "Oraingo pasahitza ez da zuzena"],
+        "22023": [400, "Baieztatzeko, idatzi zure erabiltzaile-izena"],
+        "40001": [409, "Taldeen egoera aldatu da. Itxi eta ireki berriro kontua ezabatzeko aukera"],
+      };
+      const failure: [number, string] = messages[error.code] || [500, "Ezin izan da kontua ezabatu"];
+      return respond(failure[0], { error: failure[1] });
+    }
+    return respond(200, data);
   }
   if (payload.action !== "account_update") return respond(400, { error: "Ekintza ez da baliozkoa" });
   const username = typeof payload.username === "string" ? payload.username.trim().toLowerCase() : "";
@@ -25,8 +50,6 @@ export async function handleAccountAction(
   if (typeof password === "string" && new TextEncoder().encode(password).length > 72) {
     return respond(400, { error: "Pasahitz berria luzeegia da. Erabili pasahitz laburragoa" });
   }
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(sessionToken));
-  const sessionHash = Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, "0")).join("");
   const { data, error } = await supabase.rpc("update_account_credentials", {
     p_user_id: userId, p_session_hash: sessionHash, p_current_password: currentPassword,
     p_expected_username: payload.expected_username, p_username: username, p_new_password: password,

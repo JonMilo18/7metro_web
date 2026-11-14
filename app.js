@@ -135,7 +135,8 @@ function languageDraft() {
 
 window.addEventListener("languagechange", function () {
   if ($("account-settings-dialog").open) {
-    $("account-settings-title").textContent = t($("account-password-form").hidden ? "Erabiltzaile-izena aldatu" : "Pasahitza aldatu");
+    $("account-settings-title").textContent = t(!$("account-delete-form").hidden ? "Kontua ezabatu" : $("account-password-form").hidden ? "Erabiltzaile-izena aldatu" : "Pasahitza aldatu");
+    if (accountDeletionPreview) renderAccountDeletionPreview();
   }
   var restore = languageDraft(), scrollX = window.scrollX, scrollY = window.scrollY;
   var editor = $("match-edit-form"), editingMatch = editor && editor.dataset.matchEditId;
@@ -3288,7 +3289,15 @@ $("login-form").addEventListener("submit", async function (event) {
   } finally { button.disabled = false; }
 });
 
-var accountSettingsSequence = 0, accountSettingsBusy = "", accountExpectedUsername = "";
+var accountSettingsSequence = 0, accountSettingsBusy = "", accountExpectedUsername = "", accountDeletionPreview = null;
+
+function renderAccountDeletionPreview() {
+  $("account-delete-username").textContent = accountExpectedUsername;
+  $("account-delete-teams").innerHTML = accountDeletionPreview.owned_teams.map(function (item) {
+    return '<li class="item"><div><strong>' + esc(item.name) + '</strong><p class="muted">' +
+      esc(item.recipient_id ? t("Jabetza {name} erabiltzaileari pasatuko zaio", { name: item.recipient_name }) : t("Talde hau eta bere datuak ezabatuko dira")) + '</p></div></li>';
+  }).join("");
+}
 
 function updateAccountUser(accountUser) {
   var oldModeKey = portalModeKey(), mode = readStore(oldModeKey);
@@ -3312,8 +3321,9 @@ document.querySelectorAll("[data-open-account]").forEach(function (button) {
     var sequence = ++accountSettingsSequence, sessionToken = token;
     accountSettingsBusy = "load";
     var passwordMode = button.dataset.openAccount === "password";
-    var form = $(passwordMode ? "account-password-form" : "account-settings-form");
-    $("account-settings-title").textContent = t(passwordMode ? "Pasahitza aldatu" : "Erabiltzaile-izena aldatu");
+    var deleteMode = button.dataset.openAccount === "delete";
+    var form = $(deleteMode ? "account-delete-form" : passwordMode ? "account-password-form" : "account-settings-form");
+    $("account-settings-title").textContent = t(deleteMode ? "Kontua ezabatu" : passwordMode ? "Pasahitza aldatu" : "Erabiltzaile-izena aldatu");
     document.querySelectorAll("#account-settings-dialog form").forEach(function (item) {
       item.reset(); item.hidden = item !== form;
     });
@@ -3324,11 +3334,15 @@ document.querySelectorAll("[data-open-account]").forEach(function (button) {
     $("account-settings-loading").hidden = false;
     $("account-settings-dialog").showModal();
     try {
-      var result = await request({ action: "account_get" });
+      var result = await request({ action: deleteMode ? "account_delete_preview" : "account_get" });
       if (sequence !== accountSettingsSequence || token !== sessionToken) return;
       updateAccountUser(result.user);
       accountExpectedUsername = result.user.izena;
       $("account-settings-username").value = result.user.izena;
+      if (deleteMode) {
+        accountDeletionPreview = result.preview;
+        renderAccountDeletionPreview();
+      }
       form.querySelector('[type="submit"]').disabled = false;
     } catch (error) {
       if (sequence === accountSettingsSequence) {
@@ -3353,16 +3367,20 @@ $("account-settings-dialog").addEventListener("cancel", function (event) {
 $("account-settings-dialog").addEventListener("close", function () {
   accountSettingsSequence++;
   accountSettingsBusy = ""; accountExpectedUsername = "";
+  accountDeletionPreview = null;
+  $("account-delete-teams").replaceChildren();
+  $("account-delete-username").textContent = "";
   document.querySelectorAll("#account-settings-dialog form").forEach(function (form) {
     form.reset(); form.inert = false;
   });
   $("account-settings-close").disabled = false;
   $("account-settings-confirm").setCustomValidity("");
+  $("account-delete-confirmation").setCustomValidity("");
 });
 $("account-password-form").addEventListener("input", function () {
   $("account-settings-confirm").setCustomValidity("");
 });
-document.querySelectorAll("#account-settings-dialog form").forEach(function (form) {
+document.querySelectorAll("#account-settings-form,#account-password-form").forEach(function (form) {
   form.addEventListener("submit", async function (event) {
     event.preventDefault();
     if (accountSettingsBusy || !accountExpectedUsername) return;
@@ -3403,6 +3421,56 @@ document.querySelectorAll("#account-settings-dialog form").forEach(function (for
       }
     }
   });
+});
+
+$("account-delete-form").addEventListener("input", function () {
+  $("account-delete-confirmation").setCustomValidity("");
+});
+$("account-delete-form").addEventListener("submit", async function (event) {
+  event.preventDefault();
+  if (accountSettingsBusy || !accountDeletionPreview) return;
+  var confirmation = $("account-delete-confirmation").value.trim();
+  if (confirmation !== accountExpectedUsername) {
+    $("account-delete-confirmation").setCustomValidity(t("Baieztatzeko, idatzi zure erabiltzaile-izena"));
+    $("account-delete-confirmation").reportValidity();
+    return;
+  }
+  var sequence = accountSettingsSequence, sessionToken = token;
+  accountSettingsBusy = "save"; this.inert = true;
+  $("account-settings-close").disabled = true;
+  $("account-settings-error").hidden = true;
+  $("account-settings-loading").textContent = t("Ezabatzen...");
+  $("account-settings-loading").hidden = false;
+  try {
+    await request({ action: "account_delete", current_password: this.elements.current_password.value,
+      confirmation: confirmation, preview: accountDeletionPreview });
+    if (sequence !== accountSettingsSequence || token !== sessionToken) return;
+    try {
+      localStorage.removeItem(portalModeKey());
+      ["7metro-supabase-token", "7metro-username", "7metro-team-id"].forEach(function (key) { localStorage.removeItem(key); });
+      teams.forEach(function (item) { localStorage.removeItem("7metro-scoreboard-" + item.id_taldea); });
+    } catch (error) { /* The deleted account is already inaccessible on the server. */ }
+    token = ""; user = null; userName = ""; team = null; teamId = 0;
+    teams = []; tables = {}; players = []; exercises = []; sessions = []; matches = [];
+    stopExerciseAnimation(); stopSessionAnimation();
+    scoreboard = { home: 0, away: 0, seconds: 0, period: 0, running: false, events: [], lastTick: 0 };
+    resetSessionEditor(); resetBoard();
+    $("username").value = "";
+    showLogin();
+    notify(t("Kontua behin betiko ezabatu da"), "success");
+  } catch (error) {
+    if (sequence === accountSettingsSequence) {
+      $("account-settings-error").textContent = error.message;
+      $("account-settings-error").hidden = false;
+      this.elements.current_password.value = "";
+    }
+  } finally {
+    if (sequence === accountSettingsSequence) {
+      accountSettingsBusy = ""; this.inert = false;
+      $("account-settings-close").disabled = false;
+      $("account-settings-loading").hidden = true;
+    }
+  }
 });
 
 $("create-account").addEventListener("click", async function () {
