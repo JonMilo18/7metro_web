@@ -15,6 +15,9 @@ var DEFAULT_API_URL = "https://txkjflrtoziscqcytpbc.supabase.co";
 var DEFAULT_API_KEY = "sb_publishable_R2yjFvK-Z7ezWbXVi2KqmA_dzox4-pd";
 var t = window.I18n.t;
 var $ = function (id) { return document.getElementById(id); };
+document.querySelectorAll("[data-copyright-year]").forEach(function (element) {
+  element.textContent = String(new Date().getFullYear());
+});
 var readStore = function (key) {
   try { return localStorage.getItem(key) || ""; }
   catch (error) { console.error(t("Ezin izan da tokiko biltegia irakurri"), error); return ""; }
@@ -266,7 +269,7 @@ function renderAccountIdentity(name, activeTeam) {
   if (arguments.length) accountIdentity = { name: String(name || ""), team: String(activeTeam || "") };
   var identity = accountIdentity, account = $("account");
   var inSidebar = !$("nav").classList.contains("hidden");
-  if (inSidebar) $("nav-account").appendChild(account);
+  if (inSidebar) $("nav-account").prepend(account);
   else $("notification-bell").before(account);
   document.body.classList.toggle("has-account", Boolean(identity.name));
   if (!identity.name) { account.replaceChildren(); account.removeAttribute("aria-label"); return; }
