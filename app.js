@@ -264,6 +264,9 @@ var accountIdentity = { name: "", team: "" };
 function renderAccountIdentity(name, activeTeam) {
   if (arguments.length) accountIdentity = { name: String(name || ""), team: String(activeTeam || "") };
   var identity = accountIdentity, account = $("account");
+  var inSidebar = !document.body.classList.contains("player-mode") && !$("nav").classList.contains("hidden");
+  if (inSidebar) $("nav-account").appendChild(account);
+  else $("notification-bell").before(account);
   document.body.classList.toggle("has-account", Boolean(identity.name));
   if (!identity.name) { account.replaceChildren(); account.removeAttribute("aria-label"); return; }
   var words = identity.name.trim().split(/\s+/);

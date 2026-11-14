@@ -41,7 +41,7 @@ header b{font-size:1.15rem;letter-spacing:-.01em}
 .account-team{display:flex;align-items:center;gap:5px;min-width:0;font-size:.73rem;color:var(--muted)}
 .account-team::before{content:"";width:6px;height:6px;flex:none;border-radius:50%;background:var(--blue)}
 .account-team>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-@media(max-width:420px){body.has-account header>b{display:none}}
+@media(max-width:420px){body.has-account header:has(#account)>b{display:none}}
 .notification-bell{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:12px;background:var(--bg2);color:var(--ink);font-size:1.25rem;cursor:pointer}
 .notification-bell[hidden]{display:none}
 .notification-bell svg{display:block;width:22px;height:22px;flex:none}
@@ -285,8 +285,8 @@ textarea{min-height:84px;resize:vertical}
 @media(min-width:768px){
  header{position:fixed;left:0;top:0;width:240px;border:0;padding:calc(22px + env(safe-area-inset-top,0px)) 24px 12px;z-index:4}
  header img{height:48px}
- #account{position:fixed;left:16px;top:calc(88px + env(safe-area-inset-top,0px));width:208px;margin:0}
- nav{top:calc(164px + env(safe-area-inset-top,0px));bottom:0;left:0;right:auto;width:240px;border:0;border-right:1px solid var(--line);padding:8px 12px calc(16px + env(safe-area-inset-bottom,0px));background:rgba(6,14,26,.92);overflow-y:auto}
+ header #account{max-width:208px}
+ nav{top:calc(96px + env(safe-area-inset-top,0px));bottom:0;left:0;right:auto;width:240px;border:0;border-right:1px solid var(--line);padding:8px 12px calc(16px + env(safe-area-inset-bottom,0px));background:rgba(6,14,26,.92)}
  nav div{max-width:none;grid-template-columns:1fr;gap:4px;align-content:start}
  nav button{text-align:left;padding:12px 16px;border-radius:10px;font-size:1rem;min-height:48px}
  nav button[aria-selected="true"]{box-shadow:none;background:rgba(0,68,238,.2);color:#fff}
@@ -299,12 +299,17 @@ textarea{min-height:84px;resize:vertical}
  body.mobile-menu-active{overflow:hidden}
  .menu-toggle{display:grid}
  main{padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
- nav{position:fixed;z-index:12;top:0;right:auto;bottom:0;left:0;width:min(84vw,320px);overflow-y:auto;overscroll-behavior:contain;padding:calc(16px + env(safe-area-inset-top,0px)) 12px calc(16px + env(safe-area-inset-bottom,0px));border:0;border-right:1px solid var(--line);background:var(--bg);box-shadow:16px 0 44px rgba(0,0,0,.28);transform:translateX(-105%);transition:transform .22s ease}
+ nav{position:fixed;z-index:12;top:0;right:auto;bottom:0;left:0;width:min(84vw,320px);overscroll-behavior:contain;padding:calc(16px + env(safe-area-inset-top,0px)) 12px calc(16px + env(safe-area-inset-bottom,0px));border:0;border-right:1px solid var(--line);background:var(--bg);box-shadow:16px 0 44px rgba(0,0,0,.28);transform:translateX(-105%);transition:transform .22s ease}
  nav.menu-open{transform:translateX(0)}
  nav div{max-width:none;grid-template-columns:1fr;gap:5px;align-content:start}
  nav button{text-align:left;padding:12px 16px;border-radius:10px;font-size:1rem;min-height:48px}
  nav button[aria-selected="true"]{box-shadow:none;background:rgba(0,68,238,.2);color:#fff}
 }
+#nav{display:flex;flex-direction:column;gap:12px;overflow:hidden}
+#nav>[role="tablist"]{flex:0 1 auto;min-height:0;width:100%;overflow-y:auto;overscroll-behavior:contain}
+.nav-account{flex:none;min-width:0;margin-top:auto;padding:12px 4px 0;border-top:1px solid var(--line)}
+.nav-account:empty{display:none}
+#nav #account{position:static;flex:none;width:100%;max-width:none;margin:0}
 @media(max-width:420px){.grid2,.grid3{grid-template-columns:1fr}}
 @media(max-width:760px){.home-dashboard-grid{grid-template-columns:1fr}.home-card{min-height:200px}.home-shortcuts{grid-template-columns:1fr}.home-hero{align-items:flex-start;flex-direction:column}.home-hero>.btn{width:auto;margin:0}}
 @media(max-width:520px){#v-friends .item{flex-wrap:wrap;gap:8px}#v-friends .item-main{flex:1 1 100%}}
@@ -694,7 +699,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=183"><link rel="stylesheet" href="portal.css?v=183"><link rel="stylesheet" href="motion.css?v=183">
+<link rel="stylesheet" href="insights.css?v=184"><link rel="stylesheet" href="portal.css?v=184"><link rel="stylesheet" href="motion.css?v=184">
 </head>
 <body>
 <div id="app">
@@ -1199,7 +1204,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <button id="mobile-menu-backdrop" class="mobile-menu-backdrop hidden" type="button" aria-label="Menua itxi" tabindex="-1"></button>
 <nav id="nav" class="hidden" aria-label="Nagusia" aria-hidden="true" inert><div role="tablist">
   <button role="tab" data-v="v-home" aria-selected="true"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg><span>Hasiera</span></button><button role="tab" data-v="v-sessions" aria-selected="false"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="4" width="14" height="17" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="m8 12 2 2 5-5M8 18h8"/></svg><span>Entrenamendua</span></button><button role="tab" data-v="v-planning" aria-selected="false"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18m-14 4h2m4 0h2m-8 3h2"/></svg><span>Plangintza</span></button><button role="tab" data-v="v-players" aria-selected="false"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="7" r="3"/><path d="M6 21v-2a6 6 0 0 1 12 0v2M5 5a3 3 0 0 0 0 6m14-6a3 3 0 0 1 0 6M2 20v-2a5 5 0 0 1 3-4m17 6v-2a5 5 0 0 0-3-4"/></svg><span>Taldea</span></button><button role="tab" data-v="v-matches" aria-selected="false"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M8 3h8v5a4 4 0 0 1-8 0Zm0 2H4v2a4 4 0 0 0 4 4m8-6h4v2a4 4 0 0 1-4 4m-4 1v6m-4 3h8m-6-3h4v3"/></svg><span>Lehiaketa</span></button><button role="tab" data-v="v-stats" aria-selected="false"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 3v18h17M8 17v-5m5 5V8m5 9V4"/></svg><span>Estatistikak</span></button><button role="tab" data-v="v-friends" aria-selected="false"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="8" cy="7" r="3"/><circle cx="17" cy="9" r="3"/><path d="M2 21v-2a6 6 0 0 1 12 0v2m2-6a5 5 0 0 1 6 5v1"/></svg><span>Lagunak</span></button><button role="tab" data-v="v-more" aria-selected="false"><svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg><span>Gehiago</span></button>
-</div></nav>
+</div><footer class="nav-account" id="nav-account"></footer></nav>
 <div id="plan-modal" class="modal hidden">
   <div class="modal-box card">
     <h2 id="plan-modal-title">Plangintza</h2>
@@ -1215,19 +1220,19 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <div id="toast" class="notice hidden" role="status" aria-live="polite"></div>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=183" defer></script>
-<script src="i18n.js?v=183" defer></script>
-<script src="insights-data.js?v=183" defer></script>
-<script src="portal.js?v=183" defer></script>
-<script src="portal-events.js?v=183" defer></script>
-<script src="portal-calendar.js?v=183" defer></script>
-<script src="push.js?v=183" defer></script>
-<script src="motion.js?v=183" defer></script>
-<script src="app.js?v=183" defer></script>
-<script src="player-statistics.js?v=183" defer></script>
-<script src="weekly-training.js?v=183" defer></script>
-<script src="inbox.js?v=183" defer></script>
-<script src="report-pdf.js?v=183" defer></script>
-<script src="insights.js?v=183" defer></script>
+<script src="locales/es.js?v=184" defer></script>
+<script src="i18n.js?v=184" defer></script>
+<script src="insights-data.js?v=184" defer></script>
+<script src="portal.js?v=184" defer></script>
+<script src="portal-events.js?v=184" defer></script>
+<script src="portal-calendar.js?v=184" defer></script>
+<script src="push.js?v=184" defer></script>
+<script src="motion.js?v=184" defer></script>
+<script src="app.js?v=184" defer></script>
+<script src="player-statistics.js?v=184" defer></script>
+<script src="weekly-training.js?v=184" defer></script>
+<script src="inbox.js?v=184" defer></script>
+<script src="report-pdf.js?v=184" defer></script>
+<script src="insights.js?v=184" defer></script>
 </body>
 </html>
