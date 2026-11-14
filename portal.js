@@ -130,19 +130,22 @@ function portalRenderHome(events, pending, unread) {
     return (event.kind === "session" || event.row.callup) && new Date(event.row.date).getTime() >= Date.now();
   });
   var next = eligible[0];
-  var html = identity + '<div class="portal-home-summary"><button type="button" data-portal-go="callups" class="portal-summary-action' + (pending.length ? ' needs-response' : '') + '"><strong>' + pending.length + '</strong><span>' + esc(t("Deialdi erantzuteko")) + '</span></button>' +
-    '<button type="button" data-portal-go="notices" class="portal-summary-action"><strong>' + unread + '</strong><span>' + esc(t("Abisu irakurri gabe")) + '</span></button></div>';
-  html += '<div id="portal-personal-stats-entry" hidden></div><div class="portal-section-heading"><h2>' + esc(t("Hurrengo jarduera")) + '</h2></div><div class="portal-next-event">' +
+  var html = '<div class="portal-home-overview">' + identity + '<div class="portal-home-summary"><button type="button" data-portal-go="callups" class="portal-summary-action' + (pending.length ? ' needs-response' : '') + '"><strong>' + pending.length + '</strong><span>' + esc(t("Deialdi erantzuteko")) + '</span></button>' +
+    '<button type="button" data-portal-go="notices" class="portal-summary-action"><strong>' + unread + '</strong><span>' + esc(t("Abisu irakurri gabe")) + '</span></button></div></div>';
+  html += '<div class="portal-home-columns"><div class="portal-home-primary"><div id="portal-personal-stats-entry" hidden></div><div class="portal-section-heading"><h2>' + esc(t("Hurrengo jarduera")) + '</h2></div><div class="portal-next-event">' +
     (next ? portalEventCard(next) : '<div class="card portal-home-empty"><h3>' + esc(t("Ez dago hurrengo deialdirik")) + '</h3><button class="btn secondary" type="button" data-portal-go="agenda">' + esc(t("Egutegia ikusi")) + '</button></div>') + '</div>';
+  html += '</div>';
+  var secondary = '';
   var following = eligible.slice(1, 4);
   if (following.length) {
-    html += '<div class="portal-section-heading"><h2>' + esc(t("Ondoren")) + '</h2><button type="button" data-portal-go="agenda">' + esc(t("Egutegia ikusi")) + '</button></div><div class="portal-upcoming">' + following.map(function (event) {
+    secondary += '<div class="portal-section-heading"><h2>' + esc(t("Ondoren")) + '</h2><button type="button" data-portal-go="agenda">' + esc(t("Egutegia ikusi")) + '</button></div><div class="portal-upcoming">' + following.map(function (event) {
       return '<button type="button" class="portal-upcoming-event" data-portal-open-event="' + event.kind + ':' + Number(event.row.id) + '"><span><strong>' + esc(event.kind === "session" ? event.row.title || t("Entrenamendua") : event.row.opponent || t("Partida")) + '</strong><small>' + esc(portalDate(event.row.date)) + '</small></span><span class="portal-upcoming-kind">' + esc(t(event.kind === "session" ? "Entrenamendua" : "Partida")) + '</span></button>';
     }).join("") + '</div>';
   }
   var notice = portalState.data.notices.find(function (item) { return !item.read; });
-  if (notice) html += '<div class="portal-section-heading"><h2>' + esc(t("Azken abisua")) + '</h2></div><button class="card portal-home-notice" type="button" data-portal-go="notices"><strong>' + esc(notice.title) + '</strong><span>' + esc(notice.body) + '</span><small>' + esc(t("Abisuak ikusi")) + '</small></button>';
-  $("portal-home").innerHTML = html;
+  if (notice) secondary += '<div class="portal-section-heading"><h2>' + esc(t("Azken abisua")) + '</h2></div><button class="card portal-home-notice" type="button" data-portal-go="notices"><strong>' + esc(notice.title) + '</strong><span>' + esc(notice.body) + '</span><small>' + esc(t("Abisuak ikusi")) + '</small></button>';
+  if (secondary) html += '<div class="portal-home-secondary">' + secondary + '</div>';
+  $("portal-home").innerHTML = html + "</div>";
 }
 function portalRenderPlayer() {
   var data = portalState.data; if (!data) return;
@@ -157,13 +160,13 @@ function portalRenderPlayer() {
   var answered = upcoming.filter(portalHasResponse);
   var past = callups.filter(function (event) { return String(event.row.date).slice(0, 10) < today; });
   $("portal-callups").innerHTML = '<h2>' + esc(t("Nire deialdiak")) + '</h2>' +
-    (pending.length ? '<h3 class="portal-subheading">' + esc(t("Erantzuteko")) + ' · ' + pending.length + '</h3>' + pending.map(portalEventCard).join("") : upcoming.length ? '<p class="portal-caught-up">' + esc(t("Deialdi guztiak erantzunda dituzu")) + '</p>' : '') +
-    (answered.length ? '<details class="portal-history"><summary>' + esc(t("Erantzunda")) + ' · ' + answered.length + '</summary>' + answered.map(portalEventCard).join("") + '</details>' : '') +
-    (past.length ? '<details class="portal-history"><summary>' + esc(t("Aurreko deialdiak")) + ' · ' + past.length + '</summary>' + past.map(portalEventCard).join("") + '</details>' : '') +
+    (pending.length ? '<h3 class="portal-subheading">' + esc(t("Erantzuteko")) + ' · ' + pending.length + '</h3><div class="portal-event-grid">' + pending.map(portalEventCard).join("") + '</div>' : upcoming.length ? '<p class="portal-caught-up">' + esc(t("Deialdi guztiak erantzunda dituzu")) + '</p>' : '') +
+    (answered.length ? '<details class="portal-history"><summary>' + esc(t("Erantzunda")) + ' · ' + answered.length + '</summary><div class="portal-event-grid">' + answered.map(portalEventCard).join("") + '</div></details>' : '') +
+    (past.length ? '<details class="portal-history"><summary>' + esc(t("Aurreko deialdiak")) + ' · ' + past.length + '</summary><div class="portal-event-grid">' + past.map(portalEventCard).join("") + '</div></details>' : '') +
     (!callups.length ? portalEmpty("Oraindik ez duzu deialdirik.") : '');
-  $("portal-notices").innerHTML = '<h2>' + esc(t("Taldeko abisuak")) + '</h2>' + (data.notices.length ? data.notices.map(function (notice) {
+  $("portal-notices").innerHTML = '<h2>' + esc(t("Taldeko abisuak")) + '</h2>' + (data.notices.length ? '<div class="portal-notice-grid">' + data.notices.map(function (notice) {
     return '<article class="card"><span class="portal-kind">' + esc(portalDate(notice.created_at)) + '</span><h3>' + esc(notice.title) + '</h3><p class="portal-authored">' + esc(notice.body) + '</p>' + (notice.read ? '<p class="portal-response yes">' + esc(t("Irakurrita")) + '</p>' : '<button class="btn secondary" type="button" data-portal-read="' + Number(notice.id) + '">' + esc(t("Irakurrita markatu")) + '</button>') + '</article>';
-  }).join("") : portalEmpty("Ez dago taldeko abisurik."));
+  }).join("") + '</div>' : portalEmpty("Ez dago taldeko abisurik."));
   var unread = data.notices.filter(function (notice) { return !notice.read; }).length;
   portalRenderHome(events, pending, unread);
   [["callups", pending.length], ["notices", unread]].forEach(function (entry) {

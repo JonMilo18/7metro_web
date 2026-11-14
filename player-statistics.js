@@ -98,11 +98,13 @@
       metric("Huts eginda", attendance.absent) + metric("Berandu", attendance.late) + metric("Asistentzia", attendance.rate == null ? null : attendance.rate + '%') + '</div>';
     if (!attendance.recorded) html += '<p class="muted">' + esc(t("Ez dago asistentzia-erregistrorik hautatutako aldian.")) + '</p>';
     html += '<h3>' + esc(t("Partidaz partida")) + '</h3>';
+    html += '<div class="portal-personal-match-grid">';
     html += data.matches.length ? data.matches.slice(0, player.limit).map(function (match) {
       return '<article class="card portal-personal-match"><div><h3>' + esc(match.opponent || t("Aurkaria")) + '</h3><p class="muted">' + esc(portalDate(match.date)) + '</p></div>' +
         '<div class="portal-personal-match-numbers"><span><strong>' + match.goals + '</strong>' + esc(t("Golak")) + '</span><span><strong>' + match.shots + '</strong>' + esc(t("Jaurtiketak")) + '</span><span><strong>' +
         (match.efficiency == null ? '—' : match.efficiency + '%') + '</strong>' + esc(t("Eraginkortasuna")) + '</span></div></article>';
     }).join("") : portalEmpty("Ez dago zure partidako estatistikarik hautatutako aldian.");
+    html += "</div>";
     if (data.matches.length > player.limit) html += '<button class="btn secondary" type="button" data-personal-stats-more>' + esc(t("Gehiago ikusi")) + '</button>';
     if (attendance.entries.length) html += '<details class="portal-history"><summary>' + esc(t("Asistentziaren xehetasunak")) + '</summary><ul class="list portal-personal-attendance">' +
       attendance.entries.map(function (entry) { return '<li class="item"><span>' + esc(portalDate(entry.date)) + '</span><strong>' +

@@ -159,3 +159,47 @@ body.player-mode #nav>[role="tablist"]{display:none}
 .portal-tabs button:disabled{opacity:.4;cursor:default}
 .portal-nav-icon{color:var(--muted)}
 .portal-tab-count{position:static;flex:none;margin-left:auto;min-width:20px;padding:2px 6px;border-radius:10px;background:var(--blue);color:#fff;font-size:.72rem;text-align:center}
+
+.portal-home-primary,.portal-home-secondary,.portal-calendar-layout>*{min-width:0}
+.portal-event-grid,.portal-notice-grid,.portal-personal-match-grid{display:grid;gap:16px}
+.portal-event-grid>.portal-event,.portal-notice-grid>.card,.portal-personal-match-grid>.card{min-width:0;margin:0}
+
+@media(min-width:768px){
+ body.player-mode main>#player-portal{max-width:1240px;margin-inline:auto}
+ #portal-team-label{max-width:360px}
+ #portal-stats>label{max-width:360px}
+ .portal-agenda-toggle{max-width:360px}
+ .portal-calendar-day{min-height:72px}
+ .portal-heading h1{font-size:2rem}
+ .portal-summary-action span{max-width:none;font-size:.88rem}
+}
+
+@media(min-width:1100px){
+ .portal-home-overview{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px;align-items:stretch;margin-bottom:24px}
+ .portal-home-overview>.portal-player-identity,.portal-home-overview>.portal-home-summary{margin:0}
+ .portal-home-overview:not(:has(>.portal-player-identity)){grid-template-columns:minmax(0,1fr)}
+ .portal-home-columns{display:grid;gap:24px}
+ .portal-home-columns:has(>.portal-home-secondary){grid-template-columns:minmax(0,1.25fr) minmax(280px,.85fr)}
+ .portal-home-primary>.portal-section-heading,.portal-home-secondary>.portal-section-heading:first-child{margin-top:0}
+ .portal-home-primary .portal-next-event>.card{margin-bottom:0}
+ .portal-calendar-layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,.85fr);gap:24px;align-items:start}
+ .portal-calendar-layout>.portal-calendar{margin-top:0;padding:20px}
+ .portal-calendar-layout #portal-calendar-events>h3{margin-top:0}
+ .portal-calendar-day{min-height:76px}
+ .portal-event-grid,.portal-notice-grid,.portal-personal-match-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+ .portal-event-grid{align-items:start}
+ .portal-event-grid>.portal-event{display:flex;flex-direction:column;align-items:stretch}
+ .portal-event-grid .portal-event-heading{flex:1}
+ .portal-event-grid>.portal-event>.portal-response{align-self:flex-start}
+ .portal-notice-grid>.card{display:flex;flex-direction:column}
+ .portal-notice-grid .portal-authored{flex:1}
+ #portal-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}
+ #portal-settings>.card{min-width:0;margin:0}
+ #portal-settings>.card:first-child{grid-row:span 3}
+ #portal-settings>.portal-account-actions{grid-column:1/-1;margin-top:0}
+ #portal-settings .toolbar>.btn{flex:none;width:auto;margin:0}
+ .portal-personal-match{display:flex;align-items:center;justify-content:space-between;gap:20px}
+ .portal-personal-match>div{min-width:0}
+ .portal-personal-match h3{overflow-wrap:anywhere}
+ .portal-personal-match-numbers{flex:1}
+}
