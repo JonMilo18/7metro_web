@@ -82,9 +82,11 @@ async function portalLoadPlayer() {
 }
 function portalSetTab(tab) {
   if (!portalState.playerId && tab !== "settings") tab = "settings";
+  var entering = portalState.tab !== tab;
   if (tab === "settings" && window.PushUI) window.PushUI.loadPlayerFriends();
   portalState.tab = tab;
   ["home", "agenda", "callups", "notices", "settings", "stats"].forEach(function (name) { $("portal-" + name).hidden = name !== tab; });
+  if (entering && window.AppMotion) window.AppMotion.enter($("portal-" + tab));
   document.querySelectorAll("[data-portal-tab]").forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.portalTab === (tab === "stats" ? "home" : tab))); });
 }
 function portalEventCard(event) {

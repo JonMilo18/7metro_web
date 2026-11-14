@@ -1,12 +1,12 @@
 // 7metro - service worker probisionala
 // Aldaketak argitaratzean, aldatu CACHE bertsioa.
-const CACHE = "7metro-v177";
-const SHELL = ["./", "./index.html", "./manifest.json",
-  "./player-statistics.js?v=177",
-  "./inbox.js?v=177",
-  "./weekly-training.js?v=177",
-  "./locales/es.js?v=177", "./i18n.js?v=177", "./app.js?v=177", "./insights-data.js?v=177", "./insights.js?v=177",
-  "./portal.js?v=177", "./portal-events.js?v=177", "./portal-calendar.js?v=177", "./push.js?v=177", "./portal.css?v=177", "./report-pdf.js?v=177", "./insights.css?v=177", "./vendor/jspdf.umd.min.js",
+const CACHE = "7metro-v178";
+const SHELL = ["./motion.js?v=178", "./motion.css?v=178", "./", "./index.html", "./manifest.json",
+  "./player-statistics.js?v=178",
+  "./inbox.js?v=178",
+  "./weekly-training.js?v=178",
+  "./locales/es.js?v=178", "./i18n.js?v=178", "./app.js?v=178", "./insights-data.js?v=178", "./insights.js?v=178",
+  "./portal.js?v=178", "./portal-events.js?v=178", "./portal-calendar.js?v=178", "./push.js?v=178", "./portal.css?v=178", "./report-pdf.js?v=178", "./insights.css?v=178", "./vendor/jspdf.umd.min.js",
   "./vendor/fonts/NotoSans-Regular.ttf", "./vendor/fonts/NotoSans-Bold.ttf",
   "./irudiak/Zelaia.png", "./irudiak/Zelai-erdia.png",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];

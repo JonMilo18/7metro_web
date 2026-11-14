@@ -1,0 +1,26 @@
+.motion-nav{isolation:isolate}
+#nav>.motion-nav{position:relative}
+.motion-nav::before{content:"";position:absolute;top:0;left:0;width:var(--motion-nav-width,0px);height:var(--motion-nav-height,0px);transform:translate(var(--motion-nav-x,0px),var(--motion-nav-y,0px));border-radius:12px;background:rgba(0,68,238,.12);pointer-events:none;opacity:0;transition:transform .22s cubic-bezier(.2,.8,.2,1),width .22s ease,height .22s ease;z-index:0}
+.motion-nav[data-motion-ready]::before{opacity:1}
+.motion-nav>button{position:relative;z-index:1}
+.portal-tabs.motion-nav[data-motion-ready] button[aria-pressed="true"],#nav .motion-nav[data-motion-ready] button[aria-selected="true"]{background:transparent}
+.session-options>summary{list-style:none}
+.session-options>summary::-webkit-details-marker{display:none}
+.session-options>summary::before{content:"";display:inline-block;width:7px;height:7px;margin:0 10px 2px 2px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .18s ease}
+.session-options[open]>summary::before{transform:rotate(45deg)}
+#plan-create-toggle>span{display:block;transition:transform .18s ease}
+#plan-create-toggle[aria-expanded="true"]>span{transform:rotate(45deg)}
+.btn:active{transform:scale(.98)}
+.btn.motion-saving,.btn.motion-saved{gap:8px}
+.btn.motion-saving::after{content:"";flex:none;width:15px;height:15px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:motion-spin .7s linear infinite}
+.btn.motion-saved::after{content:"";flex:none;width:8px;height:14px;margin-left:3px;border:solid currentColor;border-width:0 2px 2px 0;transform:translateY(-2px) rotate(45deg)}
+#toast.success::before{content:"✓";display:inline-block;margin-right:9px;color:var(--good);font-weight:800}
+.motion-touch{position:fixed;width:28px;height:28px;border:2px solid #80b4ff;border-radius:50%;box-shadow:0 0 0 3px rgba(0,68,238,.18);pointer-events:none;z-index:50}
+dialog[open]::backdrop{animation:motion-backdrop .2s ease-out}
+@keyframes motion-spin{to{transform:rotate(360deg)}}
+@keyframes motion-backdrop{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){
+ .motion-nav::before,.session-options>summary::before,#plan-create-toggle>span{transition:none}
+ .btn.motion-saving::after,dialog[open]::backdrop{animation:none}
+ .btn:active{transform:none}
+}

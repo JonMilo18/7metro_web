@@ -65,6 +65,7 @@ function notify(message, type) {
   var box = $("toast");
   box.textContent = t(message);
   box.className = "notice" + (type ? " " + type : "");
+  if (window.AppMotion) window.AppMotion.enter(box);
   clearTimeout(toastTimer);
   toastTimer = setTimeout(function () { box.classList.add("hidden"); }, 5000);
 }
@@ -178,8 +179,16 @@ function endpoint() {
 }
 
 async function request(payload, anonymous) {
+  var finish = window.AppMotion && window.AppMotion.saving(payload.action);
   loadingStart();
-  try { return await requestImpl(payload, anonymous); }
+  try {
+    var result = await requestImpl(payload, anonymous);
+    if (finish) finish(true);
+    return result;
+  } catch (error) {
+    if (finish) finish(false);
+    throw error;
+  }
   finally { loadingEnd(); }
 }
 
@@ -682,6 +691,7 @@ function boardPointerDown(event) {
   stopBoardAnimation();
   event.preventDefault();
   var point = boardPoint(event);
+  if (window.AppMotion) window.AppMotion.touch($("exercise-board"), event);
   var tool = boardTool;
   if (["u", "g", "h", "baloia", "poste", "maniku", "disko"].includes(tool)) {
     addBoardToken(tool, point);
@@ -2246,6 +2256,7 @@ async function refreshAll() {
 }
 
 function selectSection(id) {
+  var entering = !$(id).classList.contains("on");
   if (id !== "v-board") closeBoardFullscreen();
   if (id !== "v-friends" && typeof friendSearchSequence === "number") clearFriendSearch();
   if (id !== "v-planning") closePlanningOptions();
@@ -2266,6 +2277,7 @@ function selectSection(id) {
   document.querySelectorAll("#team-app section").forEach(function (section) {
     section.classList.toggle("on", section.id === id);
   });
+  if (entering && window.AppMotion) window.AppMotion.enter($(id));
   if (id === "v-friends") loadFriends();
   if (id === "v-player-management" && window.PlayerPortal) window.PlayerPortal.loadCoach();
   window.scrollTo(0, 0);
@@ -2552,6 +2564,10 @@ function scoreRecordAction(action, playerId, from, to, opponentPlayer) {
   scoreboard.events.push(entry);
   if (scoreIsShot(action.type)) scoreShotType = "normal";
   renderShotPlayers(); scoreSave(); scoreRender();
+  if (window.AppMotion) {
+    window.AppMotion.pulse($("score-last-event"));
+    if (scoreIsGoal(action.type)) window.AppMotion.pulse($(action.side === "home" ? "score-home" : "score-away"));
+  }
 }
 function scoreClearShot() {
   shotTargetEvent = null; shotFrom = null; shotTo = null;
@@ -3680,8 +3696,10 @@ $("exercise-category-form").addEventListener("submit", async function (event) {
 var boardPageOverflow = "";
 
 function setBoardMenu(open) {
+  var entering = open && !$("board-options").classList.contains("is-open");
   $("board-options").classList.toggle("is-open", open);
   $("board-menu-toggle").setAttribute("aria-expanded", String(open));
+  if (entering && window.AppMotion) window.AppMotion.enter($("board-options"));
 }
 
 function closeBoardFullscreen() {
@@ -3805,13 +3823,16 @@ document.querySelectorAll("[data-plan-new]").forEach(function (button) {
 });
 
 function closePlanningOptions() {
-  $("plan-create-options").hidden = true;
+  if (window.AppMotion) window.AppMotion.reveal($("plan-create-options"), false, true);
+  else $("plan-create-options").hidden = true;
   $("plan-create-toggle").setAttribute("aria-expanded", "false");
 }
 $("plan-create-toggle").addEventListener("click", function () {
   var panel = $("plan-create-options");
-  panel.hidden = !panel.hidden;
-  this.setAttribute("aria-expanded", String(!panel.hidden));
+  var open = window.AppMotion ? !window.AppMotion.isOpen(panel) : panel.hidden;
+  if (window.AppMotion) window.AppMotion.reveal(panel, open);
+  else panel.hidden = !open;
+  this.setAttribute("aria-expanded", String(open));
 });
 $("plan-create-options").addEventListener("keydown", function (event) {
   if (event.key === "Escape") { closePlanningOptions(); $("plan-create-toggle").focus(); }
