@@ -394,6 +394,8 @@ textarea{min-height:84px;resize:vertical}
 @media(max-width:520px){.attendance-dialog .attendance-row{grid-template-columns:1fr 1fr;gap:6px}.attendance-dialog .attendance-row .checkrow{grid-column:1/-1}}
 .session-preview-dialog{max-width:680px;overscroll-behavior:contain}.session-preview-canvas{display:block;width:min(100%,calc((100dvh - 210px)*1.6));height:auto;margin-inline:auto;aspect-ratio:8/5;border:1px solid var(--line);border-radius:12px;background:#28663a}.session-preview-caption{margin:12px 0;color:var(--muted);overflow-wrap:anywhere}.session-preview-actions{display:flex;justify-content:flex-end;gap:8px}.session-preview-actions .btn{width:auto;min-width:140px;margin-bottom:0}
 body:has(#session-preview-dialog[open]){overflow:hidden}
+.session-preview-actions{flex-wrap:wrap}
+.exercise-external-link{gap:6px;max-width:100%;white-space:normal;text-align:center}
 .session-preview-dialog .attendance-dialog-head h2{min-width:0;overflow-wrap:anywhere}
 .session-preview-dialog .attendance-dialog-head>.btn{flex:none;width:auto;margin:0}
 .modal-actions{display:flex;gap:8px;margin-top:6px}
@@ -738,7 +740,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=192"><link rel="stylesheet" href="portal.css?v=192"><link rel="stylesheet" href="motion.css?v=192">
+<link rel="stylesheet" href="insights.css?v=193"><link rel="stylesheet" href="portal.css?v=193"><link rel="stylesheet" href="motion.css?v=193">
 </head>
 <body>
 <div id="app">
@@ -1234,7 +1236,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
     <div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="session-preview-title">Ariketa-arbela</h2><button class="btn secondary" id="session-preview-close" type="button" aria-label="Itxi">Itxi</button></div>
       <canvas id="session-preview-canvas" class="session-preview-canvas" width="800" height="500" aria-label="Ariketaren arbela"></canvas>
       <p class="session-preview-caption" id="session-preview-caption"></p>
-      <div class="session-preview-actions"><button class="btn hidden" id="session-preview-play" type="button">Animazioa ikusi</button></div>
+      <div class="session-preview-actions"><span id="session-preview-link"></span><button class="btn hidden" id="session-preview-play" type="button">Animazioa ikusi</button></div>
     </div>
   </dialog>
   <dialog id="session-share-dialog" class="attendance-dialog" aria-labelledby="session-share-title"><div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="session-share-title">Entrenamendua partekatu</h2><button class="btn secondary" id="session-share-close" type="button">Itxi</button></div><p id="session-share-name" class="sub"></p><form id="session-share-form" class="stack"><label>Lagun<select id="session-share-friend" required></select></label><p id="session-share-status" class="muted" role="status" aria-live="polite"></p><button class="btn" id="session-share-submit" type="submit">Partekatu</button></form></div></dialog>
@@ -1266,21 +1268,21 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <dialog id="offline-pending-dialog" class="attendance-dialog" aria-labelledby="offline-pending-title"><div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="offline-pending-title">Gordetzeko zain</h2><button class="btn secondary" id="offline-pending-close" type="button">Itxi</button></div><ul id="offline-pending-list" class="list"></ul><button class="btn secondary" id="offline-sync-retry" type="button">Berriro saiatu</button></div></dialog>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=192" defer></script>
-<script src="i18n.js?v=192" defer></script>
-<script src="insights-data.js?v=192" defer></script>
-<script src="portal.js?v=192" defer></script>
-<script src="portal-events.js?v=192" defer></script>
-<script src="portal-calendar.js?v=192" defer></script>
-<script src="push.js?v=192" defer></script>
-<script src="motion.js?v=192" defer></script>
-<script src="offline.js?v=192" defer></script>
-<script src="onboarding.js?v=192" defer></script>
-<script src="app.js?v=192" defer></script>
-<script src="player-statistics.js?v=192" defer></script>
-<script src="weekly-training.js?v=192" defer></script>
-<script src="inbox.js?v=192" defer></script>
-<script src="report-pdf.js?v=192" defer></script>
-<script src="insights.js?v=192" defer></script>
+<script src="locales/es.js?v=193" defer></script>
+<script src="i18n.js?v=193" defer></script>
+<script src="insights-data.js?v=193" defer></script>
+<script src="portal.js?v=193" defer></script>
+<script src="portal-events.js?v=193" defer></script>
+<script src="portal-calendar.js?v=193" defer></script>
+<script src="push.js?v=193" defer></script>
+<script src="motion.js?v=193" defer></script>
+<script src="offline.js?v=193" defer></script>
+<script src="onboarding.js?v=193" defer></script>
+<script src="app.js?v=193" defer></script>
+<script src="player-statistics.js?v=193" defer></script>
+<script src="weekly-training.js?v=193" defer></script>
+<script src="inbox.js?v=193" defer></script>
+<script src="report-pdf.js?v=193" defer></script>
+<script src="insights.js?v=193" defer></script>
 </body>
 </html>

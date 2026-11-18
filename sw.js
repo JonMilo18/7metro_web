@@ -1,12 +1,12 @@
 // 7metro - service worker probisionala
 // Aldaketak argitaratzean, aldatu CACHE bertsioa.
-const CACHE = "7metro-v192";
-const SHELL = ["./offline.js?v=192", "./onboarding.js?v=192", "./motion.js?v=192", "./motion.css?v=192", "./", "./index.html", "./manifest.json",
-  "./player-statistics.js?v=192",
-  "./inbox.js?v=192",
-  "./weekly-training.js?v=192",
-  "./locales/es.js?v=192", "./i18n.js?v=192", "./app.js?v=192", "./insights-data.js?v=192", "./insights.js?v=192",
-  "./portal.js?v=192", "./portal-events.js?v=192", "./portal-calendar.js?v=192", "./push.js?v=192", "./portal.css?v=192", "./report-pdf.js?v=192", "./insights.css?v=192", "./vendor/jspdf.umd.min.js",
+const CACHE = "7metro-v193";
+const SHELL = ["./offline.js?v=193", "./onboarding.js?v=193", "./motion.js?v=193", "./motion.css?v=193", "./", "./index.html", "./manifest.json",
+  "./player-statistics.js?v=193",
+  "./inbox.js?v=193",
+  "./weekly-training.js?v=193",
+  "./locales/es.js?v=193", "./i18n.js?v=193", "./app.js?v=193", "./insights-data.js?v=193", "./insights.js?v=193",
+  "./portal.js?v=193", "./portal-events.js?v=193", "./portal-calendar.js?v=193", "./push.js?v=193", "./portal.css?v=193", "./report-pdf.js?v=193", "./insights.css?v=193", "./vendor/jspdf.umd.min.js",
   "./vendor/fonts/NotoSans-Regular.ttf", "./vendor/fonts/NotoSans-Bold.ttf",
   "./irudiak/Zelaia.svg", "./irudiak/Zelai-erdia.svg",
   "./irudiak/Zelaia.png", "./irudiak/Zelai-erdia.png",

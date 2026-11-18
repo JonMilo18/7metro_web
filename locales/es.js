@@ -1315,6 +1315,8 @@ window.SevenMetroLocales.es = {
     "Partidako jokalariak: {count}": "Jugadores del partido: {count}",
     "Garbitu hautaketa": "Limpiar selección",
     "Guztiak hautatu": "Seleccionar todos",
+    "Esteka ireki": "Abrir enlace",
+    "Esteka ireki: {name}": "Abrir enlace: {name}",
     "Hautatutako jokalariak agertuko dira markagailuko ekintzetan eta partidako estatistiketan.": "Los jugadores seleccionados aparecerán en las acciones del marcador y en las estadísticas del partido.",
     "Ekintzak dituen jokalaria mantendu behar da. Kendu haren ekintzak hautaketatik atera aurretik.": "Debes mantener al jugador que tenga acciones registradas. Elimina sus acciones antes de quitarlo de la selección.",
     "Hautaketa baieztatu": "Confirmar selección",

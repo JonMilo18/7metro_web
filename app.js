@@ -1134,6 +1134,7 @@ function openSessionExercisePreview(id) {
   drawBoard(canvas, board, null);
   $("session-preview-title").textContent = exercise.izena;
   $("session-preview-caption").textContent = exercise.deskribapena || exercise.kategoria || t("Ariketaren aurrebista");
+  $("session-preview-link").innerHTML = exerciseLinkMarkup(exercise);
   play.dataset.exerciseId = String(id);
   play.textContent = t("Animazioa ikusi");
   play.setAttribute("aria-label", t("Animazioa ikusi: ") + exercise.izena);
@@ -1508,7 +1509,8 @@ function renderSessionPicker() {
     var categoryNames = exerciseCategoryNames(exercise);
     return '<li class="session-slot"><span class="slot-name">' + esc(exercise.izena) +
       ' <small class="muted">' + esc(categoryNames.join(", ")) + "</small></span>" +
-      '<button class="btn secondary" type="button" data-session-view="' + id + ("\">" + esc(t("Arbela")) + "</button>") +
+      exerciseLinkMarkup(exercise) +
+      (parseBoardData(exercise.arbela_datuak) ? '<button class="btn secondary" type="button" data-session-view="' + id + ("\">" + esc(t("Arbela")) + "</button>") : "") +
       '<button class="btn" type="button" data-session-add="' + id + ("\">" + esc(t("Gehitu")) + "</button></li>");
   }).join("") : '<li class="empty">' + (sessionCategoryFilter
     ? t("Ez dago ariketarik kategoria honetan.") : t("Ez dago ariketarik liburutegian.")) + "</li>";
@@ -1522,7 +1524,7 @@ function renderSessionPicker() {
     var exercise = sessionExerciseById(entry.id_ariketa), id = sessionEntryKey(entry);
     if (!exercise) return "";
     return '<li class="session-slot" data-session-drop-exercise="' + id + ("\"><button class=\"session-drag-handle\" type=\"button\" data-session-drag-handle aria-label=\"" + esc(t("Arrastatu ordena aldatzeko: "))) + esc(exercise.izena) + ("\" title=\"" + esc(t("Arrastatu ordena aldatzeko")) + "\">&#8942;&#8942;</button><span class=\"slot-name\">") + esc(exercise.izena) +
-      '</span><input type="number" min="0" max="999" value="' + Number(entry.iraupena_minutuak) +
+      '</span>' + exerciseLinkMarkup(exercise) + '<input type="number" min="0" max="999" value="' + Number(entry.iraupena_minutuak) +
       '" data-session-minutes="' + id + ("\" aria-label=\"" + esc(t("Minutuak: "))) + esc(exercise.izena) + '">' +
       ("<label class=\"session-exercise-notes-field\">" + esc(t("Oharrak")) + "<textarea class=\"session-exercise-notes\" rows=\"2\" maxlength=\"3000\" data-session-notes=\"") + id + ("\" aria-label=\"" + esc(t("Oharrak: "))) + esc(exercise.izena) + ("\" placeholder=\"" + esc(t("Idatzi ariketa honetarako oharrak")) + "\">") + esc(entry.aldaerak || "") + '</textarea></label>' +
       '<button class="slot-remove" type="button" data-session-remove="' + id +
@@ -1637,6 +1639,18 @@ function setSessionMinutes(id, value) {
   updateSessionTimeBar();
 }
 
+function exerciseLinkMarkup(exercise) {
+  var value = String(exercise && exercise.bideo_url || "").trim();
+  if (!value) return "";
+  try {
+    var url = new URL(/^www\./i.test(value) ? "https://" + value : value);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return "";
+    return '<a class="btn secondary exercise-external-link" href="' + esc(url.href) + '" target="_blank" rel="noopener noreferrer" aria-label="' +
+      esc(t("Esteka ireki: {name}", { name: exercise.izena || t("Ariketa") })) + '">' + esc(t("Esteka ireki")) +
+      ' <span aria-hidden="true">&#8599;</span></a>';
+  } catch (error) { return ""; }
+}
+
 function renderExercises() {
   stopExerciseAnimation();
   renderExerciseCategories();
@@ -1656,7 +1670,7 @@ function renderExercises() {
       (exercise.deskribapena ? " · " + esc(exercise.deskribapena) : "") +
       '</small></div>' + (board ? '<canvas class="exercise-board-preview" width="336" height="210" data-board-preview="' +
       Number(exercise.id_ariketa) + ("\" aria-label=\"" + esc(t("Arbelaren aurrebista: "))) + esc(exercise.izena) + '"></canvas>' : '<span class="exercise-board-placeholder" aria-hidden="true"></span>') +
-      '<div class="exercise-actions">' + (hasAnimation
+      '<div class="exercise-actions">' + exerciseLinkMarkup(exercise) + (hasAnimation
         ? '<button class="btn secondary" type="button" data-play-exercise="' + Number(exercise.id_ariketa) +
           ("\" aria-label=\"" + esc(t("Animazioa ikusi")) + "\">" + esc(t("Animazioa ikusi")) + "</button>") : "") +
       '<button class="btn danger" type="button" data-delete-exercise="' +
@@ -1772,9 +1786,9 @@ function renderSavedSession(sessionId) {
       (board ? '<canvas class="training-exercise-preview" width="800" height="500" data-training-preview="' + index + '" aria-label="' + esc(title) + esc(t(' ariketa-arbela')) + '"></canvas>' : "") +
       (exercise && exercise.deskribapena ? '<p class="training-exercise-description">' + esc(exercise.deskribapena) + '</p>' : "") +
       (detail.aldaerak ? ("<p class=\"training-exercise-notes\"><strong>" + esc(t("Oharrak:")) + "</strong> ") + esc(detail.aldaerak) + '</p>' : "") +
-      (board ? '<div class="training-exercise-actions">' +
+      (board || exerciseLinkMarkup(exercise) ? '<div class="training-exercise-actions">' + exerciseLinkMarkup(exercise) +
         (hasAnimation ? '<button class="btn secondary" type="button" data-play-training-animation="' + Number(detail.id_ariketa) + ("\" aria-label=\"" + esc(t("Ariketa txartelean animazioa ikusi")) + "\">" + esc(t("Animazioa ikusi")) + "</button>") : "") +
-        '<button class="btn secondary" type="button" data-training-board="' + Number(detail.id_ariketa) + '" data-training-session="' + Number(sessionId) + ("\">" + esc(t("Arbela handitu")) + "</button></div>") : "") +
+        (board ? '<button class="btn secondary" type="button" data-training-board="' + Number(detail.id_ariketa) + '" data-training-session="' + Number(sessionId) + ("\">" + esc(t("Arbela handitu")) + "</button>") : "") + '</div>' : "") +
       '</article>';
   }).join("");
   $("saved-session-exercises").innerHTML = savedMarkup || ("<div class=\"card empty\">" + esc(t("Saio honek ez dauka lotutako ariketarik.")) + "</div>");
