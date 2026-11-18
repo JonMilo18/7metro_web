@@ -102,6 +102,43 @@ nav button[aria-selected="true"]{color:#fff;background:rgba(0,68,238,.18);box-sh
 #stats-summary>.card>div{font-size:.85rem;font-weight:650;margin-bottom:5px}
 #stats-summary>.card>small{display:block;font-size:.74rem;line-height:1.5}
 .stats-player-search{max-width:440px;margin:18px 0}
+#v-home .home-hero>div{min-width:0;flex:1}
+#v-home .home-hero>.btn{flex:none;width:auto;margin:0;min-height:44px;font-size:.82rem}
+#v-home .home-eyebrow{letter-spacing:.04em;line-height:1.5}
+#home-title{overflow-wrap:anywhere}
+.home-quick-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 22px}
+.home-quick-actions>button{display:flex;align-items:center;justify-content:center;gap:10px;min-width:0;min-height:76px;padding:14px 10px;border:1px solid var(--line);border-radius:14px;background:var(--bg2);color:var(--ink);font:inherit;font-size:.9rem;font-weight:700;cursor:pointer;overflow-wrap:anywhere}
+.home-quick-actions>button:hover{border-color:var(--blue)}
+.home-quick-actions svg{width:25px;height:25px;flex:none;color:var(--blue)}
+.home-workspace{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);align-items:start;gap:22px;margin:22px 0}
+#v-home .home-feature{min-width:0;margin:0;padding:22px;border-color:rgba(40,101,255,.35);background:linear-gradient(145deg,rgba(40,101,255,.1),transparent 70%),var(--bg2)}
+.home-feature h2{font-size:clamp(1.2rem,3vw,1.65rem);line-height:1.3;margin:14px 0 8px;overflow-wrap:anywhere}
+.home-feature p{font-size:.92rem;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
+.home-event-type{display:inline-block;padding:5px 9px;border-radius:8px;margin-top:18px;background:rgba(40,101,255,.12);color:var(--blue);font-size:.75rem;font-weight:700}
+.home-event-type.match{color:var(--warn,#e6a23c);background:rgba(230,162,60,.1)}
+#v-home .home-feature .home-card-date{display:block;font-size:.9rem;line-height:1.6;margin:18px 0 22px;overflow-wrap:anywhere}
+.home-feature-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.home-feature-actions>.btn{flex:1 1 140px;min-width:0;min-height:46px;width:auto;margin:0;font-size:.85rem;white-space:normal;text-align:center}
+.home-upcoming-section{min-width:0}
+.home-upcoming-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px}
+.home-upcoming-heading h2{font-size:1.05rem;margin:0}
+.home-upcoming-heading>button{flex:none;min-height:44px;border:0;padding:6px 0;background:transparent;color:var(--muted);font:inherit;font-size:.78rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+#home-upcoming-list{display:grid;border:1px solid var(--line);border-radius:14px;background:var(--bg2);overflow:hidden}
+.home-upcoming-item{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;padding:14px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--ink);text-align:left;font:inherit;cursor:pointer}
+.home-upcoming-item:last-child{border-bottom:0}
+.home-upcoming-item:hover{background:rgba(40,101,255,.06)}
+.home-upcoming-date{display:grid;place-items:center;gap:3px;padding:8px 3px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.home-upcoming-date strong{font-size:1.2rem;line-height:1}.home-upcoming-date small{font-size:.65rem;color:var(--muted);text-transform:uppercase}
+.home-upcoming-info{display:grid;gap:5px;min-width:0;overflow-wrap:anywhere}
+.home-upcoming-info>small{font-size:.68rem;color:var(--blue);font-weight:650}.home-upcoming-info>strong{font-size:.88rem;line-height:1.35}.home-upcoming-info>time{font-size:.72rem;line-height:1.45;color:var(--muted)}
+.home-upcoming-empty{padding:16px;font-size:.86rem;color:var(--muted)}
+.home-upcoming-empty>.btn{font-size:.82rem;margin-bottom:0}
+.home-recent{margin:24px 0 0;border:1px solid var(--line);border-radius:14px;padding:0 14px}
+.home-recent>summary{padding:16px 0;min-height:50px;color:var(--muted);font-size:.9rem;font-weight:650;cursor:pointer}
+#home-recent[hidden]{display:none!important}
+#home-recent .home-dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:900px){.home-workspace{grid-template-columns:minmax(0,1fr);gap:24px}}
+@media(max-width:600px){.home-quick-actions{gap:8px}.home-quick-actions>button{flex-direction:column;gap:8px;padding:12px 6px;min-height:90px;font-size:.76rem;line-height:1.35;text-align:center}#v-home .home-hero{padding:16px;margin-bottom:12px;gap:12px}#v-home .home-hero>.btn{width:auto;margin:0;min-height:44px;font-size:.8rem}#v-home .home-feature{padding:17px}#home-recent .home-dashboard-grid{grid-template-columns:minmax(0,1fr)}.home-upcoming-item{gap:10px;padding:12px}}
 #v-friends [hidden]{display:none!important}
 #v-friends .btn:hover{transform:none}
 .friends-page-heading,.friends-section-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px}
@@ -832,7 +869,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=202"><link rel="stylesheet" href="portal.css?v=202"><link rel="stylesheet" href="motion.css?v=202">
+<link rel="stylesheet" href="insights.css?v=203"><link rel="stylesheet" href="portal.css?v=203"><link rel="stylesheet" href="motion.css?v=203">
 </head>
 <body>
 <div id="app">
@@ -920,14 +957,10 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
   </div>
   <div id="team-app" class="hidden">
     <section id="v-home">
-      <div class="home-hero"><div><span class="home-eyebrow">7METRO · TALDEAREN LABURPENA</span><div class="help-heading"><h1 id="home-title">Ongi etorri</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="home-subtitle" aria-label="Ongi etorri: informazioa"><span aria-hidden="true">i</span></button></div><p id="home-subtitle" hidden>Zure entrenamendu eta lehiaketen ikuspegi azkarra.</p></div><button class="btn secondary" type="button" data-refresh>Birkargatu</button></div>
-      <div class="home-dashboard-grid">
-        <article class="card home-card"><span class="home-card-kicker">Azken entrenamendua</span><div id="home-session-content"></div></article>
-        <article class="card home-card"><span class="home-card-kicker">Azken partidua</span><div id="home-match-content"></div></article>
-        <article class="card home-card"><span class="home-card-kicker">Hurrengo partida</span><div id="home-next-match-content"></div></article>
-      </div>
-      <h2>Sarbide azkarrak</h2>
-      <div class="home-shortcuts"><button class="more-link" type="button" data-open-section="v-sessions"><strong>Entrenamenduak</strong><span>Saioak sortu eta ikusi</span></button><button class="more-link" type="button" data-open-section="v-scoreboard"><strong>Markagailua</strong><span>Partida bat hasi</span></button><button class="more-link" type="button" data-open-section="v-planning"><strong>Denboraldiaren plangintza</strong><span>Egutegia eta zikloak</span></button></div>
+      <div class="home-hero"><div><span class="home-eyebrow" id="home-current-date"></span><div class="help-heading"><h1 id="home-title">Ongi etorri</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="home-subtitle" aria-label="Ongi etorri: informazioa"><span aria-hidden="true">i</span></button></div><p id="home-subtitle" hidden>Zure entrenamendu eta lehiaketen ikuspegi azkarra.</p></div><button class="btn secondary" type="button" data-refresh>Birkargatu</button></div>
+      <div class="home-quick-actions" role="group" aria-label="Sarbide azkarrak"><button type="button" data-home-create-session><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="17" rx="2"/><path d="M9 3h6v4H9zM8 14h8M12 10v8"/></svg><span>Entrenamendu berria</span></button><button type="button" data-open-section="v-scoreboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M12 5v14M6 10h1v4M16 10h2v4h-2z"/></svg><span>Markagailua</span></button><button type="button" data-open-section="v-planning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg><span>Egutegia</span></button></div>
+      <div class="home-workspace"><article class="card home-feature"><span class="home-card-kicker">Hurrengo jarduera</span><div id="home-next-match-content"></div></article><div class="home-upcoming-section"><div class="home-upcoming-heading"><h2>Hurrengo egunak</h2><button type="button" data-open-section="v-planning">Egutegia ikusi</button></div><div id="home-upcoming-list"></div></div></div>
+      <details id="home-recent" class="home-recent"><summary>Azken jarduerak</summary><div class="home-dashboard-grid"><article class="card home-card"><span class="home-card-kicker">Azken entrenamendua</span><div id="home-session-content"></div></article><article class="card home-card"><span class="home-card-kicker">Azken partidua</span><div id="home-match-content"></div></article></div></details>
     </section>
     <section id="v-board">
       <div class="help-heading"><h1>Ariketa-arbela</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-4" aria-label="Ariketa-arbela: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-4" hidden>Sortu ariketa bat kantxan marraztuz, programako arbelean bezala.</p>
@@ -1363,20 +1396,20 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <dialog id="offline-pending-dialog" class="attendance-dialog" aria-labelledby="offline-pending-title"><div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="offline-pending-title">Gordetzeko zain</h2><button class="btn secondary" id="offline-pending-close" type="button">Itxi</button></div><ul id="offline-pending-list" class="list"></ul><button class="btn secondary" id="offline-sync-retry" type="button">Berriro saiatu</button></div></dialog>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=202" defer></script>
-<script src="i18n.js?v=202" defer></script>
-<script src="insights-data.js?v=202" defer></script>
-<script src="portal.js?v=202" defer></script>
-<script src="portal-events.js?v=202" defer></script>
-<script src="portal-calendar.js?v=202" defer></script>
-<script src="push.js?v=202" defer></script>
-<script src="motion.js?v=202" defer></script>
-<script src="offline.js?v=202" defer></script>
-<script src="app.js?v=202" defer></script>
-<script src="player-statistics.js?v=202" defer></script>
-<script src="weekly-training.js?v=202" defer></script>
-<script src="inbox.js?v=202" defer></script>
-<script src="report-pdf.js?v=202" defer></script>
-<script src="insights.js?v=202" defer></script>
+<script src="locales/es.js?v=203" defer></script>
+<script src="i18n.js?v=203" defer></script>
+<script src="insights-data.js?v=203" defer></script>
+<script src="portal.js?v=203" defer></script>
+<script src="portal-events.js?v=203" defer></script>
+<script src="portal-calendar.js?v=203" defer></script>
+<script src="push.js?v=203" defer></script>
+<script src="motion.js?v=203" defer></script>
+<script src="offline.js?v=203" defer></script>
+<script src="app.js?v=203" defer></script>
+<script src="player-statistics.js?v=203" defer></script>
+<script src="weekly-training.js?v=203" defer></script>
+<script src="inbox.js?v=203" defer></script>
+<script src="report-pdf.js?v=203" defer></script>
+<script src="insights.js?v=203" defer></script>
 </body>
 </html>

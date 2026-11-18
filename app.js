@@ -1899,6 +1899,8 @@ function renderDashboard() {
   var dashboardDate = function (value) {
     var date = new Date(value);
     if (Number.isNaN(date.getTime())) return String(value || "");
+    if (I18n.language() === "eu") return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() +
+      ' · ' + String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
     return date.toLocaleDateString(I18n.locale(), { weekday: "long", year: "numeric", month: "long", day: "numeric" }) +
       " · " + date.toLocaleTimeString(I18n.locale(), { hour: "2-digit", minute: "2-digit" });
   };
@@ -1911,13 +1913,15 @@ function renderDashboard() {
     var date = new Date(item.data_ordua);
     return Number.isFinite(date.getTime()) && date <= now;
   }).sort(byDateDesc);
-  var upcomingMatches = matches.filter(function (item) {
-    var date = new Date(item.data_ordua);
-    return Number.isFinite(date.getTime()) && date > now;
-  }).sort(function (a, b) { return new Date(a.data_ordua) - new Date(b.data_ordua); });
-  var latestMatch = pastMatches[0], nextMatch = upcomingMatches[0];
+  var upcoming = sessions.map(function (item) { return { kind: "session", row: item }; }).concat(matches.map(function (item) { return { kind: "match", row: item }; })).filter(function (event) {
+    var date = new Date(event.row.data_ordua);
+    return Number.isFinite(date.getTime()) && date >= now;
+  }).sort(function (a, b) { return new Date(a.row.data_ordua) - new Date(b.row.data_ordua) || a.kind.localeCompare(b.kind); });
+  var latestMatch = pastMatches[0], next = upcoming[0];
   var userName = user && user.izena && user.izena !== "Online" ? user.izena.trim() : "";
   $("home-title").textContent = t("Ongi etorri") + (userName ? ", " + userName : "");
+  var weekdays = ["Igandea", "Astelehena", "Asteartea", "Asteazkena", "Osteguna", "Ostirala", "Larunbata"];
+  $("home-current-date").textContent = I18n.language() === "eu" ? PLAN_MONTHS[now.getMonth()].slice(0, -1) + 'ak ' + now.getDate() + ' · ' + weekdays[now.getDay()].toLocaleLowerCase() : now.toLocaleDateString(I18n.locale(), { weekday: "long", month: "long", day: "numeric" });
   $("home-subtitle").textContent = t("Zure taldearen azken jarduerak eta hurrengo erronka.");
   $("home-session-content").innerHTML = latestSession
     ? '<h2>' + esc(latestSession.helburu_taktikoa || t("Entrenamendua")) + '</h2><p>' + esc(latestSession.lekua || t("Tokia zehaztu gabe")) + '</p><div class="home-card-date"><i></i>' + esc(dashboardDate(latestSession.data_ordua)) + '</div><button class="btn secondary" type="button" data-view-session="' + Number(latestSession.id_saio) + ("\">" + esc(t("Entrenamendua ikusi")) + "</button>")
@@ -1925,9 +1929,17 @@ function renderDashboard() {
   $("home-match-content").innerHTML = latestMatch
     ? '<h2>' + esc(latestMatch.aurkaria || t("Aurkaria")) + '</h2><p>' + esc(dashboardDate(latestMatch.data_ordua)) + '</p><div class="home-card-date"><i></i>' + Number(latestMatch.emaitza_geurea || 0) + ' – ' + Number(latestMatch.emaitza_aurkaria || 0) + '</div><button class="btn secondary" type="button" data-match-stats="' + Number(latestMatch.id_partida) + ("\">" + esc(t("Partidako estatistikak")) + "</button>")
     : ("<h2>" + esc(t("Ez dago aurreko partidarik")) + "</h2><p>" + esc(t("Gordetako azken partidaren emaitza eta estatistikak hemen azalduko dira.")) + "</p><button class=\"btn secondary\" type=\"button\" data-open-section=\"v-matches\">" + esc(t("Partidak ikusi")) + "</button>");
-  $("home-next-match-content").innerHTML = nextMatch
-    ? '<h2>' + esc(nextMatch.aurkaria || t("Aurkaria")) + '</h2><p>' + esc(nextMatch.lekua || t("Tokia zehaztu gabe")) + '</p><div class="home-card-date"><i></i>' + esc(dashboardDate(nextMatch.data_ordua)) + ("</div><button class=\"btn secondary\" type=\"button\" data-open-section=\"v-matches\">" + esc(t("Partidaren xehetasunak")) + "</button>")
-    : ("<h2>" + esc(t("Ez dago hurrengo partidarik")) + "</h2><p>" + esc(t("Programatzen duzunean, data eta ordua hemen agertuko dira.")) + "</p><button class=\"btn secondary\" type=\"button\" data-open-section=\"v-matches\">" + esc(t("Partida berria gehitu")) + "</button>");
+  var title = function (event) { return event.kind === "session" ? event.row.helburu_taktikoa || t("Entrenamendua") : event.row.aurkaria || t("Partida"); };
+  var action = function (event) { return event.kind === "session" ? 'data-view-session="' + Number(event.row.id_saio) + '"' : 'data-match-callup="' + Number(event.row.id_partida) + '"'; };
+  $("home-next-match-content").innerHTML = next
+    ? '<span class="home-event-type ' + next.kind + '">' + esc(t(next.kind === "session" ? "Entrenamendua" : "Partida")) + '</span><h2>' + esc(title(next)) + '</h2><p>' + esc(t(next.row.lekua) || t("Tokia zehaztu gabe")) + '</p><time class="home-card-date" datetime="' + esc(new Date(next.row.data_ordua).toISOString()) + '">' + esc(dashboardDate(next.row.data_ordua)) + '</time><div class="home-feature-actions"><button class="btn" type="button" ' + action(next) + '>' + esc(t(next.kind === "session" ? "Entrenamendua ikusi" : "Deialdia")) + '</button><button class="btn secondary" type="button" data-open-section="v-planning">' + esc(t("Egutegia ikusi")) + '</button></div>'
+    : '<h2>' + esc(t("Ez dago hurrengo jarduerarik.")) + '</h2><p>' + esc(t("Programatu entrenamendu bat edo partida bat plangintzan.")) + '</p><div class="home-feature-actions"><button class="btn" type="button" data-home-create-session>' + esc(t("Entrenamendu berria")) + '</button><button class="btn secondary" type="button" data-open-section="v-planning">' + esc(t("Egutegia ikusi")) + '</button></div>';
+  $("home-upcoming-list").innerHTML = upcoming.length > 1 ? upcoming.slice(1, 5).map(function (event) {
+    var date = new Date(event.row.data_ordua);
+    var month = I18n.language() === "eu" ? PLAN_MONTHS[date.getMonth()].slice(0, 3) : date.toLocaleDateString(I18n.locale(), { month: "short" });
+    return '<button class="home-upcoming-item" type="button" ' + action(event) + '><span class="home-upcoming-date" aria-hidden="true"><strong>' + date.getDate() + '</strong><small>' + esc(month) + '</small></span><span class="home-upcoming-info"><small>' + esc(t(event.kind === "session" ? "Entrenamendua" : "Partida")) + '</small><strong>' + esc(title(event)) + '</strong><time datetime="' + esc(date.toISOString()) + '">' + esc(dashboardDate(event.row.data_ordua)) + '</time></span><span aria-hidden="true">&rsaquo;</span></button>';
+  }).join("") : '<div class="home-upcoming-empty"><p>' + esc(t("Ez dago beste jarduerarik programatuta.")) + '</p><button class="btn secondary" type="button" data-open-section="v-planning">' + esc(t("Plangintzara joan")) + '</button></div>';
+  $("home-recent").hidden = !latestSession && !latestMatch;
 }
 
 function matchEventRecords(match) {
@@ -2507,6 +2519,7 @@ function selectSection(id) {
   if (id === "v-player-management" && window.PlayerPortal) window.PlayerPortal.loadCoach();
   window.scrollTo(0, 0);
   if (id === "v-stats") renderStats();
+  if (id === "v-home") renderDashboard();
   if (["v-players", "v-player-management"].includes(id) && window.PlayerStatistics) window.PlayerStatistics.refreshCoach();
 }
 
@@ -3599,8 +3612,12 @@ var matchToolbar = $("matches-list").previousElementSibling, matchesList = $("ma
 matchesSection.insertBefore(matchToolbar, matchCreate);
 matchesSection.insertBefore(matchesList, matchCreate);
 matchesSection.insertBefore($("match-detail"), matchCreate);
-document.querySelectorAll("[data-open-section]").forEach(function (button) {
-  button.addEventListener("click", function () { selectSection(button.dataset.openSection); });
+document.addEventListener("click", function (event) {
+  var button = event.target.closest("[data-open-section]");
+  if (button) selectSection(button.dataset.openSection);
+});
+$("v-home").addEventListener("click", function (event) {
+  if (event.target.closest("[data-home-create-session]")) $("session-create").click();
 });
 document.querySelectorAll("[data-plan-view]").forEach(function (button) {
   button.addEventListener("click", function () { planView = button.dataset.planView; renderPlanning(); });
