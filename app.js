@@ -1967,6 +1967,31 @@ function renderOpponentIndividuals(selectedMatches, query) {
   }).join("") : ("<li class=\"empty\">" + esc(t("Ez dago aurkarien banakako estatistikarik iragazki hauekin.")) + "</li>");
 }
 
+function renderStatsFilters(matchCount) {
+  var mode = $("stats-mode").value;
+  $("stats-player-search").hidden = mode === "team";
+  document.querySelectorAll("[data-stats-mode]").forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.statsMode === mode)); });
+  var filters = [], advanced = 0;
+  ["stats-period", "stats-match", "stats-start", "stats-end", "stats-venue", "stats-opponent", "stats-search"].forEach(function (id) {
+    var field = $(id), value = field.value;
+    if (!value || (id === "stats-period" || id === "stats-venue") && value === "all" || id === "stats-search" && mode === "team") return;
+    if (["stats-start", "stats-end", "stats-venue", "stats-opponent"].includes(id)) advanced++;
+    var label = field.tagName === "SELECT" ? field.options[field.selectedIndex].textContent : value;
+    if (id === "stats-start") label = t("Hasiera data") + ': ' + value;
+    if (id === "stats-end") label = t("Amaiera data") + ': ' + value;
+    if (id === "stats-search") label = t("Jokalari bilaketa") + ': ' + value;
+    filters.push('<button type="button" data-stats-remove="' + id + '" aria-label="' + esc(t("Kendu iragazkia: {name}", { name: label })) + '">' + esc(label) + '<span aria-hidden="true">&times;</span></button>');
+  });
+  $("stats-active-filters").innerHTML = filters.join("");
+  $("stats-filter-count").hidden = !advanced;
+  $("stats-filter-count").textContent = String(advanced);
+  $("stats-clear").hidden = !filters.length;
+  $("stats-result-count").textContent = t("{count} partida hautatuta", { count: matchCount });
+  $("stats-empty-state").hidden = Boolean(matchCount);
+  $("stats-summary").hidden = !matchCount;
+  $("stats-shot-details").hidden = !matchCount;
+}
+
 function renderStats() {
   var reportButton = $("stats-match-report");
   reportButton.hidden = !$("stats-match").value;
@@ -1988,6 +2013,7 @@ function renderStats() {
     return true;
   });
   var ids = new Set(filteredMatches.map(function (m) { return Number(m.id_partida); }));
+  renderStatsFilters(filteredMatches.length);
   var playerRows = records("partida_jokalariak").filter(function (r) { return ids.has(Number(r.id_partida)); });
   var sanctions = records("partidu_zigorrak").filter(function (r) { return ids.has(Number(r.id_partida)); });
   var shots = records("partidu_jaurtiketak").filter(function (r) { return ids.has(Number(r.id_partida)); });
@@ -2017,9 +2043,9 @@ function renderStats() {
   var metric = function (name, value, detail) { return '<div class="card"><strong>' + esc(value) + '</strong><div>' + esc(name) + '</div><small class="muted">' + esc(detail || "") + '</small></div>'; };
   $("stats-summary").innerHTML = mode === "opponents" ? [metric(t("Partidak"), filteredMatches.length, t("Aurkariak: ") + Object.keys(Object.fromEntries(filteredMatches.map(function (m) { return [m.aurkaria || t("Aurkaria"), true]; }))).length), metric(t("Aurkariaren golak"), against, (filteredMatches.length ? (against / filteredMatches.length).toFixed(1) : "0.0") + t(" partidako")), metric(t("Jaurtiketen eraginkortasuna"), opponentStatsShots.length ? Math.round(goalCount(opponentStatsShots) / opponentStatsShots.length * 100) + "%" : "—", goalCount(opponentStatsShots) + t(" gol / ") + opponentStatsShots.length + t(" jaurtiketa")), metric(t("Gure golak"), totalGoals, t("Aurkariaren aurkako emaitza")), metric(t("Penaltiak"), penalties.length, penaltyGoals + t(" gol · ") + (penalties.length ? Math.round(penaltyGoals / penalties.length * 100) : 0) + "%"), metric(t("Zigorrak"), opponentEvents.filter(function (event) { return scoreIsSanction(event.type); }).length, t("Partida hauetan jasota"))].join("") : [metric(t("Partidak"), filteredMatches.length, wins + " " + t("Irabazi") + " · " + draws + " " + t("Berdindu") + " · " + (filteredMatches.length - wins - draws) + " " + t("Galdu")), metric(t("Golak"), totalGoals, (filteredMatches.length ? (totalGoals / filteredMatches.length).toFixed(1) : "0.0") + t(" partidako")), metric(t("Jaurtiketen eraginkortasuna"), ownShots.length ? Math.round(goalCount(ownShots) / ownShots.length * 100) + "%" : "—", goalCount(ownShots) + t(" gol / ") + ownShots.length + t(" jaurtiketa")), metric(t("Aurkariaren golak"), against, (filteredMatches.length ? (against / filteredMatches.length).toFixed(1) : "0.0") + t(" partidako")), metric(t("Penaltiak"), penalties.length, penaltyGoals + t(" gol · ") + (penalties.length ? Math.round(penaltyGoals / penalties.length * 100) : 0) + "%"), metric(t("Zigorrak"), sanctions.length, sanctions.filter(function (s) { return s.mota === "2min"; }).length + t(" bi minutuko"))].join("");
   $("stats-heading").textContent = mode === "team" ? t("Taldearen laburpena") : mode === "players" ? t("Jokalari estatistikak") : t("Aurkari estatistikak");
-  $("stats-team-panel").classList.toggle("hidden", mode !== "team");
-  $("stats-player-panel").classList.toggle("hidden", mode !== "players");
-  $("stats-opponent-panel").classList.toggle("hidden", mode !== "opponents");
+  $("stats-team-panel").classList.toggle("hidden", mode !== "team" || !filteredMatches.length);
+  $("stats-player-panel").classList.toggle("hidden", mode !== "players" || !filteredMatches.length);
+  $("stats-opponent-panel").classList.toggle("hidden", mode !== "opponents" || !filteredMatches.length);
   var query = ($("stats-search").value || "").trim().toLocaleLowerCase();
   playerStats = players.map(function (p) {
     var rows = playerRows.filter(function (r) { return Number(r.id_jokalaria) === Number(p.id_jokalaria); });
@@ -3503,7 +3529,18 @@ $("stats-match").addEventListener("change", renderStats);
 $("stats-search").addEventListener("input", renderStats);
 $("stats-view-visual").addEventListener("click", function () { $("stats-players-visual").classList.remove("hidden"); $("stats-list").classList.add("hidden"); this.setAttribute("aria-pressed", "true"); $("stats-view-list").setAttribute("aria-pressed", "false"); });
 $("stats-view-list").addEventListener("click", function () { $("stats-players-visual").classList.add("hidden"); $("stats-list").classList.remove("hidden"); this.setAttribute("aria-pressed", "true"); $("stats-view-visual").setAttribute("aria-pressed", "false"); });
-$("stats-clear").addEventListener("click", function () { ["stats-match", "stats-opponent"].forEach(function (id) { $(id).value = ""; }); ["stats-period", "stats-venue", "stats-mode"].forEach(function (id) { $(id).value = id === "stats-mode" ? "team" : "all"; }); $("stats-start").value = ""; $("stats-end").value = ""; $("stats-search").value = ""; renderStats(); });
+document.querySelectorAll("[data-stats-mode]").forEach(function (button) {
+  button.addEventListener("click", function () { $("stats-mode").value = button.dataset.statsMode; renderStats(); });
+});
+$("stats-active-filters").addEventListener("click", function (event) {
+  var button = event.target.closest("[data-stats-remove]");
+  if (!button) return;
+  var field = $(button.dataset.statsRemove);
+  field.value = field.id === "stats-period" || field.id === "stats-venue" ? "all" : "";
+  renderStats();
+  $("stats-result-count").focus({ preventScroll: true });
+});
+$("stats-clear").addEventListener("click", function () { ["stats-match", "stats-opponent"].forEach(function (id) { $(id).value = ""; }); ["stats-period", "stats-venue"].forEach(function (id) { $(id).value = "all"; }); $("stats-start").value = ""; $("stats-end").value = ""; $("stats-search").value = ""; renderStats(); });
 $("stats-print").addEventListener("click", function () { window.print(); });
 $("open-board").addEventListener("click", function () { selectSection("v-board"); });
 
