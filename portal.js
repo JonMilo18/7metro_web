@@ -97,10 +97,28 @@ function portalSetTab(tab) {
   if (tab === "settings" && window.PushUI) window.PushUI.loadPlayerFriends();
   portalState.tab = tab;
   $("portal-greeting").parentElement.hidden = tab !== "home";
+  var pageText = {
+    agenda: ["Egutegia", "Kontsultatu entrenamenduak eta partidak, egunez egun."],
+    callups: ["Deialdiak", "Baieztatu zure asistentzia eta kontsultatu bidalitako erantzunak."],
+    notices: ["Abisuak", "Entrenatzailearen mezuak, leku berean."],
+    settings: ["Kontua", "Kudeatu zure kontua, itxura eta jakinarazpenak."],
+    stats: ["Nire estatistikak", "Kontsultatu zure bilakaera."]
+  };
+  $("portal-page-context").hidden = tab === "home";
+  if (pageText[tab]) {
+    $("portal-page-title").textContent = t(pageText[tab][0]);
+    $("portal-page-description").textContent = t(pageText[tab][1]);
+  }
+  $("portal-home-back").hidden = !portalState.playerId;
   $("portal-greeting").closest(".portal-heading").classList.toggle("portal-heading-home", tab === "home");
   ["home", "agenda", "callups", "notices", "settings", "stats"].forEach(function (name) { $("portal-" + name).hidden = name !== tab; });
   if (entering && window.AppMotion) window.AppMotion.enter($("portal-" + tab));
-  document.querySelectorAll("[data-portal-tab]").forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.portalTab === (tab === "stats" ? "home" : tab))); });
+  document.querySelectorAll("[data-portal-tab]").forEach(function (button) {
+    var active = button.dataset.portalTab === (tab === "stats" ? "home" : tab);
+    button.setAttribute("aria-pressed", String(active));
+    if (active) button.setAttribute("aria-current", "page"); else button.removeAttribute("aria-current");
+  });
+  if (entering) window.scrollTo(0, 0);
 }
 function portalEventCard(event) {
   var data = portalState.data, kind = event.kind, row = event.row;
@@ -122,6 +140,15 @@ function portalEventCard(event) {
 function portalHasResponse(event) {
   return portalState.data.responses.some(function (response) { return response.kind === event.kind && Number(response.event_id) === Number(event.row.id); });
 }
+function portalHomeShortcut(tab, title, detail, count) {
+  var paths = {
+    agenda: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/>',
+    callups: '<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 3h6v4H9zM8 14l3 3 5-6"/>',
+    notices: '<path d="M21 15a3 3 0 0 1-3 3H8l-5 4V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3zM8 8h8M8 12h5"/>'
+  };
+  return '<button type="button" data-portal-go="' + tab + '" class="portal-home-shortcut' + (count > 0 ? ' has-pending' : '') + '"><span class="portal-shortcut-top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths[tab] + '</svg>' +
+    (count > 0 ? '<span class="portal-shortcut-count">' + count + '</span>' : '') + '</span><strong>' + esc(t(title)) + '</strong><small>' + esc(t(detail)) + '</small></button>';
+}
 function portalRenderHome(events, pending, unread) {
   var player = portalState.data.player;
   var hasNumber = player.number != null && String(player.number).trim() !== "";
@@ -131,16 +158,21 @@ function portalRenderHome(events, pending, unread) {
   var eligible = events.filter(function (event) {
     return (event.kind === "session" || event.row.callup) && new Date(event.row.date).getTime() >= Date.now();
   });
-  var next = eligible[0];
-  var html = '<div class="portal-home-overview">' + identity + '<div class="portal-home-summary"><button type="button" data-portal-go="callups" class="portal-summary-action' + (pending.length ? ' needs-response' : '') + '"><strong>' + pending.length + '</strong><span>' + esc(t("Deialdi erantzuteko")) + '</span></button>' +
-    '<button type="button" data-portal-go="notices" class="portal-summary-action"><strong>' + unread + '</strong><span>' + esc(t("Abisu irakurri gabe")) + '</span></button></div></div>';
-  html += '<div class="portal-home-columns"><div class="portal-home-primary"><div id="portal-personal-stats-entry" hidden></div><div class="portal-section-heading"><h2>' + esc(t("Hurrengo jarduera")) + '</h2></div><div class="portal-next-event">' +
+  var needsAnswer = eligible.find(function (event) { return !portalHasResponse(event); });
+  var next = needsAnswer || eligible[0];
+  var html = '<div class="portal-home-overview">' + identity + '<div class="portal-home-shortcuts" aria-label="' + esc(t("Sarbide azkarrak")) + '">' +
+    portalHomeShortcut("agenda", "Egutegia", "Zure astea ikusi", 0) +
+    portalHomeShortcut("callups", "Deialdiak", pending.length ? "Erantzuteko" : "Zure erantzunak", pending.length) +
+    portalHomeShortcut("notices", "Abisuak", unread ? "Irakurri gabe" : "Taldeko mezuak", unread) + '</div></div>';
+  html += '<div class="portal-home-columns"><div class="portal-home-primary"><div class="portal-section-heading"><h2>' + esc(t(needsAnswer ? "Zure erantzunaren zain" : "Hurrengo jarduera")) + '</h2>' +
+    (needsAnswer ? '<button type="button" data-portal-go="callups">' + esc(t("Deialdi guztiak ikusi")) + '</button>' : '') + '</div>' +
+    (!pending.length && eligible.length ? '<p class="portal-ready-status">' + esc(t("Deialdi guztiak erantzunda dituzu")) + '</p>' : '') + '<div class="portal-next-event' + (needsAnswer ? ' needs-answer' : '') + '">' +
     (next ? portalEventCard(next) : '<div class="card portal-home-empty"><h3>' + esc(t("Ez dago hurrengo deialdirik")) + '</h3><button class="btn secondary" type="button" data-portal-go="agenda">' + esc(t("Egutegia ikusi")) + '</button></div>') + '</div>';
-  html += '</div>';
+  html += '<div id="portal-personal-stats-entry" hidden></div></div>';
   var secondary = '';
-  var following = eligible.slice(1, 4);
+  var following = eligible.filter(function (event) { return event !== next; }).slice(0, 3);
   if (following.length) {
-    secondary += '<div class="portal-section-heading"><h2>' + esc(t("Ondoren")) + '</h2><button type="button" data-portal-go="agenda">' + esc(t("Egutegia ikusi")) + '</button></div><div class="portal-upcoming">' + following.map(function (event) {
+    secondary += '<div class="portal-section-heading"><h2>' + esc(t("Hurrengo jarduerak")) + '</h2><button type="button" data-portal-go="agenda">' + esc(t("Egutegia ikusi")) + '</button></div><div class="portal-upcoming">' + following.map(function (event) {
       return '<button type="button" class="portal-upcoming-event" data-portal-open-event="' + event.kind + ':' + Number(event.row.id) + '"><span><strong>' + esc(event.kind === "session" ? event.row.title || t("Entrenamendua") : event.row.opponent || t("Partida")) + '</strong><small>' + esc(portalDate(event.row.date)) + '</small></span><span class="portal-upcoming-kind">' + esc(t(event.kind === "session" ? "Entrenamendua" : "Partida")) + '</span></button>';
     }).join("") + '</div>';
   }
@@ -303,6 +335,7 @@ window.addEventListener("DOMContentLoaded", function () {
     try {
       await request(Object.assign({ action: "portal_respond", response: $("portal-response-value").value, note: $("portal-response-note").value }, portalState.response));
       $("portal-response-dialog").close(); await portalLoadPlayer();
+      notify(t("Erantzuna entrenatzaileari bidali zaio"), "success");
       if (window.InboxUI) window.InboxUI.refresh();
     } catch (error) { portalError("portal-response-error", error.message); }
     finally { form.inert = false; $("portal-response-close").disabled = false; }
