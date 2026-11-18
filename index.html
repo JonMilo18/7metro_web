@@ -102,6 +102,42 @@ nav button[aria-selected="true"]{color:#fff;background:rgba(0,68,238,.18);box-sh
 #stats-summary>.card>div{font-size:.85rem;font-weight:650;margin-bottom:5px}
 #stats-summary>.card>small{display:block;font-size:.74rem;line-height:1.5}
 .stats-player-search{max-width:440px;margin:18px 0}
+#v-sessions [hidden]{display:none!important}
+#v-sessions>.group-links .btn{width:auto;min-height:44px;font-size:.84rem;margin:8px 0 16px}
+.sessions-browse-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:10px;margin:14px 0}
+.sessions-browse-toolbar>label{min-width:0;grid-template-columns:minmax(0,1fr)}
+.sessions-browse-toolbar>.btn{min-height:44px;width:auto;margin:0;padding:9px 12px;font-size:.82rem}
+.sessions-filter-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:5px;border:1px solid var(--line);border-radius:14px;background:var(--bg2)}
+.sessions-filter-tabs>button{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:5px;min-width:0;min-height:44px;padding:8px 4px;border:0;border-radius:10px;background:transparent;color:var(--muted);font:inherit;font-size:.82rem;font-weight:700;cursor:pointer}
+.sessions-filter-tabs>button[aria-pressed=true]{background:var(--blue);color:#fff}
+.sessions-filter-tabs span{min-width:20px;padding:2px 5px;border-radius:7px;background:rgba(40,101,255,.12);font-size:.7rem;color:var(--ink)}
+.sessions-filter-tabs>button[aria-pressed=true] span{background:rgba(255,255,255,.18);color:#fff}
+.sessions-result-context{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:12px 0}
+.sessions-result-context>p{margin:0;font-size:.8rem}
+#sessions-clear{min-height:44px;width:auto;margin:0;padding:7px 10px;font-size:.78rem}
+#sessions-list{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin:14px 0 22px;align-items:start}
+#sessions-list>.session-list-group{grid-column:1/-1;list-style:none;margin:10px 0 0;padding:0}
+.session-list-group h2{margin:0;font-size:.95rem;color:var(--muted);font-weight:650}
+#sessions-list>.session-list-card{min-width:0;padding:16px;border:1px solid var(--line);border-radius:15px;background:var(--bg2);gap:12px}
+.session-card-main{display:grid;grid-template-columns:50px minmax(0,1fr);gap:13px;align-items:start;min-width:0}
+.session-card-day{display:grid;place-items:center;align-content:center;gap:4px;min-height:64px;padding:8px 4px;border:1px solid rgba(40,101,255,.25);border-radius:12px;background:rgba(40,101,255,.1)}
+.session-card-day>strong{font-size:1.55rem;font-variant-numeric:tabular-nums;line-height:1;color:var(--ink)}
+.session-card-day>small{font-size:.66rem;color:var(--muted);text-transform:uppercase}
+.session-card-title{display:block;max-width:100%;min-height:44px;padding:0 0 5px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:1rem;font-weight:750;line-height:1.35;text-align:left;overflow-wrap:anywhere;cursor:pointer}
+.session-card-title:hover{color:var(--blue)}
+.session-card-main .item-main{min-width:0}
+.session-card-main small{display:block;overflow-wrap:anywhere}
+.session-card-main .session-card-date{font-size:.78rem;line-height:1.5;color:var(--ink)}
+.session-card-main .session-card-place{font-size:.77rem;color:var(--muted);line-height:1.5;margin-top:4px}
+.session-card-meta{display:flex;flex-wrap:wrap;gap:7px}
+.session-card-meta>span{padding:4px 8px;border:1px solid var(--line);border-radius:7px;color:var(--muted);font-size:.73rem}
+.session-card-exercises{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:0;color:var(--muted);font-size:.78rem;line-height:1.5;overflow-wrap:anywhere}
+#sessions-list .session-options{padding-top:10px;border-top:1px solid var(--line)}
+#sessions-list .session-options>summary{width:100%;border:0;padding:8px 2px;background:transparent;font-size:.84rem}
+#sessions-list .sessions-empty{grid-column:1/-1;padding:20px;border:1px solid var(--line);border-radius:14px;background:var(--bg2)}
+.sessions-empty>.btn{margin:12px 0 0;min-height:44px}
+@media(min-width:1100px){#sessions-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.sessions-filter-tabs>button{font-size:.76rem}.sessions-browse-toolbar>.btn{padding:9px;font-size:.78rem}#sessions-list>.session-list-card{padding:13px}.session-card-main{gap:11px}.session-card-title{font-size:.95rem}}
 #v-home .home-hero>div{min-width:0;flex:1}
 #v-home .home-hero>.btn{flex:none;width:auto;margin:0;min-height:44px;font-size:.82rem}
 #v-home .home-eyebrow{letter-spacing:.04em;line-height:1.5}
@@ -869,7 +905,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=203"><link rel="stylesheet" href="portal.css?v=203"><link rel="stylesheet" href="motion.css?v=203">
+<link rel="stylesheet" href="insights.css?v=204"><link rel="stylesheet" href="portal.css?v=204"><link rel="stylesheet" href="motion.css?v=204">
 </head>
 <body>
 <div id="app">
@@ -1031,6 +1067,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
       <div class="session-page-heading"><div class="help-heading"><h1>Entrenamendua</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-8" aria-label="Entrenamendua: informazioa"><span aria-hidden="true">i</span></button></div><button class="btn session-create-button" id="session-create" type="button" aria-label="Entrenamendu berria sortu" title="Entrenamendu berria sortu" aria-controls="session-create-panel" aria-expanded="false"><span aria-hidden="true">+</span></button></div><p class="sub" id="help-text-8" hidden>Antolatu saioak, aukeratu ariketak eta prestatu ariketa berriak kantxan.</p>
       <div class="group-links"><button class="btn secondary" id="open-board" type="button">Ariketa-liburutegia eta arbela</button></div>
       <div class="draft-recovery" id="session-draft-recovery" hidden><span>Gailuan gordetako entrenamendu-zirriborro bat dago.</span><button class="btn secondary" id="session-draft-restore" type="button">Berreskuratu zirriborroa</button><button class="btn secondary" id="session-draft-discard" type="button">Baztertu</button></div>
+      <div id="sessions-browser"><div class="sessions-browse-toolbar"><label>Bilatu entrenamendua<input id="sessions-search" type="search" placeholder="Izena, tokia edo ariketa"></label><button class="btn secondary" type="button" data-refresh>Birkargatu</button></div><div class="sessions-filter-tabs" role="group" aria-label="Entrenamenduak dataren arabera"><button type="button" data-sessions-view="upcoming" aria-pressed="false">Datozenak <span data-sessions-count="upcoming"></span></button><button type="button" data-sessions-view="past" aria-pressed="false">Aurrekoak <span data-sessions-count="past"></span></button><button type="button" data-sessions-view="all" aria-pressed="true">Guztiak <span data-sessions-count="all"></span></button></div><div class="sessions-result-context"><p id="sessions-result-count" class="muted" role="status" tabindex="-1"></p><button id="sessions-clear" class="btn secondary" type="button" hidden>Garbitu iragazkiak</button></div><ul id="sessions-list" class="list"></ul></div>
       <details class="card" id="session-create-panel"><summary><strong id="session-editor-title">Entrenamendu berria</strong></summary>
         <form id="session-form" tabindex="-1" class="stack" style="margin-top:14px">
           <div class="grid2"><label>Data eta ordua<input id="session-date" type="datetime-local" required></label><label>Tokia<input id="session-place" value="Kiroldegia"></label></div>
@@ -1070,8 +1107,8 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
           <div class="session-editor-actions"><button class="btn" id="session-submit" type="submit">Gorde entrenamendua</button><button class="btn secondary" id="session-cancel" type="button">Utzi</button></div>
         </form>
       </details>
-      <div class="toolbar"><h2>Saioak</h2><button class="btn secondary" type="button" data-refresh>Birkargatu</button></div>
-      <ul id="sessions-list" class="list"></ul>
+
+
     </section>
     <section id="v-session-detail">
       <button class="btn secondary" type="button" data-back-sessions>← Saioetara itzuli</button>
@@ -1396,20 +1433,20 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <dialog id="offline-pending-dialog" class="attendance-dialog" aria-labelledby="offline-pending-title"><div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="offline-pending-title">Gordetzeko zain</h2><button class="btn secondary" id="offline-pending-close" type="button">Itxi</button></div><ul id="offline-pending-list" class="list"></ul><button class="btn secondary" id="offline-sync-retry" type="button">Berriro saiatu</button></div></dialog>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=203" defer></script>
-<script src="i18n.js?v=203" defer></script>
-<script src="insights-data.js?v=203" defer></script>
-<script src="portal.js?v=203" defer></script>
-<script src="portal-events.js?v=203" defer></script>
-<script src="portal-calendar.js?v=203" defer></script>
-<script src="push.js?v=203" defer></script>
-<script src="motion.js?v=203" defer></script>
-<script src="offline.js?v=203" defer></script>
-<script src="app.js?v=203" defer></script>
-<script src="player-statistics.js?v=203" defer></script>
-<script src="weekly-training.js?v=203" defer></script>
-<script src="inbox.js?v=203" defer></script>
-<script src="report-pdf.js?v=203" defer></script>
-<script src="insights.js?v=203" defer></script>
+<script src="locales/es.js?v=204" defer></script>
+<script src="i18n.js?v=204" defer></script>
+<script src="insights-data.js?v=204" defer></script>
+<script src="portal.js?v=204" defer></script>
+<script src="portal-events.js?v=204" defer></script>
+<script src="portal-calendar.js?v=204" defer></script>
+<script src="push.js?v=204" defer></script>
+<script src="motion.js?v=204" defer></script>
+<script src="offline.js?v=204" defer></script>
+<script src="app.js?v=204" defer></script>
+<script src="player-statistics.js?v=204" defer></script>
+<script src="weekly-training.js?v=204" defer></script>
+<script src="inbox.js?v=204" defer></script>
+<script src="report-pdf.js?v=204" defer></script>
+<script src="insights.js?v=204" defer></script>
 </body>
 </html>

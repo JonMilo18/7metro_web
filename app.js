@@ -1786,27 +1786,56 @@ function renderSavedSession(sessionId) {
   return true;
 }
 
+var sessionListView = "all";
 function renderSessions() {
   var details = records("saio_xehetasuna");
-  $("sessions-list").innerHTML = sessions.length ? sessions.map(function (session) {
-    var names = details.filter(function (item) {
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+  var query = $("sessions-search").value.trim().toLocaleLowerCase();
+  var list = sessions.map(function (session) {
+    var entries = details.filter(function (item) {
       return Number(item.id_saio) === Number(session.id_saio);
-    }).map(function (item) {
+    });
+    var names = entries.map(function (item) {
       var exercise = sessionExerciseById(item.id_ariketa);
       return exercise ? exercise.izena : "";
     }).filter(Boolean);
-    return '<li class="item"><div class="item-main"><strong>' + esc(formatDay(session)) +
-      '</strong><small>' + esc(session.lekua || "") +
-      (session.helburu_taktikoa ? " · " + esc(session.helburu_taktikoa) : "") +
-      (names.length ? " · " + esc(names.join(", ")) : "") +
-      '</small></div><details class="session-options"><summary>' + esc(t("Aukerak")) + '</summary><div class="session-actions"><button class="btn secondary" type="button" data-view-session="' +
+    var date = new Date(session.data_ordua), valid = Number.isFinite(date.getTime());
+    var group = valid ? date >= today ? "upcoming" : "past" : "undated";
+    return { session: session, names: names, entries: entries, date: date, valid: valid, group: group };
+  });
+  ["upcoming", "past", "all"].forEach(function (view) {
+    document.querySelector('[data-sessions-count="' + view + '"]').textContent = String(view === "all" ? list.length : list.filter(function (item) { return item.group === view; }).length);
+    document.querySelector('[data-sessions-view="' + view + '"]').setAttribute("aria-pressed", String(sessionListView === view));
+  });
+  var order = { upcoming: 0, past: 1, undated: 2 };
+  var visible = list.filter(function (item) {
+    return (sessionListView === "all" || item.group === sessionListView) &&
+      (!query || [item.session.helburu_taktikoa || "", item.session.lekua || "", item.names.join(" ")].join(" ").toLocaleLowerCase().includes(query));
+  }).sort(function (a, b) {
+    return order[a.group] - order[b.group] || (a.valid && b.valid ? (a.group === "past" ? b.date - a.date : a.date - b.date) : 0) || Number(a.session.id_saio) - Number(b.session.id_saio);
+  });
+  $("sessions-result-count").textContent = t("{count} entrenamendu", { count: visible.length });
+  $("sessions-clear").hidden = !query && sessionListView === "all";
+  var lastGroup = "";
+  $("sessions-list").innerHTML = visible.length ? visible.map(function (item) {
+    var session = item.session, names = item.names, date = item.date;
+    var heading = "";
+    if (sessionListView === "all" && item.group !== lastGroup) heading = '<li class="session-list-group"><h2>' + esc(t(item.group === "upcoming" ? "Datozen entrenamenduak" : item.group === "past" ? "Aurreko entrenamenduak" : "Datarik gabe")) + '</h2></li>';
+    lastGroup = item.group;
+    var month = item.valid ? I18n.language() === "eu" ? PLAN_MONTHS[date.getMonth()].slice(0, 3) : date.toLocaleDateString(I18n.locale(), { month: "short" }) : "";
+    var dateLabel = item.valid ? (I18n.language() === "eu" ? date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() : date.toLocaleDateString(I18n.locale(), { day: "numeric", month: "short", year: "numeric" })) + ' · ' + String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0') : t("Data zehaztu gabe");
+    var exercises = item.entries.filter(function (entry) { return entry.id_ariketa != null; });
+    var minutes = exercises.reduce(function (total, entry) { return total + (Number(entry.iraupena_minutuak) || 0); }, 0);
+    return heading + '<li class="item session-list-card" data-session-card="' + Number(session.id_saio) + '"><div class="session-card-main"><span class="session-card-day" aria-hidden="true"><strong>' + (item.valid ? date.getDate() : '&mdash;') + '</strong><small>' + esc(month) + '</small></span><div class="item-main"><button class="session-card-title" type="button" data-view-session="' + Number(session.id_saio) + '">' + esc(session.helburu_taktikoa || t("Entrenamendua")) + '</button><small class="session-card-date">' + esc(dateLabel) + '</small>' + (session.lekua ? '<small class="session-card-place">' + esc(session.lekua) + '</small>' : '') + '</div></div><div class="session-card-meta"><span>' + exercises.length + esc(t(" ariketa")) + '</span>' + (minutes ? '<span>' + minutes + ' min</span>' : '') + '</div>' +
+      (names.length ? '<p class="session-card-exercises" title="' + esc(names.join(", ")) + '">' + esc(names.join(", ")) + '</p>' : '') +
+      '<details class="session-options"><summary>' + esc(t("Aukerak")) + '</summary><div class="session-actions"><button class="btn secondary" type="button" data-view-session="' +
       Number(session.id_saio) + ("\">" + esc(t("Ikusi")) + "</button><button class=\"btn secondary\" type=\"button\" data-attendance-session=\"") +
       Number(session.id_saio) + ("\">" + esc(t("Asistentzia")) + "</button>") +
       '<button class="btn secondary" type="button" data-edit-session="' + Number(session.id_saio) + '">' + esc(t("Editatu")) + '</button>' +
       '<button class="btn secondary" type="button" data-duplicate-session="' + Number(session.id_saio) + '">' + esc(t("Bikoiztu")) + '</button>' +
       '<button class="btn secondary" type="button" data-share-session="' + Number(session.id_saio) + '">' + esc(t("Partekatu")) + '</button>' +
       '<button class="btn danger" type="button" data-delete-session="' + Number(session.id_saio) + '">' + esc(t("Ezabatu")) + '</button></div></details></li>';
-  }).join("") : ("<li class=\"empty\">" + esc(t("Oraindik ez da entrenamendurik gorde.")) + "</li>");
+  }).join("") : '<li class="empty sessions-empty"><p>' + esc(t(sessions.length ? "Ez dago bilaketarekin edo iragazkiarekin bat datorren entrenamendurik." : "Oraindik ez da entrenamendurik gorde.")) + '</p><button class="btn secondary" type="button" ' + (sessions.length ? 'data-sessions-reset' : 'data-sessions-new') + '>' + esc(t(sessions.length ? "Garbitu iragazkiak" : "Entrenamendu berria")) + '</button></li>';
   var select = $("attendance-session"), prior = select.value;
   select.innerHTML = ("<option value=\"\">" + esc(t("Aukeratu entrenamendua")) + "</option>") + sessions.map(function (session) {
     return '<option value="' + Number(session.id_saio) + '">' + esc(formatDay(session)) +
@@ -1816,6 +1845,18 @@ function renderSessions() {
   $("attendance-open").disabled = !select.value;
   renderSessionEditor();
 }
+$("sessions-search").addEventListener("input", renderSessions);
+function clearSessionListFilters() {
+  sessionListView = "all"; $("sessions-search").value = ""; renderSessions();
+  $("sessions-result-count").focus({ preventScroll: true });
+}
+$("sessions-clear").addEventListener("click", clearSessionListFilters);
+$("v-sessions").addEventListener("click", function (event) {
+  var view = event.target.closest("[data-sessions-view]");
+  if (view) { sessionListView = view.dataset.sessionsView; renderSessions(); }
+  if (event.target.closest("[data-sessions-reset]")) clearSessionListFilters();
+  if (event.target.closest("[data-sessions-new]")) $("session-create").click();
+});
 
 function renderMatches() {
   $("matches-list").innerHTML = matches.length ? matches.map(function (match) {
@@ -3603,10 +3644,6 @@ else if (desktopMenuQuery.addListener) desktopMenuQuery.addListener(handleMenuVi
 document.querySelectorAll("nav [data-v]").forEach(function (button) {
   button.addEventListener("click", function () { selectSection(button.dataset.v); });
 });
-var sessionsSection = $("v-sessions"), sessionCreate = sessionsSection.querySelector("details.card");
-var sessionToolbar = $("sessions-list").previousElementSibling, sessionsList = $("sessions-list");
-sessionsSection.insertBefore(sessionToolbar, sessionCreate);
-sessionsSection.insertBefore(sessionsList, sessionCreate);
 var matchesSection = $("v-matches"), matchCreate = matchesSection.querySelector("details.card");
 var matchToolbar = $("matches-list").previousElementSibling, matchesList = $("matches-list");
 matchesSection.insertBefore(matchToolbar, matchCreate);
