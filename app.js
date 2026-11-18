@@ -1183,26 +1183,10 @@ function renderPlayers() {
   var visiblePlayers = players.filter(function (player) {
     return (!status || player.egoera === status) && (!query || (playerName(player) + " " + (player.dortsala == null ? "" : player.dortsala)).toLocaleLowerCase().includes(query));
   });
-  var attendanceRows = records("saio_bertaratzea");
   $("players-list").innerHTML = visiblePlayers.length ? visiblePlayers.map(function (player) {
-    var playerAttendance = attendanceRows.filter(function (row) {
-      return Number(row.id_jokalaria) === Number(player.id_jokalaria);
-    });
-    var attendanceTotal = playerAttendance.length;
-    var attendancePresent = playerAttendance.filter(function (row) {
-      return Number(row.bertaratu) === 1 || row.bertaratu === true;
-    }).length;
-    var attendancePercent = attendanceTotal ? Math.round(attendancePresent / attendanceTotal * 100) : null;
-    var attendanceMarkup = attendanceTotal
-      ? ("<div class=\"player-attendance\" aria-label=\"" + esc(t("Asistentzia: %"))) + attendancePercent + ', ' + attendancePresent + ' ' + attendanceTotal + esc(t(' saiotik')) + '">' +
-        ("<span class=\"player-attendance-label\">" + esc(t("Asistentzia")) + "</span><strong>%") + attendancePercent + '</strong>' +
-        '<span class="player-attendance-bar" aria-hidden="true"><i style="width:' + attendancePercent + '%"></i></span>' +
-        '<small>' + attendancePresent + '/' + attendanceTotal + (esc(t(" saio")) + "</small></div>")
-      : ("<div class=\"player-attendance player-attendance-empty\"><span class=\"player-attendance-label\">" + esc(t("Asistentzia")) + "</span><small>" + esc(t("Erregistrorik ez")) + "</small></div>");
     return '<li class="item"><div class="item-main"><strong>' +
       (player.dortsala != null ? "#" + esc(player.dortsala) + " " : "") + esc(playerName(player)) +
-      '</strong><small>' + esc(t(player.posizioa) || t("Posiziorik gabe")) + " · " +
-      esc(t(player.egoera) || "") + '</small>' + attendanceMarkup + '</div><div class="player-row-actions"><button class="btn secondary" type="button" data-player-profile="' + Number(player.id_jokalaria) + '">' + esc(t("Fitxa")) + '</button><button class="btn secondary" type="button" data-player-edit="' + Number(player.id_jokalaria) + '">' + esc(t("Editatu")) + '</button><button class="btn danger" type="button" data-delete-player="' +
+      '</strong><small>' + esc(t(player.egoera) || "") + '</small></div><div class="player-row-actions"><button class="btn secondary" type="button" data-player-profile="' + Number(player.id_jokalaria) + '">' + esc(t("Fitxa")) + '</button><button class="btn secondary" type="button" data-player-edit="' + Number(player.id_jokalaria) + '">' + esc(t("Editatu")) + '</button><button class="btn danger" type="button" data-delete-player="' +
       Number(player.id_jokalaria) + ("\">" + esc(t("Ezabatu")) + "</button></div></li>");
   }).join("") : '<li class="empty">' + (players.length ? t("Ez da jokalaririk aurkitu iragazki horiekin.") : t("Ez dago jokalaririk. Gehitu lehenengo jokalaria.")) + '</li>';
 
