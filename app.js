@@ -172,7 +172,7 @@ window.addEventListener("languagechange", function () {
   $("score-save-status").textContent = scoreboard.savedMatchId ? t("Partida gordeta dago.") : t("Oraindik ez da gorde.");
   $("shot-record").textContent = shotTargetEvent ? t("Kokapena gorde") : t("Jaurtiketa erregistratu");
   $("shot-context").textContent = shotTargetEvent ? t("Kokapena gehitu: ") + scoreEventText(shotTargetEvent) : t("Jaurtiketa berria");
-  $("install-status").textContent = standalone ? t("Instalatuta erabiltzen ari zara") : t("Arakatzailetik erabiltzen ari zara");
+  updateInstallUI();
   $("score-fullscreen").querySelector(".score-fullscreen-label").textContent = scoreMatchMode ? t("Irten") : t("Partida modua");
   $("score-fullscreen").setAttribute("aria-label", scoreMatchMode ? t("Partida modutik irten") : t("Pantaila osoko partida modua ireki"));
   $("session-preview-play").textContent = t("Animazioa ikusi");
@@ -4847,14 +4847,46 @@ document.querySelectorAll('input[type="datetime-local"]').forEach(function (inpu
 });
 
 window.addEventListener("beforeinstallprompt", function (event) {
-  event.preventDefault(); installPrompt = event; $("install").hidden = false;
-});
-$("install").addEventListener("click", async function () {
-  if (!installPrompt) return;
-  await installPrompt.prompt(); installPrompt = null; $("install").hidden = true;
+  event.preventDefault(); installPrompt = event; updateInstallUI();
 });
 var standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
-$("install-status").textContent = standalone ? t("Instalatuta erabiltzen ari zara") : t("Arakatzailetik erabiltzen ari zara");
+function updateInstallUI() {
+  var message = t(standalone ? "Instalatuta erabiltzen ari zara" : "Arakatzailetik erabiltzen ari zara");
+  $("install-status").textContent = message;
+  $("portal-install-status").textContent = message;
+  $("install").hidden = Boolean(standalone || !installPrompt);
+  $("portal-install").hidden = Boolean(standalone);
+  $("portal-install-help").hidden = Boolean(standalone);
+}
+async function promptAppInstall() {
+  if (standalone) return;
+  if (!installPrompt) {
+    $("portal-install-help").open = true;
+    $("portal-install-help").querySelector("summary").focus();
+    return;
+  }
+  var prompt = installPrompt;
+  installPrompt = null;
+  $("install").disabled = true; $("portal-install").disabled = true;
+  try {
+    await prompt.prompt();
+    await prompt.userChoice;
+  } catch (error) {
+    if (document.body.classList.contains("player-mode")) $("portal-install-help").open = true;
+  } finally {
+    $("install").disabled = false; $("portal-install").disabled = false;
+    updateInstallUI();
+  }
+}
+$("install").addEventListener("click", promptAppInstall);
+$("portal-install").addEventListener("click", promptAppInstall);
+window.addEventListener("appinstalled", function () {
+  standalone = true; installPrompt = null; updateInstallUI();
+});
+window.matchMedia("(display-mode: standalone)").addEventListener("change", function (event) {
+  standalone = event.matches || Boolean(navigator.standalone); updateInstallUI();
+});
+updateInstallUI();
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
     navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(function (registration) {
