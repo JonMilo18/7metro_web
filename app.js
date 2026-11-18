@@ -2991,15 +2991,56 @@ function updateShareExerciseCount() {
   var count = $("share-exercise-count");
   if (count) count.textContent = selectedShareExerciseIds().length + t(" hautatuta");
 }
+var friendsView = "friends";
+function setFriendsView(view) {
+  if (!["friends", "requests", "share"].includes(view)) return;
+  friendsView = view;
+  ["friends", "requests", "share"].forEach(function (name) { $("friends-pane-" + name).hidden = view !== name; });
+  document.querySelectorAll("[data-friends-view]").forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.friendsView === view)); });
+  if (view !== "friends") clearFriendSearch();
+}
+function renderFriendsNavigation() {
+  var incoming = friendsCache.incoming.length;
+  [["friends", friendsCache.friends.length], ["requests", incoming]].forEach(function (entry) {
+    var badge = document.querySelector('[data-friends-count="' + entry[0] + '"]');
+    badge.textContent = String(entry[1]); badge.hidden = !entry[1];
+  });
+  $("friends-request-alert").hidden = !incoming;
+  $("friends-request-alert").textContent = t("{count} lagun-eskaera erantzuteko. Ikusi eskaerak", { count: incoming });
+  $("friends-outgoing-count").textContent = String(friendsCache.outgoing.length);
+  $("friends-received-exercise-count").textContent = String(friendSharedExercises.length);
+  $("friends-received-training-count").textContent = String(friendSharedTrainings.length);
+  $("friends-sharing-empty").hidden = Boolean(friendsCache.friends.length);
+  $("friends-send-exercises").hidden = !friendsCache.friends.length;
+  $("friends-send-training").hidden = !friendsCache.friends.length;
+  setFriendsView(friendsView);
+}
+$("v-friends").addEventListener("click", function (event) {
+  var tab = event.target.closest("[data-friends-view]"), add = event.target.closest("[data-friend-add]"), share = event.target.closest("[data-friend-share]");
+  if (tab) setFriendsView(tab.dataset.friendsView);
+  if (event.target.closest("[data-friends-open-requests]")) setFriendsView("requests");
+  if (add) {
+    setFriendsView("friends"); $("friend-add-panel").open = true;
+    $("friend-username").focus();
+  }
+  if (share) {
+    var id = share.dataset.friendShare;
+    $("share-exercise-friend").value = id; $("share-training-friend").value = id;
+    setFriendsView("share"); $("friends-send-exercises").open = true;
+    $("share-exercise-friend").focus();
+  }
+});
 function renderFriends() {
   var sharedExercises = friendSharedExercises, sharedTrainings = friendSharedTrainings;
     $("friend-incoming").innerHTML = friendsCache.incoming.length ? friendsCache.incoming.map(function (item) {
       return '<li class="item"><div class="item-main"><strong>' + esc(item.username) + ("</strong><small>" + esc(t("Lagun-eskaera")) + "</small></div><button class=\"btn secondary\" data-friend-action=\"friend_accept\" data-id=\"") + Number(item.id) + ("\">" + esc(t("Onartu")) + "</button><button class=\"btn danger\" data-friend-action=\"friend_reject\" data-id=\"") + Number(item.id) + ("\">" + esc(t("Baztertu")) + "</button></li>");
     }).join("") : ("<li class=\"empty\">" + esc(t("Ez dago sarrerako eskaerarik.")) + "</li>");
     $("friends-list").innerHTML = friendsCache.friends.length ? friendsCache.friends.map(function (item) {
-      return '<li class="item"><div class="item-main"><strong>' + esc(item.username) + ("</strong><small>" + esc(t("Lagun")) + "</small></div><button class=\"btn danger\" data-friend-action=\"friend_remove\" data-id=\"") + Number(item.id) + ("\">" + esc(t("Laguna kendu")) + "</button></li>");
-    }).join("") : ("<li class=\"empty\">" + esc(t("Onartutako lagunik ez duzu oraindik.")) + "</li>");
-    $("friend-outgoing").innerHTML = friendsCache.outgoing.length ? '<li class="notice">' + friendsCache.outgoing.map(function (item) { return esc(item.username) + t(" — eskaera bidalita"); }).join(" · ") + '</li>' : '';
+      return '<li class="item friends-roster-card"><span class="friends-avatar" aria-hidden="true">' + esc(Array.from(item.username || '?').slice(0, 2).join('').toLocaleUpperCase()) + '</span><div class="item-main"><strong>' + esc(item.username) + '</strong><small>' + esc(t("Lagun")) + '</small></div><div class="friends-roster-actions"><button class="btn secondary" type="button" data-friend-share="' + Number(item.user_id) + '" aria-label="' + esc(t("Partekatu {name} lagunarekin", { name: item.username })) + '">' + esc(t("Partekatu")) + '</button><details class="friends-manage"><summary>' + esc(t("Aukerak")) + '</summary><button class="btn danger" type="button" data-friend-action="friend_remove" data-id="' + Number(item.id) + '">' + esc(t("Laguna kendu")) + '</button></details></div></li>';
+    }).join("") : '<li class="empty">' + esc(t("Onartutako lagunik ez duzu oraindik.")) + '<button class="btn secondary" type="button" data-friend-add>' + esc(t("Bilatu lagun bat")) + '</button></li>';
+    $("friend-outgoing").innerHTML = friendsCache.outgoing.length ? friendsCache.outgoing.map(function (item) {
+      return '<li class="item"><div class="item-main"><strong>' + esc(item.username) + '</strong><small>' + esc(t("Erantzunaren zain")) + '</small></div></li>';
+    }).join("") : '<li class="empty">' + esc(t("Ez duzu bidalitako eskaerarik.")) + '</li>';
     $("friend-shared-exercises").innerHTML = sharedExercises.length ? sharedExercises.map(function (item) {
       return '<li class="item"><div class="item-main"><strong>' + esc(item.izena) + '</strong><small>' + esc(item.shared_by_username || t("Lagun batek partekatua")) + (item.is_saved ? t(" · Nire ariketetan gordeta") : '') + '</small></div>' + (item.is_saved ? '' : '<button class="btn secondary" data-save-shared-exercise="' + Number(item.id_ariketa) + ("\">" + esc(t("Nire ariketetara gehitu")) + "</button>")) + '<button class="btn secondary" data-show-shared-exercise="' + Number(item.id_ariketa) + ("\">" + esc(t("Xehetasunak")) + "</button></li>");
     }).join("") : ("<li class=\"empty\">" + esc(t("Oraindik ez dizute ariketarik partekatu.")) + "</li>");
@@ -3012,8 +3053,10 @@ function renderFriends() {
     setFriendOptions("team-invite-friend", friendsCache.friends, t("Aukeratu gonbidatzeko laguna"));
     renderShareExerciseOptions();
     setFriendOptions("share-training-item", friendTrainings, t("Aukeratu entrenamendua"));
+    renderFriendsNavigation();
 }
 async function loadFriends() {
+  $("friends-error").hidden = true;
   [$("friend-incoming"), $("friends-list"), $("friend-outgoing"), $("friend-shared-exercises"), $("friend-shared-trainings")].forEach(function (el) { el.innerHTML = ("<li class=\"empty\">" + esc(t("Kargatzen…")) + "</li>"); });
   try {
     var results = await Promise.all([
@@ -3030,7 +3073,11 @@ async function loadFriends() {
     friendSharedTrainings = sharedTrainings;
     renderFriends();
   } catch (error) {
-    [$("friend-incoming"), $("friends-list")].forEach(function (el) { el.innerHTML = '<li class="notice error">' + esc(error.message) + '</li>'; });
+    $("friends-error").textContent = error.message;
+    $("friends-error").hidden = false;
+    [$("friend-incoming"), $("friends-list"), $("friend-outgoing"), $("friend-shared-exercises"), $("friend-shared-trainings")].forEach(function (el) {
+      el.innerHTML = '<li class="empty">' + esc(t("Ezin izan dira datuak kargatu. Sakatu Birkargatu berriro saiatzeko.")) + '</li>';
+    });
     notify(error.message, "error");
   }
 }
@@ -3074,10 +3121,15 @@ $("friend-username").addEventListener("keydown", function (event) {
 });
 $("friend-form").addEventListener("submit", async function (event) {
   event.preventDefault();
+  var button = this.querySelector('[type="submit"]');
+  if (button.disabled) return;
+  button.disabled = true;
   try {
     await request({ action: "friend_add", username: $("friend-username").value.trim().toLowerCase() });
     $("friend-username").value = ""; clearFriendSearch(); notify(t("Lagun-eskaera bidali da"), "success"); await loadFriends();
+    setFriendsView("requests"); $("friends-sent-requests").open = true;
   } catch (error) { notify(error.message, "error"); }
+  finally { button.disabled = false; }
 });
 $("friends-refresh").addEventListener("click", function () { loadFriends(); });
 $("friend-share-exercise").addEventListener("submit", async function (event) {
@@ -3085,6 +3137,9 @@ $("friend-share-exercise").addEventListener("submit", async function (event) {
   var exerciseIds = selectedShareExerciseIds();
   if (!exerciseIds.length) return notify(t("Hautatu gutxienez ariketa bat"), "error");
   if (exerciseIds.length > 100) return notify(t("Gehienez 100 ariketa parteka ditzakezu aldi bakoitzean"), "error");
+  var button = this.querySelector('[type="submit"]');
+  if (button.disabled) return;
+  button.disabled = true;
   try {
     var result = await request({ action: "exercise_share_many", friend_id: Number($("share-exercise-friend").value), exercise_ids: exerciseIds });
     var shared = Number(result.shared_count) || 0, existing = Number(result.already_shared_count) || 0;
@@ -3092,6 +3147,7 @@ $("friend-share-exercise").addEventListener("submit", async function (event) {
     shareExerciseSelection.clear();
     await loadFriends();
   } catch (error) { notify(error.message, "error"); }
+  finally { button.disabled = false; }
 });
 $("share-exercise-items").addEventListener("change", function (event) {
   var input = event.target.closest("[data-share-exercise]");
@@ -3117,14 +3173,19 @@ $("share-exercise-clear").addEventListener("click", function () {
 });
 $("friend-share-training").addEventListener("submit", async function (event) {
   event.preventDefault();
+  var button = this.querySelector('[type="submit"]');
+  if (button.disabled) return;
+  button.disabled = true;
   try {
     await request({ action: "training_share", friend_id: Number($("share-training-friend").value), training_id: Number($("share-training-item").value) });
     notify(t("Entrenamendua lagunarekin partekatu da"), "success"); await loadFriends();
   } catch (error) { notify(error.message, "error"); }
+  finally { button.disabled = false; }
 });
 document.addEventListener("click", async function (event) {
   var target = event.target.closest("[data-friend-action], [data-save-shared-exercise], [data-show-shared-exercise]");
-  if (!target) return;
+  if (!target || target.disabled) return;
+  target.disabled = true;
   try {
     if (target.dataset.friendAction) {
       await request({ action: target.dataset.friendAction, request_id: Number(target.dataset.id) });
@@ -3139,6 +3200,7 @@ document.addEventListener("click", async function (event) {
     }
     await loadFriends();
   } catch (error) { notify(error.message, "error"); }
+  finally { target.disabled = false; }
 });
 function scoreUpdate() {
   if (!scoreboard.running) return;

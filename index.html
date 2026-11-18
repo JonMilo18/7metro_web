@@ -102,6 +102,42 @@ nav button[aria-selected="true"]{color:#fff;background:rgba(0,68,238,.18);box-sh
 #stats-summary>.card>div{font-size:.85rem;font-weight:650;margin-bottom:5px}
 #stats-summary>.card>small{display:block;font-size:.74rem;line-height:1.5}
 .stats-player-search{max-width:440px;margin:18px 0}
+#v-friends [hidden]{display:none!important}
+#v-friends .btn:hover{transform:none}
+.friends-page-heading,.friends-section-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px}
+.friends-page-heading h1,.friends-section-heading h2{margin:0}
+.friends-page-heading>.btn,.friends-section-heading>.btn{width:auto;min-height:44px;margin:0;font-size:.83rem;gap:7px}
+.friends-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:5px;border:1px solid var(--line);border-radius:14px;background:var(--bg2);margin:0 0 24px}
+.friends-tabs>button{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px;min-width:0;min-height:46px;padding:8px 5px;border:0;border-radius:10px;background:transparent;color:var(--muted);font:inherit;font-size:.85rem;font-weight:700;cursor:pointer;overflow-wrap:anywhere}
+.friends-tabs>button[aria-pressed=true]{background:var(--blue);color:#fff}
+.friends-tabs [data-friends-count]{display:inline-grid;place-items:center;min-width:20px;min-height:20px;padding:2px 5px;border-radius:7px;background:rgba(40,101,255,.18);color:var(--ink);font-size:.7rem}
+.friends-tabs>button[aria-pressed=true] [data-friends-count]{background:rgba(255,255,255,.2);color:#fff}
+.friends-pane>h2{font-size:1.15rem;margin:20px 0 10px}
+.friends-pane-description{font-size:.86rem;line-height:1.5;margin:0 0 18px;max-width:65ch}
+.friends-request-alert{display:block;width:100%;margin:0 0 20px;padding:14px;text-align:left;min-height:48px;border:1px solid var(--blue);border-radius:12px;background:rgba(40,101,255,.1);color:var(--ink);font:inherit;font-size:.88rem;font-weight:650;cursor:pointer}
+.friends-add-panel{padding:0 14px;border:1px solid var(--line);border-radius:13px;background:var(--bg2);margin:0 0 18px}
+.friends-add-panel>summary,.friends-share-details>summary,.friends-sent-requests>summary{padding:14px 0;min-height:48px;color:var(--ink);font-size:.92rem;font-weight:650;cursor:pointer;overflow-wrap:anywhere}
+#friend-form{margin:0 0 14px;box-shadow:none;background:transparent;border:0;padding:8px 0}
+#friend-form h2{font-size:1rem;margin:0}
+.friends-roster{display:grid;gap:10px}
+#v-friends .friends-roster-card{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px;padding:15px;border:1px solid var(--line);border-radius:14px;background:var(--bg2)}
+.friends-avatar{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:rgba(40,101,255,.15);color:var(--ink);border:1px solid rgba(40,101,255,.25);font-size:.9rem;font-weight:750}
+.friends-roster-card .item-main{min-width:0}.friends-roster-card .item-main small{display:block;margin-top:4px;font-size:.75rem}
+.friends-roster-actions{display:flex;align-items:flex-start;gap:8px;min-width:0}
+#v-friends .friends-roster-actions>.btn{min-height:44px;padding:8px 12px;margin:0;font-size:.82rem}
+.friends-manage{min-width:0}
+.friends-manage>summary{min-height:44px;padding:11px 8px;font-size:.8rem;color:var(--muted);cursor:pointer}
+#v-friends .friends-manage>.btn{margin:4px 0 0;min-height:44px;max-width:100%;white-space:normal}
+#friend-incoming .btn{min-height:44px;margin:0;padding:8px 12px}
+.friends-sent-requests{margin-top:24px;padding-top:8px;border-top:1px solid var(--line)}
+.friends-share-details{padding:0 16px}
+.friends-share-details[open]{padding-bottom:16px}
+.friends-share-details[open]>summary{border-bottom:1px solid var(--line);margin-bottom:16px}
+.friends-share-details .help-heading h2{font-size:1rem}
+.friends-share-details summary>span,.friends-sent-requests summary>span{display:inline-grid;place-items:center;min-width:22px;min-height:22px;border-radius:7px;background:var(--bg);font-size:.75rem;padding:2px 6px;margin-left:5px}
+.friends-received-heading{padding-top:12px;font-size:1.1rem}
+#friend-shared-trainings .item-main>small:last-child{display:block;white-space:pre-line;line-height:1.7;margin-top:8px}
+@media(max-width:600px){#v-friends .friends-roster-card{grid-template-columns:44px minmax(0,1fr);padding:13px}.friends-roster-actions{grid-column:1/-1;border-top:1px solid var(--line);padding-top:12px}.friends-roster-actions>.btn,.friends-roster-actions>.friends-manage{flex:1;text-align:center}.friends-manage>.btn{width:100%}#friend-incoming .item{flex-wrap:wrap}#friend-incoming .item-main{flex-basis:100%}#friend-incoming .btn{flex:1}.friends-tabs>button{font-size:.79rem}.friends-share-details{padding-inline:12px}}
 .stats-top-controls{display:grid;grid-template-columns:minmax(0,2fr) minmax(100px,1fr) minmax(130px,1fr);gap:12px;margin:16px 0}
 .stats-top-hint{font-size:.8rem;line-height:1.5}
 .stats-top-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:22px 0 12px}
@@ -796,7 +832,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=201"><link rel="stylesheet" href="portal.css?v=201"><link rel="stylesheet" href="motion.css?v=201">
+<link rel="stylesheet" href="insights.css?v=202"><link rel="stylesheet" href="portal.css?v=202"><link rel="stylesheet" href="motion.css?v=202">
 </head>
 <body>
 <div id="app">
@@ -1178,15 +1214,15 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
       <dialog id="score-player-dialog" class="score-player-dialog" aria-labelledby="score-player-title"><div class="score-player-heading"><div><span class="score-small-label" id="score-player-time"></span><h2 id="score-player-title">Aukeratu jokalaria</h2></div><button type="button" class="btn secondary" id="score-player-cancel">Utzi</button></div><div class="score-player-grid" id="score-player-grid"></div><details id="score-opponent-add" class="score-opponent-add hidden"><summary><strong>+ Aurkariaren jokalaria</strong></summary><form id="score-opponent-form" class="stack score-details-content"><div class="score-opponent-fields"><label>Dortsala<input id="score-opponent-number" type="number" inputmode="numeric" min="0" max="999" step="1" placeholder="7"></label><label>Izena (aukerakoa)<input id="score-opponent-name" type="text" maxlength="100" autocomplete="off"></label></div><p id="score-opponent-error" class="notice error" role="alert" hidden></p><button class="btn" type="submit">Gehitu eta erregistratu</button></form></details><button class="btn secondary" type="button" id="score-player-unspecified">Jokalaria zehaztu gabe</button></dialog>
     </section>
     <section id="v-friends">
-      <div class="help-heading"><h1>Lagunak</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-18" aria-label="Lagunak: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-18" hidden>Bidali eta kudeatu lagun-eskaerak; partekatu ariketak eta entrenamenduak.</p>
-      <form id="friend-form" class="card stack"><h2>Lagun berria</h2><label>Erabiltzaile-izena<input id="friend-username" minlength="3" maxlength="200" required autocomplete="off" spellcheck="false" aria-controls="friend-search-results" aria-describedby="friend-search-status"></label><p id="friend-search-status" class="muted" role="status" aria-live="polite" hidden></p><ul id="friend-search-results" class="friend-search-results list" aria-label="Bilaketarekin bat datozen erabiltzaileak" hidden></ul><button class="btn" type="submit">Eskaera bidali</button></form>
-      <div class="toolbar"><h2>Jasotako eskaerak</h2><button class="btn secondary" type="button" id="friends-refresh">Birkargatu</button></div><ul id="friend-incoming" class="list"></ul>
-      <div class="card"><h2>Lagunak</h2><ul id="friends-list" class="list"></ul></div>
-      <div class="card"><div class="help-heading"><h2>Bidaltzeko ariketak</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-19" aria-label="Bidaltzeko ariketak: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-19" hidden>Aukeratu lagun bat eta partekatu nahi dituzun ariketa guztiak.</p><form id="friend-share-exercise" class="stack"><label>Lagun<select id="share-exercise-friend" required></select></label><fieldset class="exercise-categories"><legend>Kategoriak</legend><div id="share-exercise-category" class="checklist"><label class="checkrow"><input type="checkbox" data-share-category="" checked><span>Kategoria guztiak</span></label></div></fieldset><div><label>Ariketak <span id="share-exercise-count" class="muted">0 hautatuta</span></label><div class="board-tools" aria-label="Ariketak hautatzeko aukerak"><button class="btn secondary" id="share-exercise-select-all" type="button">Ikusgaiak hautatu</button><button class="btn secondary" id="share-exercise-clear" type="button">Garbitu</button></div><div id="share-exercise-items" class="checklist" aria-label="Partekatzeko ariketak"></div></div><button class="btn" type="submit">Hautatutako ariketak partekatu</button></form></div>
-      <div class="card"><h2>Bidaltzeko entrenamenduak</h2><form id="friend-share-training" class="stack"><label>Lagun<select id="share-training-friend" required></select></label><label>Entrenamendua<select id="share-training-item" required></select></label><button class="btn" type="submit">Entrenamendua partekatu</button></form></div>
-      <div class="card"><h2>Nirekin partekatutako ariketak</h2><ul id="friend-shared-exercises" class="list"></ul></div>
-      <div class="card"><h2>Nirekin partekatutako entrenamenduak</h2><ul id="friend-shared-trainings" class="list"></ul></div>
-      <ul id="friend-outgoing" class="list"></ul>
+      <div class="friends-page-heading"><div class="help-heading"><h1>Lagunak</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-18" aria-label="Lagunak: informazioa"><span aria-hidden="true">i</span></button></div><button class="btn secondary" type="button" id="friends-refresh">Birkargatu</button></div><p class="sub" id="help-text-18" hidden>Bidali eta kudeatu lagun-eskaerak; partekatu ariketak eta entrenamenduak.</p>
+      <div class="friends-tabs" role="group" aria-label="Lagunen atalak"><button type="button" data-friends-view="friends" aria-pressed="true">Lagunak <span data-friends-count="friends" hidden></span></button><button type="button" data-friends-view="requests" aria-pressed="false">Eskaerak <span data-friends-count="requests" hidden></span></button><button type="button" data-friends-view="share" aria-pressed="false">Partekatu</button></div>
+      <p id="friends-error" class="notice error" role="alert" hidden></p>
+      <div id="friends-pane-friends" class="friends-pane">
+        <button id="friends-request-alert" class="friends-request-alert" type="button" data-friends-open-requests hidden></button>
+        <div class="friends-section-heading"><h2>Nire lagunak</h2><button class="btn secondary" type="button" data-friend-add><span aria-hidden="true">+</span> Lagun berria</button></div>
+        <details id="friend-add-panel" class="friends-add-panel"><summary>Bilatu lagun bat</summary><form id="friend-form" class="card stack"><h2>Lagun berria</h2><label>Erabiltzaile-izena<input id="friend-username" minlength="3" maxlength="200" required autocomplete="off" spellcheck="false" aria-controls="friend-search-results" aria-describedby="friend-search-status"></label><p id="friend-search-status" class="muted" role="status" aria-live="polite" hidden></p><ul id="friend-search-results" class="friend-search-results list" aria-label="Bilaketarekin bat datozen erabiltzaileak" hidden></ul><button class="btn" type="submit">Eskaera bidali</button></form></details><ul id="friends-list" class="list friends-roster"></ul></div>      <div id="friends-pane-requests" class="friends-pane" hidden><h2>Jasotako eskaerak</h2><p class="muted friends-pane-description">Onartu eskaera elkarrekin ariketak eta entrenamenduak partekatzeko.</p><ul id="friend-incoming" class="list"></ul><details class="friends-sent-requests" id="friends-sent-requests"><summary>Bidalitako eskaerak <span id="friends-outgoing-count"></span></summary><ul id="friend-outgoing" class="list"></ul></details></div>
+      <div id="friends-pane-share" class="friends-pane" hidden><h2>Partekatu lagunekin</h2><p class="muted friends-pane-description">Aukeratu zer bidali nahi duzun. Behean, lagunek zurekin partekatutakoa aurkituko duzu.</p><div id="friends-sharing-empty" class="notice" hidden>Partekatzeko, lehenik gehitu lagun bat edo onartu lagun-eskaera bat. <button class="btn secondary" type="button" data-friend-add>Lagun berria</button></div><details class="card friends-share-details" id="friends-send-exercises"><summary>Ariketak bidali</summary><div class="help-heading"><h2>Bidaltzeko ariketak</h2><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-19" aria-label="Bidaltzeko ariketak: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-19" hidden>Aukeratu lagun bat eta partekatu nahi dituzun ariketa guztiak.</p><form id="friend-share-exercise" class="stack"><label>Lagun<select id="share-exercise-friend" required></select></label><fieldset class="exercise-categories"><legend>Kategoriak</legend><div id="share-exercise-category" class="checklist"><label class="checkrow"><input type="checkbox" data-share-category="" checked><span>Kategoria guztiak</span></label></div></fieldset><div><label>Ariketak <span id="share-exercise-count" class="muted">0 hautatuta</span></label><div class="board-tools" aria-label="Ariketak hautatzeko aukerak"><button class="btn secondary" id="share-exercise-select-all" type="button">Ikusgaiak hautatu</button><button class="btn secondary" id="share-exercise-clear" type="button">Garbitu</button></div><div id="share-exercise-items" class="checklist" aria-label="Partekatzeko ariketak"></div></div><button class="btn" type="submit">Hautatutako ariketak partekatu</button></form></details><details class="card friends-share-details" id="friends-send-training"><summary>Entrenamendua bidali</summary><form id="friend-share-training" class="stack"><label>Lagun<select id="share-training-friend" required></select></label><label>Entrenamendua<select id="share-training-item" required></select></label><button class="btn" type="submit">Entrenamendua partekatu</button></form></details>        <h2 class="friends-received-heading">Jasotako edukia</h2><details class="card friends-share-details" id="friends-received-exercises"><summary>Ariketak <span id="friends-received-exercise-count"></span></summary><ul id="friend-shared-exercises" class="list"></ul></details><details class="card friends-share-details" id="friends-received-trainings"><summary>Entrenamenduak <span id="friends-received-training-count"></span></summary><ul id="friend-shared-trainings" class="list"></ul></details>
+      </div>
     </section>
     <section id="v-planning">
       <div class="session-page-heading"><div class="help-heading"><h1>Denboraldiaren plangintza</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-20" aria-label="Denboraldiaren plangintza: informazioa"><span aria-hidden="true">i</span></button></div><button class="btn session-create-button" id="plan-create-toggle" type="button" aria-label="Gehitu plangintzan" title="Gehitu plangintzan" aria-controls="plan-create-options" aria-expanded="false"><span aria-hidden="true">+</span></button></div><p class="sub" id="help-text-20" hidden>Makrozikloak, mikrozikloak, entrenamenduak eta partidak hilabete-egutegi batean.</p>
@@ -1327,20 +1363,20 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <dialog id="offline-pending-dialog" class="attendance-dialog" aria-labelledby="offline-pending-title"><div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="offline-pending-title">Gordetzeko zain</h2><button class="btn secondary" id="offline-pending-close" type="button">Itxi</button></div><ul id="offline-pending-list" class="list"></ul><button class="btn secondary" id="offline-sync-retry" type="button">Berriro saiatu</button></div></dialog>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=201" defer></script>
-<script src="i18n.js?v=201" defer></script>
-<script src="insights-data.js?v=201" defer></script>
-<script src="portal.js?v=201" defer></script>
-<script src="portal-events.js?v=201" defer></script>
-<script src="portal-calendar.js?v=201" defer></script>
-<script src="push.js?v=201" defer></script>
-<script src="motion.js?v=201" defer></script>
-<script src="offline.js?v=201" defer></script>
-<script src="app.js?v=201" defer></script>
-<script src="player-statistics.js?v=201" defer></script>
-<script src="weekly-training.js?v=201" defer></script>
-<script src="inbox.js?v=201" defer></script>
-<script src="report-pdf.js?v=201" defer></script>
-<script src="insights.js?v=201" defer></script>
+<script src="locales/es.js?v=202" defer></script>
+<script src="i18n.js?v=202" defer></script>
+<script src="insights-data.js?v=202" defer></script>
+<script src="portal.js?v=202" defer></script>
+<script src="portal-events.js?v=202" defer></script>
+<script src="portal-calendar.js?v=202" defer></script>
+<script src="push.js?v=202" defer></script>
+<script src="motion.js?v=202" defer></script>
+<script src="offline.js?v=202" defer></script>
+<script src="app.js?v=202" defer></script>
+<script src="player-statistics.js?v=202" defer></script>
+<script src="weekly-training.js?v=202" defer></script>
+<script src="inbox.js?v=202" defer></script>
+<script src="report-pdf.js?v=202" defer></script>
+<script src="insights.js?v=202" defer></script>
 </body>
 </html>
