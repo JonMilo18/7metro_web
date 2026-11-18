@@ -29,7 +29,7 @@ async function fixture() {
     SELECT setval('saioak_id_saio_seq',100);
     INSERT INTO saio_xehetasuna(id_saio,id_ariketa,ordena,iraupena_minutuak,taldea,aldaerak,paraleloa)
       VALUES (1,NULL,1,0,'Beroketa',NULL,0),(1,1,2,20,'Beroketa','Jatorrizko oharrak',0),
-      (1,NULL,3,0,'Zati nagusia',NULL,0),(1,2,4,0,'Zati nagusia','<Gola> "ñ"',1),
+      (1,NULL,3,0,'Zati nagusia',NULL,0),(1,2,4,0,'Zati nagusia','<Gola> "Ã±"',1),
       (1,1,5,12,'Zati nagusia','Ariketa errepikatua',0);
     INSERT INTO saio_bertaratzea VALUES(1,3,1);
     INSERT INTO saio_plangintzak VALUES(1,45);
@@ -99,7 +99,7 @@ test('a failed details insert rolls back the entire edit or copy', async () => {
 });
 
 test('the API validates writes and passes authenticated team context to the transaction', async () => {
-  let source=stripTypeScriptTypes(fs.readFileSync(path.join(__dirname,'../session-actions.ts'),'utf8')).replace('export async function','async function');
+  let source=stripTypeScriptTypes(fs.readFileSync(path.join(__dirname,'../session-actions.ts'),'utf8')).replace(/^import .*offline-actions.*$/m,'').replace('export async function','async function');
   const context={};vm.createContext(context);vm.runInContext(source+'\nthis.handle=handleSessionAction;',context);
   const snapshot={session:{id_saio:1},details:[]}, calls=[];
   const db={rpc:async(name,args)=>{calls.push({name,args});return{data:{id:1,session:snapshot.session,details:args.p_details},error:null};}};
@@ -162,7 +162,7 @@ test('deleting a training is atomic, team scoped and cleans linked data while pr
 });
 
 test('delete API uses the authenticated context and reports missing and failed deletions', async () => {
-  const source=stripTypeScriptTypes(fs.readFileSync(path.join(__dirname,'../session-actions.ts'),'utf8')).replace('export async function','async function');
+  const source=stripTypeScriptTypes(fs.readFileSync(path.join(__dirname,'../session-actions.ts'),'utf8')).replace(/^import .*offline-actions.*$/m,'').replace('export async function','async function');
   const context={};vm.createContext(context);vm.runInContext(source+'\nthis.handle=handleSessionAction;',context);
   const calls=[];
   const db={rpc:async(name,args)=>{calls.push({name,args});return{error:null};}};

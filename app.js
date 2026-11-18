@@ -199,7 +199,7 @@ async function request(payload, anonymous) {
   var finish = window.AppMotion && window.AppMotion.saving(payload.action);
   loadingStart();
   try {
-    var result = await requestImpl(payload, anonymous);
+    var result = window.AppOffline ? await window.AppOffline.perform(payload, anonymous, function (signal) { return requestImpl(payload, anonymous, signal); }) : await requestImpl(payload, anonymous);
     if (finish) finish(true);
     return result;
   } catch (error) {
@@ -209,36 +209,44 @@ async function request(payload, anonymous) {
   finally { loadingEnd(); }
 }
 
-async function requestImpl(payload, anonymous) {
+async function requestImpl(payload, anonymous, signal) {
+  var sessionToken = token;
   var headers = { "Accept": "application/json", "Content-Type": "application/json", "apikey": apiKey };
   if (token && !anonymous) headers["x-7metro-session"] = token;
   var response;
   try {
     response = await fetch(endpoint(), {
-      method: "POST", headers: headers, body: JSON.stringify(payload), cache: "no-store"
+      method: "POST", headers: headers, body: JSON.stringify(payload), cache: "no-store", signal: signal
     });
   } catch (error) {
-    throw new Error(t("Ezin da Supabasera konektatu. Egiaztatu Interneteko konexioa eta proiektuaren URL-a."));
+    var networkError = new Error(t("Ezin da konektatu. Egiaztatu Interneteko konexioa."));
+    networkError.network = true;
+    throw networkError;
   }
   var result;
   try { result = await response.json(); }
   catch (error) {
-    if (response.ok) throw new Error(t("Supabasek JSON erantzun baliogabea bidali du"));
+    if (response.ok) {
+      var unreadable = new Error(t("Supabasek JSON erantzun baliogabea bidali du"));
+      unreadable.network = true; throw unreadable;
+    }
     result = {};
   }
-  if (response.status === 401 && token && !anonymous) {
+  if (response.status === 401 && token === sessionToken && token && !anonymous) {
+    if (window.AppOffline) await window.AppOffline.forgetSession();
     token = "";
     user = null;
     localStorage.removeItem("7metro-supabase-token");
     localStorage.removeItem("7metro-username");
     showLogin();
-    throw new Error(t("Online saioa iraungi da; hasi saioa berriro"));
+    var expired = new Error(t("Online saioa iraungi da; hasi saioa berriro")); expired.status = 401; throw expired;
   }
   if (!response.ok) {
     if (payload.action === "pwa_create_match" && /usuario o contrase(?:ñ|Ã±)a no v[aá]lidos/i.test(String(result.error || ""))) {
       throw new Error(t("Supabaseko metro-api zaharkituta dago eta ez du markagailutik gordetzea onartzen. Backendaren eguneraketa argitaratu behar da."));
     }
-    throw new Error(I18n.serverMessage(result.error) || (t("Supabase errorea (") + response.status + ")"));
+    var failure = new Error(I18n.serverMessage(result.error) || (t("Supabase errorea (") + response.status + ")"));
+    failure.status = response.status; throw failure;
   }
   return result;
 }
@@ -254,6 +262,9 @@ function showLogin() {
   if (window.PushUI) window.PushUI.reset();
   if (window.PlayerPortal) window.PlayerPortal.reset();
   if (scoreMatchMode) scoreExitMatchMode();
+  clearInterval(scoreTimer);
+  scoreboard = { home: 0, away: 0, seconds: 0, period: 0, running: false, events: [], lastTick: 0, savedMatchId: null };
+  scoreSaving = false;
   token = "";
   setMobileMenu(false);
   $("mobile-menu-toggle").hidden = true;
@@ -261,6 +272,8 @@ function showLogin() {
   $("nav").classList.add("hidden");
   renderAccountIdentity("", "");
   $("v-login").classList.add("on");
+  resetSessionEditor();
+  if (window.AppOffline) window.AppOffline.render();
 }
 
 var accountIdentity = { name: "", team: "" };
@@ -372,6 +385,7 @@ async function loadTeams(autoOpen) {
 }
 
 async function openTeam(id) {
+  if (window.AppOffline) await window.AppOffline.saveDraft();
   if (window.PlayerPortal) window.PlayerPortal.hide();
   var selected = teams.find(function (item) { return Number(item.id_taldea) === Number(id); });
   if (!selected) throw new Error(t("Aukeratutako taldea ez da aurkitu"));
@@ -385,7 +399,7 @@ async function openTeam(id) {
   await refreshAll();
   scoreRead();
   scoreRender();
-  loadFriends();
+  if (!window.AppOffline || !window.AppOffline.disconnected()) loadFriends();
   saveLocal("7metro-team-id", String(teamId));
   $("workspace").classList.remove("hidden");
   $("v-login").classList.remove("on");
@@ -398,6 +412,8 @@ async function openTeam(id) {
   $("nav").inert = false;
   renderAccountIdentity(user ? user.izena : "", selected.izena);
   selectSection("v-home");
+  if (window.AppOffline) await window.AppOffline.teamOpened();
+  if (window.AppGuide) window.AppGuide.render();
 }
 
 function localDateTime() {
@@ -1481,6 +1497,7 @@ function renderSessionPicker() {
       ("\" aria-label=\"" + esc(t("Kendu ariketa")) + "\">✕</button></li>");
   }).join("") : ("<li class=\"empty\">" + esc(t("Gehitu ariketak ezkerraldetik.")) + "</li>");
   updateSessionTimeBar();
+  if (window.AppOffline) queueMicrotask(function () { window.AppOffline.saveDraft(); });
 }
 
 function addSessionExercise(id) {
@@ -1845,6 +1862,7 @@ function renderMatchEditor(matchId, scroll) {
 }
 
 function renderDashboard() {
+  if (window.AppGuide) window.AppGuide.render();
   if (!$('home-session-content')) return;
   var now = new Date();
   var dashboardDate = function (value) {
@@ -2358,6 +2376,7 @@ async function refreshAll() {
     return String(b.data_ordua).localeCompare(String(a.data_ordua));
   });
   renderPlayers(); renderExercises(); renderSessions(); renderMatches(); renderStats(); renderCycles(); renderDashboard();
+  if (result.offline_cached) return;
   if (window.InsightsUI) window.InsightsUI.refresh();
   if (window.WeeklyTraining) window.WeeklyTraining.refresh();
   if (window.PlayerStatistics) window.PlayerStatistics.refreshCoach();
@@ -2398,7 +2417,7 @@ var scoreboard = { home: 0, away: 0, seconds: 0, period: 0, running: false, even
 var scoreTimeEditState = null;
 var scoreMatchMode = false, scoreModePanels = [], scoreModeScroll = 0, scoreNativeFullscreen = false, scoreWakeLock = null, scoreWakePending = false;
 var scoreTimer = 0, scoreSaving = false, scoreShotType = "normal", scoreSanctionSide = "home", pendingScoreAction = null, shotTargetEvent = null;
-function scoreStorageKey() { return "7metro-scoreboard-" + (teamId || "local"); }
+function scoreStorageKey() { return "7metro-scoreboard-" + (user && user.id_erabiltzailea || "user-" + (user && user.izena || "local")) + "-" + (teamId || "local"); }
 function scoreRead() {
   scoreDiscardTimeEdit();
   clearInterval(scoreTimer);
@@ -2408,6 +2427,14 @@ function scoreRead() {
   scoreboard = { home: 0, away: 0, seconds: 0, period: 0, running: false, events: [], lastTick: 0, savedMatchId: null };
   try {
     var saved = JSON.parse(localStorage.getItem(scoreStorageKey()) || "null");
+    if (!saved && teamId && user) {
+      var legacy = localStorage.getItem("7metro-scoreboard-" + teamId);
+      if (legacy) {
+        saved = JSON.parse(legacy);
+        localStorage.setItem(scoreStorageKey(), legacy);
+        localStorage.removeItem("7metro-scoreboard-" + teamId);
+      }
+    }
     if (saved && typeof saved === "object") scoreboard = Object.assign(scoreboard, saved, { running: false, lastTick: 0 });
   } catch (error) { console.warn(t("Markagailua ezin izan da kargatu"), error); }
   var settings = scoreboard.settings || {};
@@ -2415,17 +2442,20 @@ function scoreRead() {
   $("score-away-name").value = settings.awayName || t("Aurkaria");
   $("score-mode").value = ["match", "manual", "countdown"].includes(settings.mode) ? settings.mode : "match";
   $("score-minutes").value = Math.min(180, Math.max(1, Number(settings.minutes) || 30));
+  if (settings.saveDate) $("score-save-date").value = settings.saveDate;
+  if (settings.venue) $("score-save-venue").value = settings.venue;
   scoreSaving = false;
   renderShotPlayers();
-  $("score-save-status").textContent = scoreboard.savedMatchId ? t("Partida gordeta dago.") : t("Oraindik ez da gorde.");
+  $("score-save-status").textContent = scoreboard.pendingOperationId ? t("Gailuan gordeta. Sinkronizatzeko zain.") : scoreboard.savedMatchId ? t("Partida gordeta dago.") : t("Oraindik ez da gorde.");
 }
 function scoreSave() {
   scoreboard.settings = { homeName: $("score-home-name").value.trim(), awayName: $("score-away-name").value.trim(),
-    mode: $("score-mode").value, minutes: Math.min(180, Math.max(1, Number($("score-minutes").value) || 30)) };
+    mode: $("score-mode").value, minutes: Math.min(180, Math.max(1, Number($("score-minutes").value) || 30)),
+    saveDate: $("score-save-date").value, venue: $("score-save-venue").value };
   try { localStorage.setItem(scoreStorageKey(), JSON.stringify(scoreboard)); }
   catch (error) { notify(t("Markagailua ezin izan da gorde gailuan"), "error"); }
 }
-function scoreIsLocked() { return Boolean(scoreboard.savedMatchId || scoreSaving); }
+function scoreIsLocked() { return Boolean(scoreboard.savedMatchId || scoreboard.pendingOperationId || scoreSaving); }
 function scoreIsSanction(type) { return ["horia", "2min", "gorria", "urdina"].includes(type); }
 function scoreIsShot(type) { return ["gol", "jaurtiketa", "penalti_gol", "penalti_jaurtiketa"].includes(type); }
 function scoreRenderSanctions() {
@@ -3431,6 +3461,7 @@ function updateAccountUser(accountUser) {
   } catch (error) { /* The server-saved account remains usable without local preferences. */ }
   $("username").value = userName;
   $("portal-username").textContent = userName;
+  if (window.AppOffline) window.AppOffline.rememberIdentity(token, user).catch(function () {});
   renderAccountIdentity(userName, accountIdentity.team);
   if (team) renderDashboard();
 }
@@ -3564,6 +3595,7 @@ $("account-delete-form").addEventListener("submit", async function (event) {
   try {
     await request({ action: "account_delete", current_password: this.elements.current_password.value,
       confirmation: confirmation, preview: accountDeletionPreview });
+    if (window.AppOffline) await window.AppOffline.deleteAccount().catch(function () {});
     if (sequence !== accountSettingsSequence || token !== sessionToken) return;
     try {
       localStorage.removeItem(portalModeKey());
@@ -4070,12 +4102,14 @@ $("session-form").addEventListener("submit", async function (event) {
   event.preventDefault();
   if (sessionEditorBusy) return;
   var mode = sessionEditor.mode, source = sessionEditor.source, sourceTeam = teamId;
+  if (!sessionEditor.operationId) sessionEditor.operationId = crypto.randomUUID();
   var exerciseList = sessionSelection.map(function (entry) {
     return { is_separator: Boolean(entry.is_separator), id_ariketa: entry.is_separator ? null : Number(entry.id_ariketa),
       iraupena_minutuak: Number(entry.iraupena_minutuak) || 0, taldea: entry.taldea || null,
       aldaerak: entry.aldaerak || null, paraleloa: Number(entry.paraleloa) ? 1 : 0 };
   });
   var payload = {
+    operation_id: sessionEditor.operationId,
     action: mode === "edit" ? "pwa_update_session" : mode === "duplicate" ? "pwa_duplicate_session" : "pwa_create_session",
     team_id: sourceTeam, data_ordua: $("session-date").value, lekua: $("session-place").value,
     helburu_taktikoa: $("session-goal").value, id_mikroziklo: numberOrNull($("session-micro").value), exercises: exerciseList
@@ -4083,9 +4117,16 @@ $("session-form").addEventListener("submit", async function (event) {
   if (source) { payload.id = Number(source.id_saio); payload.source_id = Number(source.id_saio); payload.snapshot = sessionEditor.snapshot; }
   sessionEditorBusy = "save"; renderSessionEditor();
   try {
+    if (window.AppOffline) await window.AppOffline.saveDraft(true);
     var result = await request(payload);
     if (sourceTeam !== teamId) return;
+    if (window.AppOffline) await window.AppOffline.clearDraft();
     resetSessionEditor();
+    if (result.queued) {
+      $("session-create-panel").open = false;
+      notify(t("Entrenamendua gailuan gordeta dago. Konexioa itzultzean bidaliko da."), "success");
+      return;
+    }
     var refreshError = null;
     try { await refreshAll(); } catch (error) { refreshError = error; }
     if (mode !== "create") {
@@ -4100,6 +4141,7 @@ $("session-form").addEventListener("submit", async function (event) {
 
 $("session-cancel").addEventListener("click", function () {
   if (sessionEditorBusy || !canReplaceSessionDraft()) return;
+  if (window.AppOffline) window.AppOffline.clearDraft();
   var source = sessionEditor.source;
   resetSessionEditor(); $("session-create-panel").open = false;
   if (source && renderSavedSession(source.id_saio)) selectSection("v-session-detail");
@@ -4281,14 +4323,15 @@ $("match-form").addEventListener("submit", async function (event) {
   });
   button.disabled = true;
   try {
-    await request({
+    var result = await request({
       action: "pwa_create_match", team_id: teamId,
       data_ordua: $("match-date").value, aurkaria: $("match-opponent").value.trim(),
       lekua: $("match-place").value, emaitza_geurea: score[0],
       emaitza_aurkaria: score[1], stats: stats
     });
     form.reset(); $("match-date").value = localDateTime();
-    await refreshAll(); notify(t("Partida gorde da"), "success");
+    if (result.queued) notify(t("Partida gailuan gordeta dago. Konexioa itzultzean bidaliko da."), "success");
+    else { await refreshAll(); notify(t("Partida gorde da"), "success"); }
   } catch (error) { notify(error.message, "error"); }
   finally { button.disabled = false; }
 });
@@ -4344,6 +4387,7 @@ $("match-detail").addEventListener("change", function (event) {
 
 $("score-save-match").addEventListener("click", async function () {
   var button = this;
+  var sourceBoard = scoreboard, sourceTeam = teamId, sourceUser = user && user.id_erabiltzailea;
   if (scoreIsLocked()) return notify(t("Markagailu hau gordeta dago. Berrabiarazi beste partida bat gordetzeko."), "error");
   if (!token || !teamId) return notify(t("Hasi saioa eta aukeratu taldea partida gordetzeko"), "error");
   var opponent = $("score-away-name").value.trim();
@@ -4386,22 +4430,36 @@ $("score-save-match").addEventListener("click", async function () {
       aurkaria: entry.side === "away" ? entry.aurkaria || null : null,
       shot_from: entry.shot_from || null, shot_to: entry.shot_to || null };
   });
+  if (!scoreboard.operationId) scoreboard.operationId = crypto.randomUUID();
+  scoreSave();
   scoreSaving = true; scoreRender();
   var result;
   try {
     result = await request({
       action: "pwa_create_match", team_id: teamId, data_ordua: date, aurkaria: opponent,
+      operation_id: scoreboard.operationId,
       lekua: $("score-save-venue").value, emaitza_geurea: scoreboard.home,
       emaitza_aurkaria: scoreboard.away, stats: Object.keys(statsByPlayer).map(function (id) { return statsByPlayer[id]; }),
       shots: savedShots, event_records: eventRecords
     });
   } catch (error) {
+    if (scoreboard !== sourceBoard || teamId !== sourceTeam || !user || user.id_erabiltzailea !== sourceUser) return;
     $("score-save-status").textContent = t("Errorea: ") + error.message;
     notify(error.message, "error");
     scoreSaving = false; scoreRender();
     return;
   }
+  if (scoreboard !== sourceBoard || teamId !== sourceTeam || !user || user.id_erabiltzailea !== sourceUser) return;
+  if (result.queued) {
+    scoreboard.pendingOperationId = result.operation_id;
+    scoreboard.running = false; clearInterval(scoreTimer); scoreSaving = false;
+    scoreSave(); scoreRender();
+    $("score-save-status").textContent = t("Gailuan gordeta. Sinkronizatzeko zain.");
+    notify(t("Partida gailuan gordeta dago. Konexioa itzultzean bidaliko da."), "success");
+    return;
+  }
   scoreboard.savedMatchId = Number(result.id) || true;
+  delete scoreboard.pendingOperationId;
   scoreboard.savedMatchStats = Object.keys(statsByPlayer).map(function (id) { return statsByPlayer[id]; });
   scoreboard.savedMatchShots = savedShots;
   scoreboard.savedMatchSnapshot = {
@@ -4649,6 +4707,7 @@ $("team-invite-form").addEventListener("submit", async function (event) {
 });
 
 $("logout").addEventListener("click", async function () {
+  if (window.AppOffline) { await window.AppOffline.saveDraft(); await window.AppOffline.forgetSession(); }
   if (window.PushUI) await window.PushUI.beforeLogout();
   var logoutError = null;
   try { await request({ action: "pwa_logout" }); }
@@ -4696,6 +4755,8 @@ if ("serviceWorker" in navigator) {
 (async function () {
   if (!token) return;
   try {
+    if (window.AppOffline) await window.AppOffline.prepare();
+    if (!token) return;
     await routeAuthenticatedSession();
   } catch (error) {
     showLogin(); notify(error.message, "error");

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { offlineOperation } from "./offline-actions.ts";
 
 type JsonResponse = (status: number, body: unknown) => Response;
 
@@ -82,6 +83,13 @@ export async function handleSessionAction(
   const snapshot = payload.snapshot as Record<string, unknown> | null;
   if (!snapshot || typeof snapshot !== "object" || !snapshot.session || !Array.isArray(snapshot.details)) {
     return jsonResponse(400, { error: "Birkargatu entrenamendua aldaketak gorde aurretik" });
+  }
+  if (payload.operation_id !== undefined) {
+    return await offlineOperation(payload, supabase, teamId, userId, jsonResponse, {
+      source_id: sourceId, expected: snapshot,
+      session: { data_ordua: date, lekua: place, helburu_taktikoa: goal || null, id_mikroziklo: micro },
+      details,
+    }) as Response;
   }
   const { data, error } = await supabase.rpc("save_team_session", {
     p_team_id: teamId, p_user_id: userId, p_source_id: sourceId, p_duplicate: duplicate,

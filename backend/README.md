@@ -1,5 +1,31 @@
 # Entrenamenduak editatu eta bikoiztu
 
+## Konexiorik gabeko gordetzeak
+
+Aplikatu `migrations/20261114160000_offline_operations.sql`, aurreko
+`save_team_session` migrazioa instalatuta dagoela. `offline-actions.ts` laguntzailea
+`metro-api`-n inportatzen da. Taldekidetza egiaztatu ondoren, `operation_id` duten
+`pwa_create_session`, `pwa_update_session`, `pwa_duplicate_session` eta
+`pwa_create_match` eskaerek `offlineOperation(payload, supabase, teamId, userId,
+jsonResponse)` deitzen dute, aurreko emaitza berreskuratzeko.
+
+Eragiketa berrietan, APIaren lehengo balidazioak exekutatzen dira. Sortzeko INSERTak
+egin aurretik, laguntzaile berari azken argumentu gisa normalizatutako datuak
+pasatzen zaizkio. Entrenamenduak `session` eta `details` erabiltzen ditu; partidak
+`match`, `players`, `sanctions`, `shots` eta `events_saved`. `session-actions.ts`
+moduluak eguneratze eta bikoizketetarako `source_id`, `expected`, `session` eta
+`details` bidaltzen ditu. `operation_id` gabeko bezeroek lehengo bidea erabiltzen
+dute. Backendaren aldaketa frontendaren aurretik hedatu behar da.
+
+SQL transakzioak datu guztiak eta eragiketaren emaitza batera gordetzen ditu.
+UUID bera duen saiakera batek lehen emaitza itzultzen du; datu desberdinekin
+berrerabiltzen bada, gatazka ematen du. Beste gailu batek aldatutako entrenamenduek
+aurreko snapshotaren egiaztapena mantentzen dute. RPCak `service_role` rolaren bidez
+bakarrik deitu daitezke, eta erabiltzailearen eta taldearen identitatea APIak
+autentifikatzen du. Gailuko zirriborroak eta bidalketak IndexedDBn gordetzen dira,
+erabiltzailearen IDaren arabera bereizita. Sinkronizazioa aplikazioa irekita dagoenean
+egiten da; itxita dagoenean zain gelditzen dira.
+
 Kontua ezabatzeko, aplikatu `migrations/20261114110000_delete_account.sql` eta
 berriro hedatu `metro-api`. `account-actions.ts` moduluak `account_delete_preview`
 eta `account_delete` ekintzak autentifikatutako erabiltzailearen eta saioaren
