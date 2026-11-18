@@ -1317,6 +1317,7 @@ window.SevenMetroLocales.es = {
     "Guztiak hautatu": "Seleccionar todos",
     "Esteka ireki": "Abrir enlace",
     "Irabazi": "Ganados",
+    "Dortsalarik gabe": "Sin dorsal",
     "Berdindu": "Empatados",
     "Galdu": "Perdidos",
     "Gehitu 7metro hasierako pantailara, azkarrago sartzeko.": "Añade 7metro a la pantalla de inicio para acceder más rápido.",

@@ -1184,9 +1184,12 @@ function renderPlayers() {
     return (!status || player.egoera === status) && (!query || (playerName(player) + " " + (player.dortsala == null ? "" : player.dortsala)).toLocaleLowerCase().includes(query));
   });
   $("players-list").innerHTML = visiblePlayers.length ? visiblePlayers.map(function (player) {
-    return '<li class="item"><div class="item-main"><strong>' +
-      (player.dortsala != null ? "#" + esc(player.dortsala) + " " : "") + esc(playerName(player)) +
-      '</strong><small>' + esc(t(player.egoera) || "") + '</small></div><div class="player-row-actions"><button class="btn secondary" type="button" data-player-profile="' + Number(player.id_jokalaria) + '">' + esc(t("Fitxa")) + '</button><button class="btn secondary" type="button" data-player-edit="' + Number(player.id_jokalaria) + '">' + esc(t("Editatu")) + '</button><button class="btn danger" type="button" data-delete-player="' +
+    var hasNumber = player.dortsala != null && String(player.dortsala).trim() !== "";
+    var statusClass = { Erabilgarri: "available", Zalantza: "uncertain", Baja: "unavailable" }[player.egoera] || "neutral";
+    return '<li class="item player-roster-card"><div class="player-roster-identity"><span class="player-roster-number" aria-label="' +
+      esc(hasNumber ? t("Dortsala") + ': ' + player.dortsala : t("Dortsalarik gabe")) + '">' + (hasNumber ? '<span aria-hidden="true">#</span>' + esc(player.dortsala) : '&mdash;') +
+      '</span><div class="item-main"><strong class="player-roster-name">' + esc(playerName(player)) +
+      '</strong>' + (player.egoera ? '<span class="player-roster-status ' + statusClass + '"><i aria-hidden="true"></i>' + esc(t(player.egoera)) + '</span>' : '') + '</div></div><div class="player-row-actions"><button class="btn secondary" type="button" data-player-profile="' + Number(player.id_jokalaria) + '">' + esc(t("Fitxa")) + '</button><button class="btn secondary" type="button" data-player-edit="' + Number(player.id_jokalaria) + '">' + esc(t("Editatu")) + '</button><button class="btn danger" type="button" data-delete-player="' +
       Number(player.id_jokalaria) + ("\">" + esc(t("Ezabatu")) + "</button></div></li>");
   }).join("") : '<li class="empty">' + (players.length ? t("Ez da jokalaririk aurkitu iragazki horiekin.") : t("Ez dago jokalaririk. Gehitu lehenengo jokalaria.")) + '</li>';
 
