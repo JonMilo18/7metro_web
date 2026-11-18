@@ -318,7 +318,7 @@ textarea{min-height:84px;resize:vertical}
 .offline-status,.draft-recovery{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--bg2);color:var(--muted);font-size:.86rem}
 .offline-status{max-width:1240px;margin:0 auto 18px}
 .draft-recovery{margin:14px 0}
-.offline-status[hidden],.draft-recovery[hidden],.onboarding[hidden]{display:none}
+.offline-status[hidden],.draft-recovery[hidden]{display:none}
 .offline-status .btn,.draft-recovery .btn{width:auto;min-height:44px;margin:0}
 .offline-job{display:grid;gap:8px;padding:16px 0;border-bottom:1px solid var(--line);min-width:0;overflow-wrap:anywhere}
 .offline-job>span,.offline-job p{color:var(--muted);margin:0;font-size:.85rem}
@@ -336,16 +336,6 @@ textarea{min-height:84px;resize:vertical}
 #score-roster-open svg{width:20px;height:20px;flex:none}
 @media(max-width:680px){.match-roster-list{grid-template-columns:minmax(0,1fr)}.score-match-mode .score-roster-label{display:none}}
 #offline-pending-close{width:auto;flex:none;margin:0}
-.onboarding{padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--bg2);margin:0 0 22px}
-.onboarding-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}
-.onboarding-head h2{margin:0}.onboarding-head small{color:var(--muted)}
-.onboarding-head button{width:auto;margin:0;min-height:44px}
-.onboarding-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;list-style:none;padding:0;margin:0}
-.onboarding-steps li{display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-width:0;padding:14px;border:1px solid var(--line);border-radius:12px}
-.onboarding-steps p{margin:0;color:var(--muted);font-size:.85rem}
-.onboarding-steps .btn{width:auto;margin:0;margin-top:auto;min-height:44px}
-.onboarding-steps .guide-done{color:var(--good)}
-@media(max-width:900px){.onboarding-steps{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:420px){.grid2,.grid3{grid-template-columns:1fr}}
 @media(max-width:760px){.home-dashboard-grid{grid-template-columns:1fr}.home-card{min-height:200px}.home-shortcuts{grid-template-columns:1fr}.home-hero{align-items:flex-start;flex-direction:column}.home-hero>.btn{width:auto;margin:0}}
 @media(max-width:520px){#v-friends .item{flex-wrap:wrap;gap:8px}#v-friends .item-main{flex:1 1 100%}}
@@ -740,7 +730,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=194"><link rel="stylesheet" href="portal.css?v=194"><link rel="stylesheet" href="motion.css?v=194">
+<link rel="stylesheet" href="insights.css?v=195"><link rel="stylesheet" href="portal.css?v=195"><link rel="stylesheet" href="motion.css?v=195">
 </head>
 <body>
 <div id="app">
@@ -777,7 +767,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
     </div>
     <div id="portal-callups" class="portal-view" hidden></div>
     <div id="portal-notices" class="portal-view" hidden></div>
-    <div id="portal-settings" class="portal-view" hidden><div class="card stack"><h2>Nire kontua</h2><button class="btn secondary" type="button" data-guide-reopen>Lehen urratsen gida</button><button class="btn secondary" type="button" data-open-account="username">Erabiltzaile-izena aldatu</button><button class="btn secondary" type="button" data-open-account="password">Pasahitza aldatu</button><button class="btn danger" type="button" data-open-account="delete">Kontua ezabatu</button><button class="btn secondary" id="portal-personal-stats-account" type="button" data-open-personal-stats hidden>Nire estatistikak</button><label>Hizkuntza<select data-language-select><option value="eu">Euskara</option><option value="es">Español</option></select></label><button class="btn secondary" id="portal-coach-mode" type="button">Entrenatzaile modura</button></div><div class="card"><h2>Itxura</h2><div class="theme-choices" role="group" aria-label="Kolore-modua"><button class="btn secondary theme-choice" id="portal-theme-light" type="button" data-theme-choice="light" aria-pressed="false">Modu argia</button><button class="btn secondary theme-choice" id="portal-theme-dark" type="button" data-theme-choice="dark" aria-pressed="true">Modu iluna</button></div></div><div class="card" id="player-push-settings" data-push-settings></div><div class="card"><div class="toolbar"><h2>Lagun-eskaerak</h2><button class="btn secondary" type="button" data-player-friends-refresh>Birkargatu</button></div><div id="portal-friend-requests"></div></div><div class="card" id="portal-install-card"><h2>Instalatu aplikazioa</h2><p class="muted">Gehitu 7metro hasierako pantailara, azkarrago sartzeko.</p><button class="btn" id="portal-install" type="button">Instalatu aplikazioa</button><p class="muted" id="portal-install-status" role="status"></p><details id="portal-install-help"><summary>Instalatzeko argibideak</summary><h3>Androiden</h3><ol class="steps"><li>Ireki PWA hau Chromen.</li><li>Sakatu menuan “Instalatu aplikazioa”.</li></ol><h3>iPhonen</h3><ol class="steps"><li>Ireki Safarin.</li><li>Sakatu Partekatu eta “Hasierako pantailara gehitu”.</li></ol><h3>Ordenagailuan</h3><p class="muted">Ireki Chromen edo Edgen, eta sakatu helbide-barrako instalatzeko ikonoa.</p></details></div><div class="portal-account-actions"><button class="btn secondary portal-logout" id="portal-logout" type="button">Saioa itxi</button></div></div>
+    <div id="portal-settings" class="portal-view" hidden><div class="card stack"><h2>Nire kontua</h2><button class="btn secondary" type="button" data-open-account="username">Erabiltzaile-izena aldatu</button><button class="btn secondary" type="button" data-open-account="password">Pasahitza aldatu</button><button class="btn danger" type="button" data-open-account="delete">Kontua ezabatu</button><button class="btn secondary" id="portal-personal-stats-account" type="button" data-open-personal-stats hidden>Nire estatistikak</button><label>Hizkuntza<select data-language-select><option value="eu">Euskara</option><option value="es">Español</option></select></label><button class="btn secondary" id="portal-coach-mode" type="button">Entrenatzaile modura</button></div><div class="card"><h2>Itxura</h2><div class="theme-choices" role="group" aria-label="Kolore-modua"><button class="btn secondary theme-choice" id="portal-theme-light" type="button" data-theme-choice="light" aria-pressed="false">Modu argia</button><button class="btn secondary theme-choice" id="portal-theme-dark" type="button" data-theme-choice="dark" aria-pressed="true">Modu iluna</button></div></div><div class="card" id="player-push-settings" data-push-settings></div><div class="card"><div class="toolbar"><h2>Lagun-eskaerak</h2><button class="btn secondary" type="button" data-player-friends-refresh>Birkargatu</button></div><div id="portal-friend-requests"></div></div><div class="card" id="portal-install-card"><h2>Instalatu aplikazioa</h2><p class="muted">Gehitu 7metro hasierako pantailara, azkarrago sartzeko.</p><button class="btn" id="portal-install" type="button">Instalatu aplikazioa</button><p class="muted" id="portal-install-status" role="status"></p><details id="portal-install-help"><summary>Instalatzeko argibideak</summary><h3>Androiden</h3><ol class="steps"><li>Ireki PWA hau Chromen.</li><li>Sakatu menuan “Instalatu aplikazioa”.</li></ol><h3>iPhonen</h3><ol class="steps"><li>Ireki Safarin.</li><li>Sakatu Partekatu eta “Hasierako pantailara gehitu”.</li></ol><h3>Ordenagailuan</h3><p class="muted">Ireki Chromen edo Edgen, eta sakatu helbide-barrako instalatzeko ikonoa.</p></details></div><div class="portal-account-actions"><button class="btn secondary portal-logout" id="portal-logout" type="button">Saioa itxi</button></div></div>
   </div>
 </section>
 
@@ -829,7 +819,6 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
   <div id="team-app" class="hidden">
     <section id="v-home">
       <div class="home-hero"><div><span class="home-eyebrow">7METRO · TALDEAREN LABURPENA</span><div class="help-heading"><h1 id="home-title">Ongi etorri</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="home-subtitle" aria-label="Ongi etorri: informazioa"><span aria-hidden="true">i</span></button></div><p id="home-subtitle" hidden>Zure entrenamendu eta lehiaketen ikuspegi azkarra.</p></div><button class="btn secondary" type="button" data-refresh>Birkargatu</button></div>
-      <div id="coach-onboarding" class="onboarding" hidden></div>
       <div class="home-dashboard-grid">
         <article class="card home-card"><span class="home-card-kicker">Azken entrenamendua</span><div id="home-session-content"></div></article>
         <article class="card home-card"><span class="home-card-kicker">Azken partidua</span><div id="home-match-content"></div></article>
@@ -1182,7 +1171,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
     </section>
     <section id="v-more">
       <div class="help-heading"><h1>Gehiago</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-21" aria-label="Gehiago: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-21" hidden>Komunitatea eta zure kontuaren ezarpenak.</p>
-      <div class="more-links"><button class="more-link" type="button" data-guide-reopen><strong>Lehen urratsen gida</strong><span>Ikasi aplikazioa erabiltzen</span></button><button class="more-link" id="open-player-mode" type="button"><strong>Jokalari modua</strong><span>Ireki zure jokalari-kontua</span></button>
+      <div class="more-links"><button class="more-link" id="open-player-mode" type="button"><strong>Jokalari modua</strong><span>Ireki zure jokalari-kontua</span></button>
       </div>
 
       <div class="card" id="coach-push-settings" data-push-settings></div>
@@ -1268,21 +1257,20 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <dialog id="offline-pending-dialog" class="attendance-dialog" aria-labelledby="offline-pending-title"><div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="offline-pending-title">Gordetzeko zain</h2><button class="btn secondary" id="offline-pending-close" type="button">Itxi</button></div><ul id="offline-pending-list" class="list"></ul><button class="btn secondary" id="offline-sync-retry" type="button">Berriro saiatu</button></div></dialog>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=194" defer></script>
-<script src="i18n.js?v=194" defer></script>
-<script src="insights-data.js?v=194" defer></script>
-<script src="portal.js?v=194" defer></script>
-<script src="portal-events.js?v=194" defer></script>
-<script src="portal-calendar.js?v=194" defer></script>
-<script src="push.js?v=194" defer></script>
-<script src="motion.js?v=194" defer></script>
-<script src="offline.js?v=194" defer></script>
-<script src="onboarding.js?v=194" defer></script>
-<script src="app.js?v=194" defer></script>
-<script src="player-statistics.js?v=194" defer></script>
-<script src="weekly-training.js?v=194" defer></script>
-<script src="inbox.js?v=194" defer></script>
-<script src="report-pdf.js?v=194" defer></script>
-<script src="insights.js?v=194" defer></script>
+<script src="locales/es.js?v=195" defer></script>
+<script src="i18n.js?v=195" defer></script>
+<script src="insights-data.js?v=195" defer></script>
+<script src="portal.js?v=195" defer></script>
+<script src="portal-events.js?v=195" defer></script>
+<script src="portal-calendar.js?v=195" defer></script>
+<script src="push.js?v=195" defer></script>
+<script src="motion.js?v=195" defer></script>
+<script src="offline.js?v=195" defer></script>
+<script src="app.js?v=195" defer></script>
+<script src="player-statistics.js?v=195" defer></script>
+<script src="weekly-training.js?v=195" defer></script>
+<script src="inbox.js?v=195" defer></script>
+<script src="report-pdf.js?v=195" defer></script>
+<script src="insights.js?v=195" defer></script>
 </body>
 </html>

@@ -57,8 +57,6 @@ async function portalShow(boot) {
   boot = boot || await request({ action: "portal_bootstrap" });
   if (!token || token !== sessionToken || sequence !== portalState.sequence) return;
   portalState.bootstrap = boot;
-  var guide = $("player-onboarding");
-  if (boot.links.length && guide && guide.closest("#portal-no-link")) guide.remove();
   $("portal-username").textContent = user && user.izena || userName;
   $("portal-no-link").hidden = !!boot.links.length; $("portal-linked-content").hidden = false;
   document.querySelectorAll("[data-portal-tab]").forEach(function (button) { button.disabled = !boot.links.length && button.dataset.portalTab !== "settings"; });
@@ -98,12 +96,10 @@ function portalSetTab(tab) {
   var entering = portalState.tab !== tab;
   if (tab === "settings" && window.PushUI) window.PushUI.loadPlayerFriends();
   portalState.tab = tab;
-  if (window.AppGuide) window.AppGuide.visit(tab);
   $("portal-greeting").parentElement.hidden = tab !== "home";
   $("portal-greeting").closest(".portal-heading").classList.toggle("portal-heading-home", tab === "home");
   ["home", "agenda", "callups", "notices", "settings", "stats"].forEach(function (name) { $("portal-" + name).hidden = name !== tab; });
   if (entering && window.AppMotion) window.AppMotion.enter($("portal-" + tab));
-  if (window.AppGuide) window.AppGuide.render();
   document.querySelectorAll("[data-portal-tab]").forEach(function (button) { button.setAttribute("aria-pressed", String(button.dataset.portalTab === (tab === "stats" ? "home" : tab))); });
 }
 function portalEventCard(event) {
@@ -136,7 +132,7 @@ function portalRenderHome(events, pending, unread) {
     return (event.kind === "session" || event.row.callup) && new Date(event.row.date).getTime() >= Date.now();
   });
   var next = eligible[0];
-  var html = '<div id="player-onboarding" class="onboarding" hidden></div><div class="portal-home-overview">' + identity + '<div class="portal-home-summary"><button type="button" data-portal-go="callups" class="portal-summary-action' + (pending.length ? ' needs-response' : '') + '"><strong>' + pending.length + '</strong><span>' + esc(t("Deialdi erantzuteko")) + '</span></button>' +
+  var html = '<div class="portal-home-overview">' + identity + '<div class="portal-home-summary"><button type="button" data-portal-go="callups" class="portal-summary-action' + (pending.length ? ' needs-response' : '') + '"><strong>' + pending.length + '</strong><span>' + esc(t("Deialdi erantzuteko")) + '</span></button>' +
     '<button type="button" data-portal-go="notices" class="portal-summary-action"><strong>' + unread + '</strong><span>' + esc(t("Abisu irakurri gabe")) + '</span></button></div></div>';
   html += '<div class="portal-home-columns"><div class="portal-home-primary"><div id="portal-personal-stats-entry" hidden></div><div class="portal-section-heading"><h2>' + esc(t("Hurrengo jarduera")) + '</h2></div><div class="portal-next-event">' +
     (next ? portalEventCard(next) : '<div class="card portal-home-empty"><h3>' + esc(t("Ez dago hurrengo deialdirik")) + '</h3><button class="btn secondary" type="button" data-portal-go="agenda">' + esc(t("Egutegia ikusi")) + '</button></div>') + '</div>';

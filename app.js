@@ -416,7 +416,6 @@ async function openTeam(id) {
   renderAccountIdentity(user ? user.izena : "", selected.izena);
   selectSection("v-home");
   if (window.AppOffline) await window.AppOffline.teamOpened();
-  if (window.AppGuide) window.AppGuide.render();
 }
 
 function localDateTime() {
@@ -1908,7 +1907,6 @@ function renderMatchEditor(matchId, scroll) {
 }
 
 function renderDashboard() {
-  if (window.AppGuide) window.AppGuide.render();
   if (!$('home-session-content')) return;
   var now = new Date();
   var dashboardDate = function (value) {
