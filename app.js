@@ -34,6 +34,7 @@ var token = readStore("7metro-supabase-token");
 var userName = readStore("7metro-username");
 var user = userName ? { izena: userName } : null, teamId = Number(readStore("7metro-team-id")) || 0, team = null;
 var teams = [], tables = {}, players = [], exercises = [], sessions = [], matches = [];
+var matchPlayersTeam = 0;
 var macros = [], micros = [], playerStats = [], toastTimer, installPrompt = null;
 var loadingCount = 0, loadingDelay = 0;
 var boardState = { fondo: "Zelaia", posizioak: {}, marrazkiak: [], animazioa: [] };
@@ -252,6 +253,8 @@ async function requestImpl(payload, anonymous, signal) {
 }
 
 function showLogin() {
+  scoreCloseRoster();
+  matchPlayersTeam = 0;
   if ($("account-settings-dialog").open) $("account-settings-dialog").close();
   closeSessionExercisePreview();
   sessionReferenceExercises = [];
@@ -1203,17 +1206,26 @@ function renderPlayers() {
       Number(player.id_jokalaria) + ("\">" + esc(t("Ezabatu")) + "</button></div></li>");
   }).join("") : '<li class="empty">' + (players.length ? t("Ez da jokalaririk aurkitu iragazki horiekin.") : t("Ez dago jokalaririk. Gehitu lehenengo jokalaria.")) + '</li>';
 
+  var previousMatchPlayers = new Map();
+  if (matchPlayersTeam === teamId) $("match-players").querySelectorAll("[data-match-played]").forEach(function (checkbox) {
+    var row = checkbox.closest(".match-player"), values = {};
+    row.querySelectorAll("[data-stat]").forEach(function (input) { values[input.dataset.stat] = input.value; });
+    previousMatchPlayers.set(Number(checkbox.dataset.matchPlayed), { played: checkbox.checked, values: values, open: row.querySelector("details").open });
+  });
+  matchPlayersTeam = teamId;
   var fields = [[t("Gol"), "golak"], [t("Jaurtiketa"), "jaurtiketak"], [t("Horia"), "horia"],
     ["2 min", "two_min"], [t("Gorria"), "gorria"], [t("Urdina"), "urdina"]];
   $("match-players").innerHTML = players.length ? players.map(function (player) {
     var id = Number(player.id_jokalaria), name = esc(playerName(player));
-    return '<div class="match-player"><div class="match-player-head">' +
+    var previous = previousMatchPlayers.get(id), selected = !previous || previous.played;
+    return '<div class="match-player"><label class="checkrow match-player-head"><input type="checkbox" data-match-played="' + id + '"' + (selected ? ' checked' : '') + '><span>' +
       (player.dortsala != null ? "#" + esc(player.dortsala) + " " : "") + name +
-      '</div><div class="player-stats">' + fields.map(function (field) {
-        return '<label>' + field[0] + '<input type="number" min="0" max="999" value="0" aria-label="' +
+      '</span></label><details class="match-player-stats"' + (previous && previous.open ? ' open' : '') + '><summary>' + esc(t("Estatistikak")) + '</summary><div class="player-stats">' + fields.map(function (field) {
+        return '<label>' + field[0] + '<input type="number" min="0" max="999" value="' + esc(previous && previous.values[field[1]] || '0') + '" aria-label="' +
           name + " " + field[0] + '" data-stat="' + field[1] + '" data-player="' + id + '"></label>';
-      }).join("") + "</div></div>";
+      }).join("") + "</div></details></div>";
   }).join("") : ("<p class=\"empty\">" + esc(t("Gehitu jokalariak partidako estatistikak jasotzeko.")) + "</p>");
+  updateMatchPlayerSelection();
 
   $("attendance-list").innerHTML = players.length ? players.map(function (player) {
     var id = Number(player.id_jokalaria), name = esc(playerName(player));
@@ -1224,6 +1236,26 @@ function renderPlayers() {
       ("\"><option value=\"\">" + esc(t("Ez dago")) + "</option><option value=\"Justifikatua\">" + esc(t("Justifikatua")) + "</option><option value=\"Justifikatu gabea\">" + esc(t("Justifikatu gabea")) + "</option></select></label></div>");
   }).join("") : ("<p class=\"empty\">" + esc(t("Ez dago jokalaririk.")) + "</p>");
 }
+
+function updateMatchPlayerSelection() {
+  var count = 0;
+  $("match-players").querySelectorAll("[data-match-played]").forEach(function (checkbox) {
+    var row = checkbox.closest(".match-player");
+    if (checkbox.checked) count++;
+    row.querySelector("details").hidden = !checkbox.checked;
+    row.querySelectorAll("[data-stat]").forEach(function (input) { input.disabled = !checkbox.checked; });
+  });
+  $("match-roster-count").textContent = t("{count} jokalari hautatuta", { count: count });
+}
+$("match-players").addEventListener("change", function (event) {
+  if (event.target.matches("[data-match-played]")) updateMatchPlayerSelection();
+});
+document.querySelectorAll("[data-match-select]").forEach(function (button) {
+  button.addEventListener("click", function () {
+    $("match-players").querySelectorAll("[data-match-played]").forEach(function (checkbox) { checkbox.checked = button.dataset.matchSelect === "all"; });
+    updateMatchPlayerSelection();
+  });
+});
 
 function sessionExerciseById(id) {
   return sessionReferenceExercises.concat(exercises).find(function (item) { return Number(item.id_ariketa) === Number(id); });
@@ -2383,6 +2415,7 @@ async function refreshAll() {
 }
 
 function selectSection(id) {
+  if (id !== "v-scoreboard") scoreCloseRoster();
   closeSessionExercisePreview();
   var entering = !$(id).classList.contains("on");
   if (id !== "v-board") closeBoardFullscreen();
@@ -2418,7 +2451,58 @@ var scoreTimeEditState = null;
 var scoreMatchMode = false, scoreModePanels = [], scoreModeScroll = 0, scoreNativeFullscreen = false, scoreWakeLock = null, scoreWakePending = false;
 var scoreTimer = 0, scoreSaving = false, scoreShotType = "normal", scoreSanctionSide = "home", pendingScoreAction = null, shotTargetEvent = null;
 function scoreStorageKey() { return "7metro-scoreboard-" + (user && user.id_erabiltzailea || "user-" + (user && user.izena || "local")) + "-" + (teamId || "local"); }
+var scoreRosterContinuation = null;
+function scoreSelectedPlayers() {
+  if (!Array.isArray(scoreboard.playerIds)) return players;
+  return players.filter(function (player) { return scoreboard.playerIds.includes(Number(player.id_jokalaria)); });
+}
+function scoreNeedsRoster() {
+  return !scoreIsLocked() && players.length > 0 && !Array.isArray(scoreboard.playerIds) && !scoreboard.events.length && !scoreboard.seconds;
+}
+function scoreCloseRoster() {
+  scoreRosterContinuation = null;
+  if ($("score-roster-dialog").open) $("score-roster-dialog").close();
+}
+function scoreRosterSummary() {
+  var count = $("score-roster-list").querySelectorAll("input:checked").length;
+  $("score-roster-selected").textContent = t("{count} jokalari hautatuta", { count: count });
+}
+function scoreOpenRoster(continuation) {
+  if (scoreIsLocked()) return;
+  scoreRosterContinuation = typeof continuation === "function" ? continuation : null;
+  var selected = new Set(scoreSelectedPlayers().map(function (player) { return Number(player.id_jokalaria); }));
+  var recorded = new Set(scoreboard.events.filter(function (entry) { return entry.side === "home"; }).map(function (entry) { return Number(entry.playerId); }).filter(Boolean));
+  $("score-roster-list").innerHTML = players.length ? players.map(function (player) {
+    var id = Number(player.id_jokalaria), locked = recorded.has(id);
+    var label = (player.dortsala == null ? "" : "#" + player.dortsala + " ") + playerName(player);
+    return '<label class="checkrow"><input type="checkbox" value="' + id + '"' +
+      (selected.has(id) || locked ? ' checked' : '') + (locked ? ' disabled' : '') + '><span>' + esc(label) + '</span></label>';
+  }).join("") : '<p class="empty">' + esc(t("Ez dago jokalaririk.")) + '</p>';
+  $("score-roster-locked-note").hidden = !$("score-roster-list").querySelector("input:disabled");
+  scoreRosterSummary();
+  $("score-roster-dialog").showModal();
+}
+$("score-roster-open").addEventListener("click", function () { scoreOpenRoster(); });
+$("score-roster-cancel").addEventListener("click", scoreCloseRoster);
+$("score-roster-dialog").addEventListener("close", function () { scoreRosterContinuation = null; });
+$("score-roster-list").addEventListener("change", scoreRosterSummary);
+document.querySelectorAll("[data-score-roster-select]").forEach(function (button) {
+  button.addEventListener("click", function () {
+    $("score-roster-list").querySelectorAll("input:not(:disabled)").forEach(function (input) { input.checked = button.dataset.scoreRosterSelect === "all"; });
+    scoreRosterSummary();
+  });
+});
+$("score-roster-form").addEventListener("submit", function (event) {
+  event.preventDefault();
+  if (scoreIsLocked()) return;
+  scoreboard.playerIds = Array.from($("score-roster-list").querySelectorAll("input:checked")).map(function (input) { return Number(input.value); });
+  var next = scoreRosterContinuation; scoreRosterContinuation = null;
+  $("score-roster-dialog").close();
+  scoreSave(); renderShotPlayers(); scoreRender();
+  if (next) next();
+});
 function scoreRead() {
+  scoreCloseRoster();
   scoreDiscardTimeEdit();
   clearInterval(scoreTimer);
   pendingScoreAction = null; scoreShotType = "normal"; scoreSanctionSide = "home";
@@ -2460,14 +2544,14 @@ function scoreIsSanction(type) { return ["horia", "2min", "gorria", "urdina"].in
 function scoreIsShot(type) { return ["gol", "jaurtiketa", "penalti_gol", "penalti_jaurtiketa"].includes(type); }
 function scoreRenderSanctions() {
   document.querySelectorAll("[data-score-sanction]").forEach(function (button) {
-    button.disabled = scoreIsLocked() || (scoreSanctionSide === "home" && !players.length);
+    button.disabled = scoreIsLocked() || (scoreSanctionSide === "home" && !scoreSelectedPlayers().length);
     button.setAttribute("aria-label", (scoreSanctionSide === "away" ? t("Aurkaria: ") : t("Gure taldea: ")) + scoreActionLabel(button.dataset.scoreSanction));
   });
   document.querySelectorAll("[data-sanction-side]").forEach(function (button) {
     button.disabled = scoreIsLocked();
     button.setAttribute("aria-pressed", String(button.dataset.sanctionSide === scoreSanctionSide));
   });
-  $("score-sanction-note").hidden = scoreSanctionSide === "away" || Boolean(players.length);
+  $("score-sanction-note").hidden = scoreSanctionSide === "away" || Boolean(scoreSelectedPlayers().length);
 }
 function scoreOpponentLabel(player) {
   if (!player) return t("Jokalaria zehaztu gabe");
@@ -2488,7 +2572,7 @@ function scoreOpponents() {
 }
 function renderShotPlayers() {
   var select = $("shot-player"), selected = select.value, away = $("shot-team").value === "away";
-  var rows = away ? scoreOpponents() : players;
+  var rows = away ? scoreOpponents() : scoreSelectedPlayers();
   select.disabled = false;
   select.innerHTML = ("<option value=\"\">" + esc(t("Ez zehaztu")) + "</option>") + rows.map(function (player, index) {
     return '<option value="' + (away ? "opp:" + index : Number(player.id_jokalaria)) + '">' + esc(away ? scoreOpponentLabel(player) : playerName(player)) + '</option>';
@@ -2515,6 +2599,9 @@ function scoreFormat(seconds) {
 }
 function scoreRender() {
   var locked = scoreIsLocked(), last = scoreboard.events[scoreboard.events.length - 1];
+  $("score-roster-open").disabled = locked;
+  $("score-roster-open").setAttribute("aria-label", t("Partidako jokalariak: {count}", { count: scoreSelectedPlayers().length }));
+  $("score-roster-count").textContent = String(scoreSelectedPlayers().length);
   $("score-home").textContent = scoreboard.home;
   $("score-away").textContent = scoreboard.away;
   $("score-home-label").textContent = $("score-home-name").value.trim() || t("Gure taldea");
@@ -2673,16 +2760,17 @@ function scoreSnapshot(side, type) {
 }
 function scoreBeginAction(side, type) {
   if (scoreIsLocked()) return;
-  if (scoreIsSanction(type) && side === "home" && !players.length) return notify(t("Gehitu jokalariak Taldea atalean zigorra esleitzeko"), "error");
+  if (scoreNeedsRoster()) { scoreOpenRoster(function () { scoreBeginAction(side, type); }); return; }
+  if (scoreIsSanction(type) && side === "home" && !scoreSelectedPlayers().length) return notify(t("Hautatu jokalari bat zigorra esleitzeko"), "error");
   var action = scoreSnapshot(side, type), away = side === "away";
   $("score-player-unspecified").classList.toggle("hidden", scoreIsSanction(type));
   $("score-opponent-add").classList.toggle("hidden", !away);
   $("score-opponent-form").reset(); $("score-opponent-error").hidden = true;
-  if (!away && !players.length) { scoreRecordAction(action, null); return; }
+  if (!away && !scoreSelectedPlayers().length) { scoreRecordAction(action, null); return; }
   pendingScoreAction = action;
   $("score-player-title").textContent = scoreActionLabel(type) + " \u00b7 " + (away ? t("Aurkariaren jokalaria") : t("Jokalaria"));
   $("score-player-time").textContent = action.time + " \u00b7 " + action.period + t(". zatia");
-  var roster = away ? scoreOpponents() : players.slice().sort(function (a, b) { return (Number(a.dortsala) || 0) - (Number(b.dortsala) || 0); });
+  var roster = away ? scoreOpponents() : scoreSelectedPlayers().slice().sort(function (a, b) { return (Number(a.dortsala) || 0) - (Number(b.dortsala) || 0); });
   $("score-opponent-add").open = away && !roster.length;
   $("score-player-grid").innerHTML = roster.map(function (player, index) {
     var number = away ? player.zenbakia : player.dortsala, label = away ? scoreOpponentLabel(player) : playerName(player);
@@ -2692,7 +2780,8 @@ function scoreBeginAction(side, type) {
 }
 function scoreRecordAction(action, playerId, from, to, opponentPlayer) {
   if (scoreIsLocked()) return;
-  var player = action.side === "home" && players.find(function (item) { return Number(item.id_jokalaria) === Number(playerId); });
+  var player = action.side === "home" && scoreSelectedPlayers().find(function (item) { return Number(item.id_jokalaria) === Number(playerId); });
+  if (action.side === "home" && playerId && !player) return;
   if (scoreIsSanction(action.type) && !(action.side === "away" ? opponentPlayer : player)) return;
   if (scoreIsGoal(action.type)) scoreboard[action.side]++;
   var name = $(action.side === "home" ? "score-home-name" : "score-away-name").value.trim();
@@ -3211,6 +3300,7 @@ $("score-time-dialog").addEventListener("cancel", function (event) { event.preve
 $("score-time-dialog").addEventListener("close", function () { if (!this.open) scoreFinishTimeEdit(); });
 $("score-start").addEventListener("click", function () {
   if (scoreIsLocked()) return;
+  if (scoreNeedsRoster()) { scoreOpenRoster(function () { $("score-start").click(); }); return; }
   scoreUpdate();
   if (scoreboard.running) { scoreboard.running = false; clearInterval(scoreTimer); }
   else {
@@ -3261,6 +3351,7 @@ async function scoreKeepAwake() {
 }
 async function scoreEnterMatchMode() {
   if (scoreMatchMode) return;
+  if (scoreNeedsRoster()) { scoreOpenRoster(scoreEnterMatchMode); return; }
   scoreMatchMode = true; scoreModeScroll = window.scrollY;
   setMobileMenu(false);
   $("v-scoreboard").classList.add("score-match-mode");
@@ -3284,6 +3375,7 @@ async function scoreEnterMatchMode() {
 }
 async function scoreExitMatchMode() {
   if (!scoreMatchMode) return;
+  scoreCloseRoster();
   scoreMatchMode = false; scoreNativeFullscreen = false;
   ["score-player-dialog", "score-tools-dialog", "score-location-dialog", "score-time-dialog"].forEach(function (id) { if ($(id).open) $(id).close(); });
   scoreModePanels.forEach(function (panel) { panel.placeholder.replaceWith(panel.element); });
@@ -4311,7 +4403,10 @@ $("match-form").addEventListener("submit", async function (event) {
   if (score.some(function (value) { return !Number.isInteger(value) || value < 0 || value > 999; })) {
     return notify(t("Golak 0 eta 999 arteko zenbaki osoak izan behar dira"), "error");
   }
-  var stats = players.map(function (player) {
+  var stats = players.filter(function (player) {
+    var checkbox = form.querySelector('[data-match-played="' + player.id_jokalaria + '"]');
+    return checkbox && checkbox.checked;
+  }).map(function (player) {
     var row = { id_jokalaria: Number(player.id_jokalaria) };
     form.querySelectorAll('[data-player="' + player.id_jokalaria + '"]').forEach(function (input) {
       row[input.dataset.stat] = Number(input.value);
@@ -4330,6 +4425,7 @@ $("match-form").addEventListener("submit", async function (event) {
       emaitza_aurkaria: score[1], stats: stats
     });
     form.reset(); $("match-date").value = localDateTime();
+    matchPlayersTeam = 0; renderPlayers();
     if (result.queued) notify(t("Partida gailuan gordeta dago. Konexioa itzultzean bidaliko da."), "success");
     else { await refreshAll(); notify(t("Partida gorde da"), "success"); }
   } catch (error) { notify(error.message, "error"); }
@@ -4396,8 +4492,13 @@ $("score-save-match").addEventListener("click", async function () {
     $("score-save-status").textContent = t("Errorea: bete data eta aurkariaren izena.");
     return notify(t("Data eta aurkariaren izena bete behar dira"), "error");
   }
+  if (scoreNeedsRoster()) { scoreOpenRoster(function () { button.click(); }); return; }
   var homeName = $("score-home-name").value.trim() || "7metro";
   var statsByPlayer = {};
+  scoreSelectedPlayers().forEach(function (player) {
+    var id = Number(player.id_jokalaria);
+    statsByPlayer[id] = { id_jokalaria: id, golak: 0, jaurtiketak: 0 };
+  });
   scoreboard.events.forEach(function (entry) {
     var side = entry.side || (entry.team === homeName ? "home" : "away");
     var playerId = Number(entry.playerId) || 0;

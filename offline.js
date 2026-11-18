@@ -271,12 +271,17 @@
         $("match-date").value = payload.data_ordua; $("match-opponent").value = payload.aurkaria;
         $("match-place").value = payload.lekua; $("match-score-home").value = payload.emaitza_geurea;
         $("match-score-away").value = payload.emaitza_aurkaria;
+        var selectedPlayers = new Set((payload.stats || []).map(function (row) { return Number(row.id_jokalaria); }));
+        $("match-players").querySelectorAll("[data-match-played]").forEach(function (checkbox) {
+          checkbox.checked = selectedPlayers.has(Number(checkbox.dataset.matchPlayed));
+        });
         (payload.stats || []).forEach(function (row) {
           Object.keys(row).forEach(function (field) {
             var input = $("match-form").querySelector('[data-player="' + Number(row.id_jokalaria) + '"][data-stat="' + field + '"]');
             if (input) input.value = row[field];
           });
         });
+        updateMatchPlayerSelection();
         $("offline-pending-dialog").close(); selectSection("v-matches"); $("match-create").click();
       }
     } else {

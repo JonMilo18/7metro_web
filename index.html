@@ -323,6 +323,18 @@ textarea{min-height:84px;resize:vertical}
 .offline-job{display:grid;gap:8px;padding:16px 0;border-bottom:1px solid var(--line);min-width:0;overflow-wrap:anywhere}
 .offline-job>span,.offline-job p{color:var(--muted);margin:0;font-size:.85rem}
 .offline-job .btn{margin:0}
+.match-roster-heading{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px}
+.match-roster-heading h2{margin:0}
+.match-roster-actions{display:flex;flex-wrap:wrap;gap:8px}
+.match-roster-actions .btn{width:auto;margin:0;min-height:44px;font-size:.83rem}
+.match-roster-heading .match-roster-actions{margin-left:auto}
+.match-roster-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}
+.match-roster-list .checkrow{min-width:0;min-height:52px;padding:10px;border:1px solid var(--line);border-radius:10px;overflow-wrap:anywhere}
+.match-player-stats{margin:8px 0 0}.match-player-stats>summary{cursor:pointer;color:var(--muted);min-height:44px;padding:10px 0;font-size:.85rem}
+#score-roster-cancel{width:auto;flex:none;margin:0}
+#score-roster-open{display:inline-flex;align-items:center;gap:6px}
+#score-roster-open svg{width:20px;height:20px;flex:none}
+@media(max-width:680px){.match-roster-list{grid-template-columns:minmax(0,1fr)}.score-match-mode .score-roster-label{display:none}}
 #offline-pending-close{width:auto;flex:none;margin:0}
 .onboarding{padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--bg2);margin:0 0 22px}
 .onboarding-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}
@@ -726,7 +738,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=191"><link rel="stylesheet" href="portal.css?v=191"><link rel="stylesheet" href="motion.css?v=191">
+<link rel="stylesheet" href="insights.css?v=192"><link rel="stylesheet" href="portal.css?v=192"><link rel="stylesheet" href="motion.css?v=192">
 </head>
 <body>
 <div id="app">
@@ -1009,7 +1021,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
         <form id="match-form" tabindex="-1" class="stack" style="margin-top:14px">
           <div class="grid2"><label>Data eta ordua<input id="match-date" type="datetime-local" required></label><label>Aurkaria<input id="match-opponent" required maxlength="120"></label></div>
           <div class="grid2"><label>Tokia<select id="match-place"><option value="Etxean">Etxean</option><option value="Kanpoan">Kanpoan</option></select></label><div class="match-score-inputs"><label>Gure golak<input id="match-score-home" type="number" inputmode="numeric" min="0" max="999" step="1" placeholder="0"></label><span aria-hidden="true">?</span><label>Aurkariaren golak<input id="match-score-away" type="number" inputmode="numeric" min="0" max="999" step="1" placeholder="0"></label></div></div>
-          <h2>Jokalariak</h2><div id="match-players"></div>
+          <div class="match-roster-heading"><h2>Partidako jokalariak</h2><span id="match-roster-count" class="muted" role="status"></span><div class="match-roster-actions"><button class="btn secondary" type="button" data-match-select="all">Guztiak hautatu</button><button class="btn secondary" type="button" data-match-select="none">Garbitu hautaketa</button></div></div><div id="match-players"></div>
           <button class="btn" type="submit">Gorde partida</button>
         </form>
       </details>
@@ -1042,7 +1054,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
     <section id="v-scoreboard">
       <div class="score-page-title">
       <div class="help-heading"><h1>Markagailua</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-15" aria-label="Markagailua: informazioa"><span aria-hidden="true">i</span></button></div><p class="sub" id="help-text-15" hidden>Partidako denbora, emaitza eta goleatzaileen erregistro azkarra.</p>
-        <button class="btn secondary score-mode-only" id="score-match-tools" type="button">Aukerak</button><button class="btn" id="score-fullscreen" type="button" aria-label="Pantaila osoko partida modua ireki" aria-pressed="false"><span aria-hidden="true">&#9974;</span><span class="score-fullscreen-label">Partida modua</span></button>
+        <button class="btn secondary" id="score-roster-open" type="button" aria-haspopup="dialog" aria-controls="score-roster-dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M17 4a3 3 0 0 1 0 6m1 5a5 5 0 0 1 3 4v2"/></svg><span class="score-roster-label">Jokalariak</span><span id="score-roster-count"></span></button><button class="btn secondary score-mode-only" id="score-match-tools" type="button">Aukerak</button><button class="btn" id="score-fullscreen" type="button" aria-label="Pantaila osoko partida modua ireki" aria-pressed="false"><span aria-hidden="true">&#9974;</span><span class="score-fullscreen-label">Partida modua</span></button>
       </div>
       <div class="card score-live-panel" id="score-live-panel">
         <div class="score-live-summary">
@@ -1101,6 +1113,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
       </dialog>
       <dialog id="score-tools-dialog" class="score-mode-dialog" aria-labelledby="score-tools-title"><div class="score-mode-dialog-heading"><h2 id="score-tools-title">Partidaren aukerak</h2><button class="btn secondary" type="button" data-close-score-dialog="score-tools-dialog">Itxi</button></div><button class="btn secondary" type="button" id="score-mode-new-shot">Jaurtiketa berria kokapenarekin</button><div id="score-tools-content"></div></dialog>
       <dialog id="score-location-dialog" class="score-mode-dialog" aria-labelledby="score-location-title"><div class="score-mode-dialog-heading"><h2 id="score-location-title">Jaurtiketaren kokapena</h2><button class="btn secondary" type="button" data-close-score-dialog="score-location-dialog">Utzi</button></div><div id="score-location-content"></div></dialog>
+      <dialog id="score-roster-dialog" class="attendance-dialog" aria-labelledby="score-roster-title"><form id="score-roster-form" class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="score-roster-title">Partidako jokalariak</h2><button class="btn secondary" id="score-roster-cancel" type="button">Utzi</button></div><p class="muted">Hautatutako jokalariak agertuko dira markagailuko ekintzetan eta partidako estatistiketan.</p><div class="match-roster-actions"><button class="btn secondary" type="button" data-score-roster-select="all">Guztiak hautatu</button><button class="btn secondary" type="button" data-score-roster-select="none">Garbitu hautaketa</button></div><p id="score-roster-selected" class="muted" role="status"></p><div id="score-roster-list" class="match-roster-list"></div><p id="score-roster-locked-note" class="muted" hidden>Ekintzak dituen jokalaria mantendu behar da. Kendu haren ekintzak hautaketatik atera aurretik.</p><button class="btn" type="submit">Hautaketa baieztatu</button></form></dialog>
       <dialog id="score-player-dialog" class="score-player-dialog" aria-labelledby="score-player-title"><div class="score-player-heading"><div><span class="score-small-label" id="score-player-time"></span><h2 id="score-player-title">Aukeratu jokalaria</h2></div><button type="button" class="btn secondary" id="score-player-cancel">Utzi</button></div><div class="score-player-grid" id="score-player-grid"></div><details id="score-opponent-add" class="score-opponent-add hidden"><summary><strong>+ Aurkariaren jokalaria</strong></summary><form id="score-opponent-form" class="stack score-details-content"><div class="score-opponent-fields"><label>Dortsala<input id="score-opponent-number" type="number" inputmode="numeric" min="0" max="999" step="1" placeholder="7"></label><label>Izena (aukerakoa)<input id="score-opponent-name" type="text" maxlength="100" autocomplete="off"></label></div><p id="score-opponent-error" class="notice error" role="alert" hidden></p><button class="btn" type="submit">Gehitu eta erregistratu</button></form></details><button class="btn secondary" type="button" id="score-player-unspecified">Jokalaria zehaztu gabe</button></dialog>
     </section>
     <section id="v-friends">
@@ -1253,21 +1266,21 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <dialog id="offline-pending-dialog" class="attendance-dialog" aria-labelledby="offline-pending-title"><div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="offline-pending-title">Gordetzeko zain</h2><button class="btn secondary" id="offline-pending-close" type="button">Itxi</button></div><ul id="offline-pending-list" class="list"></ul><button class="btn secondary" id="offline-sync-retry" type="button">Berriro saiatu</button></div></dialog>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=191" defer></script>
-<script src="i18n.js?v=191" defer></script>
-<script src="insights-data.js?v=191" defer></script>
-<script src="portal.js?v=191" defer></script>
-<script src="portal-events.js?v=191" defer></script>
-<script src="portal-calendar.js?v=191" defer></script>
-<script src="push.js?v=191" defer></script>
-<script src="motion.js?v=191" defer></script>
-<script src="offline.js?v=191" defer></script>
-<script src="onboarding.js?v=191" defer></script>
-<script src="app.js?v=191" defer></script>
-<script src="player-statistics.js?v=191" defer></script>
-<script src="weekly-training.js?v=191" defer></script>
-<script src="inbox.js?v=191" defer></script>
-<script src="report-pdf.js?v=191" defer></script>
-<script src="insights.js?v=191" defer></script>
+<script src="locales/es.js?v=192" defer></script>
+<script src="i18n.js?v=192" defer></script>
+<script src="insights-data.js?v=192" defer></script>
+<script src="portal.js?v=192" defer></script>
+<script src="portal-events.js?v=192" defer></script>
+<script src="portal-calendar.js?v=192" defer></script>
+<script src="push.js?v=192" defer></script>
+<script src="motion.js?v=192" defer></script>
+<script src="offline.js?v=192" defer></script>
+<script src="onboarding.js?v=192" defer></script>
+<script src="app.js?v=192" defer></script>
+<script src="player-statistics.js?v=192" defer></script>
+<script src="weekly-training.js?v=192" defer></script>
+<script src="inbox.js?v=192" defer></script>
+<script src="report-pdf.js?v=192" defer></script>
+<script src="insights.js?v=192" defer></script>
 </body>
 </html>

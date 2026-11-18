@@ -1310,6 +1310,15 @@ window.SevenMetroLocales.es = {
     "Ezin izan da laburpena kopiatu": "No se ha podido copiar el resumen",
     "Gorde gabeko txostenaren oharrak baztertu eta berriro kargatu nahi dituzu?": "¿Quieres descartar las notas sin guardar y recargar el informe?",
     "Partidaren oharrak ez dira baliozkoak": "Las notas del partido no son válidas",
+    "Partidako jokalariak": "Jugadores del partido",
+    "{count} jokalari hautatuta": "{count} jugadores seleccionados",
+    "Partidako jokalariak: {count}": "Jugadores del partido: {count}",
+    "Garbitu hautaketa": "Limpiar selección",
+    "Guztiak hautatu": "Seleccionar todos",
+    "Hautatutako jokalariak agertuko dira markagailuko ekintzetan eta partidako estatistiketan.": "Los jugadores seleccionados aparecerán en las acciones del marcador y en las estadísticas del partido.",
+    "Ekintzak dituen jokalaria mantendu behar da. Kendu haren ekintzak hautaketatik atera aurretik.": "Debes mantener al jugador que tenga acciones registradas. Elimina sus acciones antes de quitarlo de la selección.",
+    "Hautaketa baieztatu": "Confirmar selección",
+    "Hautatu jokalari bat zigorra esleitzeko": "Selecciona un jugador para asignar la sanción",
     "Ezin izan dira partidaren oharrak gorde": "No se han podido guardar las notas del partido",
     "Partidaren oharrak beste gailu batean aldatu dira. Birkargatu txostena berriro gorde aurretik": "Las notas del partido han cambiado en otro dispositivo. Recarga el informe antes de volver a guardarlas"
   }
