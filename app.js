@@ -1967,6 +1967,44 @@ function renderOpponentIndividuals(selectedMatches, query) {
   }).join("") : ("<li class=\"empty\">" + esc(t("Ez dago aurkarien banakako estatistikarik iragazki hauekin.")) + "</li>");
 }
 
+function setStatsPlayerView(view) {
+  [["visual", "stats-players-visual"], ["list", "stats-list"], ["top", "stats-top-panel"]].forEach(function (entry) {
+    $(entry[1]).classList.toggle("hidden", view !== entry[0]);
+    $("stats-view-" + entry[0]).setAttribute("aria-pressed", String(view === entry[0]));
+  });
+}
+function renderStatsTop() {
+  var metric = $("stats-top-metric").value;
+  var rate = metric === "efficiency" || metric === "penaltyEfficiency";
+  var minimum = Number($("stats-top-min").value) || 1;
+  $("stats-top-min-label").hidden = !rate;
+  var limit = Number($("stats-top-limit").value) || Infinity;
+  var rows = playerStats.map(function (player) {
+    var attempts = metric === "penaltyEfficiency" ? player.penaltyShots : player.shots;
+    var goals = metric === "penaltyEfficiency" ? player.penaltyGoals : player.goals;
+    var score = rate ? (attempts ? Math.round(goals / attempts * 1000) / 10 : 0) : metric === "goalsPerMatch" ? (player.appearances ? Math.round(player.goals / player.appearances * 100) / 100 : 0) : player[metric];
+    return { player: player, score: score, attempts: attempts, goals: goals };
+  }).filter(function (row) { return rate ? row.attempts >= minimum : row.score > 0; }).sort(function (a, b) {
+    return b.score - a.score || a.player.label.localeCompare(b.player.label, I18n.locale(), { numeric: true });
+  });
+  var position = 0, previous = null;
+  rows.forEach(function (row, index) {
+    if (row.score !== previous) position = index + 1;
+    row.rank = position; previous = row.score;
+  });
+  rows = rows.filter(function (row) { return row.rank <= limit; });
+  var metricName = $("stats-top-metric").selectedOptions[0].textContent;
+  $("stats-top-title").textContent = metricName;
+  $("stats-top-count").textContent = t("{count} jokalari", { count: rows.length });
+  $("stats-top-list").innerHTML = rows.length ? rows.map(function (row) {
+    var player = row.player;
+    var detail = rate ? t("{goals} gol / {shots} jaurtiketa", { goals: row.goals, shots: row.attempts }) : t("{goals} gol · {matches} partida", { goals: player.goals, matches: player.appearances });
+    if (metric === "penaltyGoals") detail = player.penaltyGoals + ' / ' + player.penaltyShots + ' · 7 m';
+    var value = row.score.toLocaleString(I18n.locale(), { maximumFractionDigits: metric === "goalsPerMatch" ? 2 : 1 }) + (rate ? '%' : '');
+    return '<li class="stats-top-row' + (row.rank <= 3 ? ' leading' : '') + '"><span class="stats-top-position" aria-label="' + esc(t("{rank}. postua", { rank: row.rank })) + '">' + row.rank + '</span><div class="stats-top-player"><button type="button" data-player-profile="' + player.id + '">' + esc(player.label) + '</button><small>' + esc(detail) + '</small><span class="stats-top-bar" aria-hidden="true"><i style="width:' + (rows[0].score ? row.score / rows[0].score * 100 : 0) + '%"></i></span></div><strong class="stats-top-value">' + esc(value) + '</strong></li>';
+  }).join("") : '<li class="empty">' + esc(t(rate ? "Ez dago gutxieneko jaurtiketa kopurura iristen den jokalaririk. Aldatu gutxienekoa edo iragazkiak." : "Ez dago sailkapen honetarako daturik aukeratutako iragazkiekin.")) + '</li>';
+}
+
 function renderStatsFilters(matchCount) {
   var mode = $("stats-mode").value;
   $("stats-player-search").hidden = mode === "team";
@@ -2055,7 +2093,8 @@ function renderStats() {
     var label = (p.dortsala != null ? "#" + p.dortsala + " " : "") + playerName(p);
     var matchCount = new Set(rows.map(function (r) { return Number(r.id_partida); })).size;
     return { id: Number(p.id_jokalaria), label: label, goals: totalG, shots: totalS, normalGoals: Math.max(0, totalG - pg), normalShots: Math.max(0, totalS - pshot), penaltyGoals: pg, penaltyShots: pshot, appearances: matchCount, yellow: ps.filter(function (s) { return s.mota === "horia"; }).length, two: ps.filter(function (s) { return s.mota === "2min"; }).length, red: ps.filter(function (s) { return s.mota === "gorria"; }).length, blue: ps.filter(function (s) { return s.mota === "urdina"; }).length };
-  }).filter(function (s) { return (s.goals || s.shots || s.yellow || s.two || s.red || s.blue) && s.label.toLocaleLowerCase().includes(query); });
+  }).filter(function (s) { return (s.appearances || s.goals || s.shots || s.yellow || s.two || s.red || s.blue) && s.label.toLocaleLowerCase().includes(query); });
+  renderStatsTop();
   $("stats-list").innerHTML = playerStats.length ? playerStats.map(function (s) { var pct = s.shots ? Math.round(s.goals / s.shots * 100) : 0, normalPct = s.normalShots ? Math.round(s.normalGoals / s.normalShots * 100) : 0, penaltyPct = s.penaltyShots ? Math.round(s.penaltyGoals / s.penaltyShots * 100) : 0; return '<li class="item"><div class="item-main"><strong>' + esc(s.label) + '</strong><small>' + s.appearances + t(" partida · Guztira: ") + s.goals + '/' + s.shots + ' (%' + pct + t(") · Jaurtiketa arruntak: ") + s.normalGoals + '/' + s.normalShots + ' (%' + normalPct + t(") · Penaltiak: ") + s.penaltyGoals + '/' + s.penaltyShots + ' (%' + penaltyPct + ')</small></div><span class="muted">🟨 ' + s.yellow + ' · 2\' ' + s.two + ' · 🟥 ' + s.red + ' · 🔵 ' + s.blue + '</span></li>'; }).join("") : ("<li class=\"empty\">" + esc(t("Ez dago iragazki hauekin bat datorren jokalari daturik.")) + "</li>");
   $("stats-players-visual").innerHTML = playerStats.length ? playerStats.map(function (s) {
     var pct = s.shots ? Math.round(s.goals / s.shots * 100) : 0;
@@ -3527,8 +3566,10 @@ $("exercise-list-category").addEventListener("change", renderExercises);
 $("stats-match").addEventListener("change", renderStats);
 ["stats-period", "stats-venue", "stats-opponent", "stats-mode", "stats-start", "stats-end"].forEach(function (id) { $(id).addEventListener("change", renderStats); });
 $("stats-search").addEventListener("input", renderStats);
-$("stats-view-visual").addEventListener("click", function () { $("stats-players-visual").classList.remove("hidden"); $("stats-list").classList.add("hidden"); this.setAttribute("aria-pressed", "true"); $("stats-view-list").setAttribute("aria-pressed", "false"); });
-$("stats-view-list").addEventListener("click", function () { $("stats-players-visual").classList.add("hidden"); $("stats-list").classList.remove("hidden"); this.setAttribute("aria-pressed", "true"); $("stats-view-visual").setAttribute("aria-pressed", "false"); });
+["visual", "list", "top"].forEach(function (view) {
+  $("stats-view-" + view).addEventListener("click", function () { setStatsPlayerView(view); });
+});
+["stats-top-metric", "stats-top-limit", "stats-top-min"].forEach(function (id) { $(id).addEventListener("change", renderStatsTop); });
 document.querySelectorAll("[data-stats-mode]").forEach(function (button) {
   button.addEventListener("click", function () { $("stats-mode").value = button.dataset.statsMode; renderStats(); });
 });
