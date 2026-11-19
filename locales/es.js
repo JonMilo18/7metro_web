@@ -6,6 +6,10 @@ window.SevenMetroLocales.es = {
   "name": "Español",
   "locale": "es-ES",
   "messages": {
+    "Kategorien katalogoa partekatua da; ariketak beren baimenen arabera erakusten dira. Kategoria kentzeak zure ariketen loturei bakarrik eragiten die.": "El catálogo de categorías es compartido; los ejercicios se muestran según sus permisos. Quitar una categoría solo afecta a los vínculos de tus ejercicios.",
+    "Nire ariketetatik kendu": "Quitar de mis ejercicios",
+    "Kategoria zure ariketetatik kendu da": "Categoría quitada de tus ejercicios",
+    "\" kategoria zure ariketetatik kendu? Beste erabiltzaileen ariketak eta katalogoa mantenduko dira.": "\" de tus ejercicios? Se conservarán el catálogo y los ejercicios de otros usuarios.",
     "Estatistiken sarbidea": "Acceso a las estadísticas",
     "Itzuli": "Volver",
     "Aldia": "Periodo",

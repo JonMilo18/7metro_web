@@ -1716,7 +1716,7 @@ function renderExerciseCategories() {
   var list = $("exercise-category-list");
   if (list) list.innerHTML = categories.length ? categories.map(function (category) {
     return '<li class="item"><div class="item-main"><strong>' + esc(category.izena) + '</strong></div>' +
-      '<button class="btn danger" type="button" data-delete-exercise-category="' + esc(category.izena) + ("\">" + esc(t("Ezabatu")) + "</button></li>");
+      '<button class="btn danger" type="button" data-delete-exercise-category="' + esc(category.izena) + ("\">" + esc(t("Nire ariketetatik kendu")) + "</button></li>");
   }).join("") : ("<li class=\"empty\">" + esc(t("Oraindik ez dago kategoriarik. Sortu kategoria liburutegian erabiltzeko.")) + "</li>");
 }
 
@@ -1767,7 +1767,7 @@ function renderSavedSession(sessionId) {
     var title = exercise ? exercise.izena : t("Ariketa ez dago eskuragarri");
     return heading + '<article class="training-exercise-card"><div class="training-exercise-head"><span class="training-step">' +
       step + '</span><div><h3>' + esc(title) + '</h3><div class="training-exercise-meta">' +
-      (exercise && exercise.kategoria ? esc(exercise.kategoria) + " · " : "") +
+      (exercise && exerciseCategoryNames(exercise).length ? esc(exerciseCategoryNames(exercise).join(", ")) + " · " : "") +
       Number(detail.iraupena_minutuak || 0) + (esc(t(" min")) + "</div></div></div>") +
       (board ? '<canvas class="training-exercise-preview" width="800" height="500" data-training-preview="' + index + '" aria-label="' + esc(title) + esc(t(' ariketa-arbela')) + '"></canvas>' : "") +
       (exercise && exercise.deskribapena ? '<p class="training-exercise-description">' + esc(exercise.deskribapena) + '</p>' : "") +
@@ -4992,8 +4992,8 @@ document.addEventListener("click", async function (event) {
     message = t("Ariketa hau ezabatu nahi duzu?");
   } else if (target.hasAttribute("data-delete-exercise-category")) {
     deletion = { action: "pwa_delete_category", izena: target.dataset.deleteExerciseCategory };
-    message = '"' + target.dataset.deleteExerciseCategory + t("\" izeneko kategoria-erregistro guztiak ezabatu? Kategoria hori ariketetatik kenduko da; beste kategoriak mantenduko dira.");
-    successMessage = t("Kategoria ezabatu da");
+    message = '"' + target.dataset.deleteExerciseCategory + t("\" kategoria zure ariketetatik kendu? Beste erabiltzaileen ariketak eta katalogoa mantenduko dira.");
+    successMessage = t("Kategoria zure ariketetatik kendu da");
   } else if (target.hasAttribute("data-delete-match")) {
     deletion = { action: "pwa_delete_match", id: Number(target.dataset.deleteMatch) };
     message = t("Partida hau eta haren estatistikak ezabatu nahi dituzu?");

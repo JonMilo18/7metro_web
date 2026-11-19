@@ -231,3 +231,32 @@ Deialdiaren erantzunak benetako asistentziara kopiatzeko, aplikatu
 `portal_apply_attendance` ekintzak lotutako jokalarien `yes`/`no` erantzunak
 transakzio bakarrean kopiatzen ditu. Aurretik gordetako asistentzia eta
 berandutzeak mantentzen dira; `maybe` eta erantzun gabeak ez dira gordetzen.
+
+Kategoriak bateratzeko, aplikatu `migrations/20261119120000_canonical_categories.sql`
+eta hedatu `metro-api` frontendaren aurretik. Izenaren gako normalizatuak UNIQUE
+muga du: maiuskulak, azentuak eta zuriune errepikatuak ez dira kategoria berriak.
+Migrazioak lotura zaharrak, lehen kategoriaren IDa eta testuzko kategoriak
+many-to-many taulara bateratzen ditu; ezabatutako IDen aliasak mantentzen ditu.
+Aurretik kategoriak, loturak eta ariketen kategoria-eremuak kopiatu behar dira.
+
+`metro-api` integrazioa:
+- Inportatu `reconcileCategorySync` `category-actions.ts` modulutik. `syncRows`-en,
+  input balidatu ondoren eta edozein upsert egin aurretik, ordezkatu `tables`
+  `await reconcileCategorySync(supabase,tables)` emaitzarekin. Errorea bezeroari
+  itzuli. Honek katalogoa izenez ebazten du eta tokiko IDak berridazten ditu.
+- `pwa_create_category`: `resolve_category_names({p_names:[name],p_create:true})`;
+  lehendik dagoen kategoriak ID bera itzultzen du.
+- `pwa_create_exercise`: lehengo izen/kopuru/arbela balidazioen ondoren,
+  `create_categorized_exercise({p_user_id:userId,p_team_id:teamId,p_names:categoryNames,
+  p_data:{izena,deskribapena,jokalari_kopurua,arbela_datuak,bideo_url}})`.
+  Emaitzaren `id_ariketa` erabili. Ariketa eta loturak transakzio berean sortzen dira.
+- `pwa_delete_category`: `detach_user_category({p_user_id:userId,p_team_id:teamId,
+  p_name:name})`; erabiltzailearen ariketetatik soilik kentzen du, katalogoa mantenduz.
+- Snapshoten katalogoak `id_kategoria,izena` proiektatzen ditu. Ariketak lehenengo
+  jabetza edo partekatze-baimenaren arabera kargatzen dira eta gero soilik haien
+  IDen kategoria-loturak. Taldeko entrenamenduen erreferentziek ere baimendutako
+  `saio_reference_ariketak` IDen loturak kargatzen dituzte. `my_exercises`-ek
+  `id_kategoria,kategoria` bateragarritasun-eremuak ere itzultzen ditu.
+
+Kategoria bateko kide izateak ez du ariketa pribaturik irakurtzeko baimenik ematen.
+RPCak `service_role` rolarentzat bakarrik daude; identitatea APIko saiotik dator.
