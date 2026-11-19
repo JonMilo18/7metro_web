@@ -2020,6 +2020,7 @@ function renderOpponentIndividuals(selectedMatches, query) {
   }).join("") : ("<li class=\"empty\">" + esc(t("Ez dago aurkarien banakako estatistikarik iragazki hauekin.")) + "</li>");
 }
 
+var statsPdfShots = [], statsPdfBusy = false;
 function setStatsPlayerView(view) {
   [["visual", "stats-players-visual"], ["list", "stats-list"], ["top", "stats-top-panel"]].forEach(function (entry) {
     $(entry[1]).classList.toggle("hidden", view !== entry[0]);
@@ -2056,6 +2057,64 @@ function renderStatsTop() {
     var value = row.score.toLocaleString(I18n.locale(), { maximumFractionDigits: metric === "goalsPerMatch" ? 2 : 1 }) + (rate ? '%' : '');
     return '<li class="stats-top-row' + (row.rank <= 3 ? ' leading' : '') + '"><span class="stats-top-position" aria-label="' + esc(t("{rank}. postua", { rank: row.rank })) + '">' + row.rank + '</span><div class="stats-top-player"><button type="button" data-player-profile="' + player.id + '">' + esc(player.label) + '</button><small>' + esc(detail) + '</small><span class="stats-top-bar" aria-hidden="true"><i style="width:' + (rows[0].score ? row.score / rows[0].score * 100 : 0) + '%"></i></span></div><strong class="stats-top-value">' + esc(value) + '</strong></li>';
   }).join("") : '<li class="empty">' + esc(t(rate ? "Ez dago gutxieneko jaurtiketa kopurura iristen den jokalaririk. Aldatu gutxienekoa edo iragazkiak." : "Ez dago sailkapen honetarako daturik aukeratutako iragazkiekin.")) + '</li>';
+  return { rows: rows, metricName: metricName, metric: metric, minimum: minimum, rate: rate };
+}
+
+function statsPdfSnapshot() {
+  var mode = $("stats-mode").value;
+  var snapshot = { title: $("stats-heading").textContent, subtitle: $("stats-result-count").textContent, filters: [], metrics: [], sections: [], mapped: [] };
+  snapshot.filters = Array.from($("stats-active-filters").querySelectorAll("button")).map(function (button) { return button.firstChild.textContent; });
+  if (!snapshot.filters.length) snapshot.filters.push(t("Guztiak"));
+  var section = function (title, headings, rows, widths) { snapshot.sections.push({ title: title, headings: headings, rows: rows, widths: widths }); };
+  if (mode === "players" && $("stats-view-top").getAttribute("aria-pressed") === "true") {
+    var ranking = renderStatsTop();
+    snapshot.title = t("Jokalarien sailkapena");
+    snapshot.subtitle = ranking.metricName + ' · ' + $("stats-top-limit").selectedOptions[0].textContent;
+    snapshot.note = t("Aukeratutako aldia, partida eta iragazkiak erabiltzen dira. Berdinketak barne.");
+    if (ranking.rate) snapshot.filters.push(t("Gutxieneko jaurtiketak") + ': ' + ranking.minimum);
+    section(ranking.metricName, [t("Postua"), t("Jokalaria"), ranking.metricName], ranking.rows.map(function (row) {
+      return [row.rank, row.player.label, row.score.toLocaleString(I18n.locale(), { maximumFractionDigits: ranking.metric === "goalsPerMatch" ? 2 : 1 }) + (ranking.rate ? '%' : '')];
+    }), [18, 110, 54]);
+    return snapshot;
+  }
+  snapshot.metrics = Array.from($("stats-summary").children).map(function (card) {
+    return { value: card.querySelector("strong").textContent, label: card.querySelector("div").textContent, detail: card.querySelector("small").textContent };
+  });
+  if (mode === "players") {
+    section(t("Jokalari bakoitzaren xehetasunak"), ["Jokalaria", "Golak", "Jaurtiketak", "%", "7 m", "Partidak", "Horia", "2 min", "Gorria", "Urdina"].map(t), playerStats.map(function (player) {
+      return [player.label, player.goals, player.shots, player.shots ? Math.round(player.goals / player.shots * 100) + '%' : '-', player.penaltyGoals + '/' + player.penaltyShots, player.appearances, player.yellow, player.two, player.red, player.blue];
+    }), [47, 13, 23, 13, 18, 15, 14, 13, 13, 13]);
+  } else if (mode === "team") {
+    section(t("Gol eta eraginkortasuna 10 minutuko tarteetan"), [t("Tartea"), t("Laburpena")], Array.from($("stats-period-chart").children).map(function (card) { return [card.querySelector("strong").textContent, card.querySelector("small").textContent.replace(/^\s*[·]\s*/, '')]; }), [40, 142]);
+  } else {
+    [["stats-opponent-list", "Aurkari bakoitzaren xehetasunak"], ["stats-opponent-players", "Aurkariaren jokalariak"]].forEach(function (entry) {
+      section(t(entry[1]), [t("Izena"), t("Laburpena")], Array.from($(entry[0]).querySelectorAll(".item-main")).map(function (row) { return [row.querySelector("strong").textContent, row.querySelector("small").textContent]; }), [53, 129]);
+    });
+  }
+  function point(row, x, y) {
+    if (row[x] == null || row[y] == null || row[x] === '' || row[y] === '') return null;
+    var values = [Number(row[x]), Number(row[y])];
+    return values.every(function (value) { return Number.isFinite(value) && value >= 0 && value <= 1; }) ? values : null;
+  }
+  snapshot.mapped = statsPdfShots.map(function (shot) { return { type: shot.mota, from: point(shot, "jatorri_x", "jatorri_y"), to: point(shot, "helburu_x", "helburu_y") }; }).filter(function (shot) { return shot.from || shot.to; });
+  return snapshot;
+}
+async function downloadStatsPdf() {
+  var button = $("stats-download");
+  if (statsPdfBusy || $("stats-summary").hidden) return;
+  var snapshot = statsPdfSnapshot(), sourceTeam = teamId, sourceToken = token;
+  var language = I18n.language(), dictionary = (window.SevenMetroLocales[language] || {}).messages || {};
+  var options = { teamName: team && team.izena || "7metro", locale: I18n.locale(), t: function (key) { return Object.prototype.hasOwnProperty.call(dictionary, key) ? dictionary[key] : key; } };
+  statsPdfBusy = true; button.disabled = true; button.setAttribute("aria-busy", "true"); button.textContent = t("PDFa prestatzen...");
+  try {
+    var result = await window.SevenMetroReportPdf.buildStatistics(snapshot, options);
+    if (sourceTeam !== teamId || sourceToken !== token) return;
+    var url = URL.createObjectURL(new Blob([result], { type: "application/pdf" }));
+    var anchor = document.createElement("a"); anchor.href = url; anchor.download = '7metro-' + (snapshot.title === options.t("Jokalarien sailkapena") ? 'topa-' : 'estatistikak-') + planKey(new Date()) + '.pdf';
+    document.body.appendChild(anchor); anchor.click(); anchor.remove(); setTimeout(function () { URL.revokeObjectURL(url); }, 30000);
+    notify(t("PDFa deskargatu da. Orain parteka dezakezu."), "success");
+  } catch (error) { notify(t("Ezin izan da PDFa prestatu. Sakatu berriro saiatzeko."), "error"); }
+  finally { statsPdfBusy = false; button.disabled = $("stats-summary").hidden; button.removeAttribute("aria-busy"); button.textContent = t("PDFa deskargatu"); }
 }
 
 function renderStatsFilters(matchCount) {
@@ -2074,12 +2133,15 @@ function renderStatsFilters(matchCount) {
     filters.push('<button type="button" data-stats-remove="' + id + '" aria-label="' + esc(t("Kendu iragazkia: {name}", { name: label })) + '">' + esc(label) + '<span aria-hidden="true">&times;</span></button>');
   });
   $("stats-active-filters").innerHTML = filters.join("");
+  var printFilters = Array.from($("stats-active-filters").querySelectorAll("button")).map(function (button) { return button.firstChild.textContent; }).join(' · ');
+  $("stats-print-context").textContent = (team && team.izena || "7metro") + ' · ' + t("{count} partida hautatuta", { count: matchCount }) + (printFilters ? ' · ' + printFilters : '');
   $("stats-filter-count").hidden = !advanced;
   $("stats-filter-count").textContent = String(advanced);
   $("stats-clear").hidden = !filters.length;
   $("stats-result-count").textContent = t("{count} partida hautatuta", { count: matchCount });
   $("stats-empty-state").hidden = Boolean(matchCount);
   $("stats-summary").hidden = !matchCount;
+  $("stats-download").disabled = statsPdfBusy || !matchCount;
   $("stats-shot-details").hidden = !matchCount;
 }
 
@@ -2123,6 +2185,7 @@ function renderStats() {
   var mode = $("stats-mode").value;
   var mapShots = mode === "opponents" ? awayShots : ownShots;
   if (mode === "players" && $("stats-search").value.trim()) { var searched = players.filter(function (p) { return ((p.dortsala != null ? "#" + p.dortsala + " " : "") + playerName(p)).toLocaleLowerCase().includes($("stats-search").value.trim().toLocaleLowerCase()); }).map(function (p) { return Number(p.id_jokalaria); }); mapShots = ownShots.filter(function (s) { return searched.indexOf(Number(s.id_jokalaria)) !== -1; }); }
+  statsPdfShots = mapShots.slice();
   var isGoal = function (s) { return /gol/.test(String(s.mota || "").toLocaleLowerCase()); };
   var isPenalty = function (s) { return /penalti/.test(String(s.mota || "").toLocaleLowerCase()); };
   var shotCount = function (arr) { return arr.length; }, goalCount = function (arr) { return arr.filter(isGoal).length; };
@@ -3699,6 +3762,7 @@ $("stats-active-filters").addEventListener("click", function (event) {
 });
 $("stats-clear").addEventListener("click", function () { ["stats-match", "stats-opponent"].forEach(function (id) { $(id).value = ""; }); ["stats-period", "stats-venue"].forEach(function (id) { $(id).value = "all"; }); $("stats-start").value = ""; $("stats-end").value = ""; $("stats-search").value = ""; renderStats(); });
 $("stats-print").addEventListener("click", function () { window.print(); });
+$("stats-download").addEventListener("click", downloadStatsPdf);
 $("open-board").addEventListener("click", function () { selectSection("v-board"); });
 
 $("login-form").addEventListener("submit", async function (event) {
