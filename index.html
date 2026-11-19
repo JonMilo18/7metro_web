@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#060E1A">
 <script>try{var savedTheme=localStorage.getItem("7metro-theme");if(savedTheme==="light"||savedTheme==="dark")document.documentElement.setAttribute("data-theme",savedTheme)}catch(e){}</script>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="501x501" href="icons/favicon_logo.png?v=208">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -31,7 +31,8 @@ body{background:radial-gradient(ellipse at 75% -10%,rgba(0,68,238,.16),transpare
 button,input,select,textarea{font:inherit}
 #app{min-height:100vh;display:flex;flex-direction:column}
 header{padding:calc(14px + env(safe-area-inset-top,0px)) 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);background:rgba(6,14,26,.94);backdrop-filter:blur(16px)}
-header img{height:40px;width:auto;border-radius:8px;background:#fff;padding:2px 4px}
+header img{height:40px;width:40px;object-fit:contain;border-radius:10px;background:#060E1A;padding:5px;flex:none}
+.login-brand{margin:0 0 18px;width:160px;max-width:100%;aspect-ratio:415/314}.login-brand img{display:block;width:100%;height:100%;object-fit:contain;border-radius:12px}.login-brand .brand-light{display:none}:root[data-theme="light"] .login-brand .brand-light{display:block}:root[data-theme="light"] .login-brand .brand-dark{display:none}
 header b{font-size:1.15rem;letter-spacing:-.01em}
 #account{display:flex;align-items:center;gap:9px;min-width:0;margin-left:auto;padding:7px 10px;border:1px solid var(--line);border-radius:13px;background:var(--bg2);line-height:1.3}
 #account:empty{display:none}
@@ -232,7 +233,7 @@ nav button[aria-selected="true"]{color:#fff;background:rgba(0,68,238,.18);box-sh
 .stats-export-actions .btn{width:auto;min-height:44px;margin:0;font-size:.82rem}
 .stats-print-brand{display:none}
 @media print{@page{size:A4;margin:14mm;background:#fff}html{background:#fff!important;color-scheme:light}body{display:block!important;background:#fff!important;background-image:none!important}.card,.player-visual-card{box-shadow:none!important}main{margin:0!important;padding:0!important}#v-stats{width:100%;max-width:none;margin:0}#stats-card{--ink:#11213b;--muted:#56657b;--bg2:#fff;--bg:#fff;--line:#dfe5ed;color:#11213b}.player-visual-card,.stats-top-row{break-inside:avoid}.stats-export-actions,.stats-view-toggle,#v-stats .info-toggle,#v-stats>.help-heading{display:none!important}}
-@media print{.stats-print-brand{display:flex;align-items:center;gap:14px;border-top:3px solid #0044ee;border-bottom:1px solid #dfe5ed;padding:10px 0;margin-bottom:18px;color:#11213b}.stats-print-brand img{width:62px;height:62px}.stats-print-brand strong,.stats-print-brand span{display:block}.stats-print-brand strong{font-size:22px}.stats-print-brand span{font-size:12px}.stats-print-brand p{font-size:10px;margin:5px 0 0;color:#56657b}}
+@media print{.stats-print-brand{display:flex;align-items:center;gap:14px;border-top:3px solid #0044ee;border-bottom:1px solid #dfe5ed;padding:10px 0;margin-bottom:18px;color:#11213b}.stats-print-brand img{width:82px;height:62px;object-fit:contain}.stats-print-brand strong,.stats-print-brand span{display:block}.stats-print-brand strong{font-size:22px}.stats-print-brand span{font-size:12px}.stats-print-brand p{font-size:10px;margin:5px 0 0;color:#56657b}}
 @media(max-width:600px){.stats-export-actions .btn{width:100%}}
 #stats-period-chart{padding-bottom:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px}
 #stats-period-chart>.card{margin:0;min-width:0;padding:12px}
@@ -464,7 +465,7 @@ textarea{min-height:84px;resize:vertical}
 @media(min-width:768px){
  header{position:fixed;left:0;top:0;width:240px;border:0;padding:calc(22px + env(safe-area-inset-top,0px)) 24px 12px;z-index:4;backdrop-filter:none}
  .notification-bell{position:fixed;top:calc(22px + env(safe-area-inset-top,0px));right:calc(24px + env(safe-area-inset-right,0px))}
- header img{height:48px}
+ header img{height:48px;width:48px}
  header #account{max-width:208px}
  nav{top:calc(96px + env(safe-area-inset-top,0px));bottom:0;left:0;right:auto;width:240px;border:0;border-right:1px solid var(--line);padding:8px 12px calc(16px + env(safe-area-inset-bottom,0px));background:rgba(6,14,26,.92)}
  nav div{max-width:none;grid-template-columns:1fr;gap:4px;align-content:start}
@@ -622,7 +623,7 @@ body:has(#session-preview-dialog[open]){overflow:hidden}
  html{font-size:16px}
  body{font-size:1rem;line-height:1.55}
  header{gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px}
- header img{height:36px}
+ header img{height:36px;width:36px}
  header b{font-size:1.1rem}
  #account{flex:1;max-width:260px;padding:6px 8px;gap:7px}
  main{padding:18px max(14px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
@@ -908,14 +909,15 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
 </style>
-<link rel="stylesheet" href="insights.css?v=207"><link rel="stylesheet" href="portal.css?v=207"><link rel="stylesheet" href="motion.css?v=207">
+<link rel="stylesheet" href="insights.css?v=208"><link rel="stylesheet" href="portal.css?v=208"><link rel="stylesheet" href="motion.css?v=208">
 </head>
 <body>
 <div id="app">
-<header><button class="menu-toggle" id="mobile-menu-toggle" type="button" aria-label="Menua ireki" aria-controls="nav" aria-expanded="false" hidden>☰</button><img src="icons/icon-192.png" alt="" aria-hidden="true"><b>7metro</b><span id="account"></span><button class="notification-bell" id="notification-bell" type="button" aria-label="Jakinarazpenak" aria-haspopup="dialog" aria-controls="inbox-dialog" hidden><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg><span class="notification-badge" id="notification-badge" aria-hidden="true" hidden></span></button></header>
+<header><button class="menu-toggle" id="mobile-menu-toggle" type="button" aria-label="Menua ireki" aria-controls="nav" aria-expanded="false" hidden>☰</button><img src="icons/favicon_logo.png" width="501" height="501" alt="" aria-hidden="true"><b>7metro</b><span id="account"></span><button class="notification-bell" id="notification-bell" type="button" aria-label="Jakinarazpenak" aria-haspopup="dialog" aria-controls="inbox-dialog" hidden><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg><span class="notification-badge" id="notification-badge" aria-hidden="true" hidden></span></button></header>
 <main>
 <aside id="offline-status" class="offline-status" role="status" hidden><span id="offline-status-text"></span><button id="offline-pending-open" class="btn secondary" type="button" hidden>Gordetzeko zain</button></aside>
 <section id="v-login" class="on">
+  <div class="login-brand"><img class="brand-dark" src="irudiak/logo_nagusia_illuna.png" width="1442" height="1091" alt="7metro"><img class="brand-light" src="irudiak/logo_nagusia_argia.png" width="415" height="314" alt="7metro"></div>
   <div class="help-heading"><h1>Saioa hasi</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-1" aria-label="Saioa hasi: informazioa"><span aria-hidden="true">i</span></button></div>
   <p class="sub" id="help-text-1" hidden>Hasi saioa edo sortu 7metroko kontu berria. Pasahitzak gutxienez 8 karaktere izan behar ditu.</p>
   <form id="login-form" class="card stack"><label>Sarbidea<select id="login-mode"><option value="">Automatikoa</option><option value="coach">Entrenatzailea</option><option value="player">Jokalaria</option></select></label>
@@ -1204,7 +1206,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
     </section>
     <section id="v-stats">
       <div class="help-heading"><h1>Estatistikak</h1><button class="info-toggle" type="button" aria-expanded="false" aria-controls="help-text-13" aria-label="Estatistikak: informazioa"><span aria-hidden="true">i</span></button></div><p class="muted" id="help-text-13" hidden>Taldearen, jokalarien eta aurkarien errendimendua aztertu.</p>
-      <div class="card" id="stats-card"><div class="stats-print-brand" aria-hidden="true"><img src="icons/icon-512.png" alt=""><div><strong>7metro</strong><span>Estatistikak</span><p id="stats-print-context"></p></div></div>
+      <div class="card" id="stats-card"><div class="stats-print-brand" aria-hidden="true"><img src="irudiak/logo_nagusia_argia.png" width="415" height="314" alt=""><div><strong>7metro</strong><span>Estatistikak</span><p id="stats-print-context"></p></div></div>
 
         <div class="stats-mode-tabs" role="group" aria-label="Estatistiken ikuspegia"><button type="button" data-stats-mode="team" aria-pressed="true">Taldea</button><button type="button" data-stats-mode="players" aria-pressed="false">Jokalariak</button><button type="button" data-stats-mode="opponents" aria-pressed="false">Aurkariak</button></div>
         <label class="hidden">Ikuspegia<select id="stats-mode"><option value="team">Taldea</option><option value="players">Jokalariak</option><option value="opponents">Aurkariak</option></select></label>
@@ -1436,20 +1438,20 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <dialog id="offline-pending-dialog" class="attendance-dialog" aria-labelledby="offline-pending-title"><div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="offline-pending-title">Gordetzeko zain</h2><button class="btn secondary" id="offline-pending-close" type="button">Itxi</button></div><ul id="offline-pending-list" class="list"></ul><button class="btn secondary" id="offline-sync-retry" type="button">Berriro saiatu</button></div></dialog>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=207" defer></script>
-<script src="i18n.js?v=207" defer></script>
-<script src="insights-data.js?v=207" defer></script>
-<script src="portal.js?v=207" defer></script>
-<script src="portal-events.js?v=207" defer></script>
-<script src="portal-calendar.js?v=207" defer></script>
-<script src="push.js?v=207" defer></script>
-<script src="motion.js?v=207" defer></script>
-<script src="offline.js?v=207" defer></script>
-<script src="app.js?v=207" defer></script>
-<script src="player-statistics.js?v=207" defer></script>
-<script src="weekly-training.js?v=207" defer></script>
-<script src="inbox.js?v=207" defer></script>
-<script src="report-pdf.js?v=207" defer></script>
-<script src="insights.js?v=207" defer></script>
+<script src="locales/es.js?v=208" defer></script>
+<script src="i18n.js?v=208" defer></script>
+<script src="insights-data.js?v=208" defer></script>
+<script src="portal.js?v=208" defer></script>
+<script src="portal-events.js?v=208" defer></script>
+<script src="portal-calendar.js?v=208" defer></script>
+<script src="push.js?v=208" defer></script>
+<script src="motion.js?v=208" defer></script>
+<script src="offline.js?v=208" defer></script>
+<script src="app.js?v=208" defer></script>
+<script src="player-statistics.js?v=208" defer></script>
+<script src="weekly-training.js?v=208" defer></script>
+<script src="inbox.js?v=208" defer></script>
+<script src="report-pdf.js?v=208" defer></script>
+<script src="insights.js?v=208" defer></script>
 </body>
 </html>

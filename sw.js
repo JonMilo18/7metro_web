@@ -1,16 +1,18 @@
 // 7metro - service worker probisionala
 // Aldaketak argitaratzean, aldatu CACHE bertsioa.
-const CACHE = "7metro-v207";
-const SHELL = ["./offline.js?v=207", "./motion.js?v=207", "./motion.css?v=207", "./", "./index.html", "./manifest.json",
-  "./player-statistics.js?v=207",
-  "./inbox.js?v=207",
-  "./weekly-training.js?v=207",
-  "./locales/es.js?v=207", "./i18n.js?v=207", "./app.js?v=207", "./insights-data.js?v=207", "./insights.js?v=207",
-  "./portal.js?v=207", "./portal-events.js?v=207", "./portal-calendar.js?v=207", "./push.js?v=207", "./portal.css?v=207", "./report-pdf.js?v=207", "./insights.css?v=207", "./vendor/jspdf.umd.min.js",
+const CACHE = "7metro-v208";
+const SHELL = ["./offline.js?v=208", "./motion.js?v=208", "./motion.css?v=208", "./", "./index.html", "./manifest.json",
+  "./player-statistics.js?v=208",
+  "./inbox.js?v=208",
+  "./weekly-training.js?v=208",
+  "./locales/es.js?v=208", "./i18n.js?v=208", "./app.js?v=208", "./insights-data.js?v=208", "./insights.js?v=208",
+  "./portal.js?v=208", "./portal-events.js?v=208", "./portal-calendar.js?v=208", "./push.js?v=208", "./portal.css?v=208", "./report-pdf.js?v=208", "./insights.css?v=208", "./vendor/jspdf.umd.min.js",
   "./vendor/fonts/NotoSans-Regular.ttf", "./vendor/fonts/NotoSans-Bold.ttf",
   "./irudiak/Zelaia.svg", "./irudiak/Zelai-erdia.svg",
   "./irudiak/Zelaia.png", "./irudiak/Zelai-erdia.png",
-  "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];
+  "./irudiak/logo_nagusia_argia.png", "./irudiak/logo_nagusia_illuna.png",
+  "./icons/favicon_logo.png", "./icons/favicon_logo.png?v=208",
+  "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png", "./icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -73,7 +75,7 @@ self.addEventListener("push", event => {
     if (!data || data.binding !== await pushBinding("get") || !Number.isSafeInteger(data.notification_id) || data.notification_id < 1) return;
     await self.registration.showNotification(String(data.title || "7metro").slice(0, 150), {
       body: String(data.body || "").slice(0, 300), icon: new URL("icons/icon-192.png", self.registration.scope).href,
-      badge: new URL("icons/icon-192.png", self.registration.scope).href, tag: String(data.tag || "7metro"), renotify: false,
+      badge: new URL("icons/favicon_logo.png", self.registration.scope).href, tag: String(data.tag || "7metro"), renotify: false,
       data: { id: data.notification_id }
     });
   })());

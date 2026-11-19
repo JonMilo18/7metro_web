@@ -23,7 +23,7 @@
           canvas.getContext("2d").drawImage(image, 0, 0); resolve(canvas.toDataURL("image/png"));
         } catch (error) { reject(error); }
       };
-      image.src = "./icons/icon-512.png";
+      image.src = "./irudiak/logo_nagusia_argia.png";
     });
     assets = Promise.all([library, font("NotoSans-Regular.ttf"), font("NotoSans-Bold.ttf"), court, logo]).catch(function (error) { assets = null; throw error; });
     return assets;
@@ -57,9 +57,9 @@
     var clean = function (value) { return String(value == null ? "" : value).replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, "").replace(/[\u2010-\u2015\u2212]/g, "-"); };
     function header() {
       doc.setFillColor(0, 68, 238); doc.rect(0, 0, 210, 2, "F");
-      doc.addImage(loaded[4], "PNG", 12, 4, 24, 24, "7metro-logo");
-      bold(17); doc.text("7metro", 39, 15);
-      normal(7.5, [105, 117, 137]); doc.text(clean(t("Eskubaloiaren kudeaketa")), 39, 21);
+      doc.addImage(loaded[4], "PNG", 12, 4, 24 * 415 / 314, 24, "7metro-logo");
+      bold(17); doc.text("7metro", 48, 15);
+      normal(7.5, [105, 117, 137]); doc.text(clean(t("Eskubaloiaren kudeaketa")), 48, 21);
       bold(9, [0, 68, 238]); doc.text(doc.splitTextToSize(clean(documentTitle), 76), 196, 14, { align: "right" });
       doc.setDrawColor(223, 229, 237); doc.line(margin, 31, 196, 31);
       y = 41;
