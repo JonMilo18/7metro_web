@@ -6,6 +6,12 @@ window.SevenMetroLocales.es = {
   "name": "Español",
   "locale": "es-ES",
   "messages": {
+    "Emaitza": "Resultado",
+    "Iraupena": "Duración",
+    "Jarduerara joan": "Ir a la actividad",
+    "Entrenamendura joan": "Ir al entrenamiento",
+    "Partidara joan": "Ir al partido",
+    "Ordua zehaztu gabe": "Hora sin especificar",
     "Kategorien katalogoa partekatua da; ariketak beren baimenen arabera erakusten dira. Kategoria kentzeak zure ariketen loturei bakarrik eragiten die.": "El catálogo de categorías es compartido; los ejercicios se muestran según sus permisos. Quitar una categoría solo afecta a los vínculos de tus ejercicios.",
     "Nire ariketetatik kendu": "Quitar de mis ejercicios",
     "Kategoria zure ariketetatik kendu da": "Categoría quitada de tus ejercicios",

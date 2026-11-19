@@ -66,6 +66,7 @@ var sessionDragState = null;
 var sessionCategoryFilter = "";
 var planMonth = new Date();
 planMonth.setDate(1);
+var planActivityContext = null;
 var planView = window.matchMedia("(max-width: 680px)").matches ? "agenda" : "month";
 var planFormContext = null;
 var PLAN_MONTHS = ["Urtarrila", "Otsaila", "Martxoa", "Apirila", "Maiatza", "Ekaina",
@@ -153,6 +154,7 @@ function languageDraft() {
 
 window.addEventListener("languagechange", function () {
   renderAccountIdentity();
+  if ($("plan-activity-dialog").open) renderPlanningActivity();
   if ($("account-settings-dialog").open) {
     $("account-settings-title").textContent = t(!$("account-delete-form").hidden ? "Kontua ezabatu" : $("account-password-form").hidden ? "Erabiltzaile-izena aldatu" : "Pasahitza aldatu");
     if (accountDeletionPreview) renderAccountDeletionPreview();
@@ -253,6 +255,7 @@ async function requestImpl(payload, anonymous, signal) {
 }
 
 function showLogin() {
+  if ($("plan-activity-dialog").open) $("plan-activity-dialog").close();
   scoreCloseRoster();
   matchPlayersTeam = 0;
   if ($("account-settings-dialog").open) $("account-settings-dialog").close();
@@ -2322,6 +2325,71 @@ function planWeeks(base) {
   return weeks;
 }
 
+function openPlanningActivity(kind, id) {
+  if (kind !== "session" && kind !== "match") return;
+  planActivityContext = { kind: kind, id: Number(id), team: teamId };
+  if (!renderPlanningActivity()) {
+    notify(t(kind === "session" ? "Ezin izan da entrenamendua aurkitu. Birkargatu zerrenda." : "Ezin izan da partida aurkitu. Birkargatu zerrenda."), "error");
+    return;
+  }
+  var dialog = $("plan-activity-dialog");
+  if (!dialog.open) dialog.showModal();
+}
+
+function renderPlanningActivity() {
+  var context = planActivityContext;
+  if (!context) return false;
+  var isSession = context.kind === "session";
+  var item = context.team === teamId && records(isSession ? "saioak" : "partidak").find(function (row) {
+    return Number(row[isSession ? "id_saio" : "id_partida"]) === context.id;
+  });
+  if (!item) {
+    if ($("plan-activity-dialog").open) $("plan-activity-dialog").close();
+    return false;
+  }
+  var dialog = $("plan-activity-dialog"), date = planDayNumber(item.data_ordua);
+  dialog.dataset.kind = context.kind;
+  $("plan-activity-kind").textContent = t(isSession ? "Entrenamendua" : "Partida");
+  $("plan-activity-title").textContent = (isSession ? item.helburu_taktikoa : item.aurkaria) || t(isSession ? "Entrenamendua" : "Aurkaria");
+  $("plan-activity-date").textContent = date && Number.isFinite(date.getTime())
+    ? I18n.language() === "eu" ? t(PLAN_MONTHS[date.getMonth()]).slice(0, -1) + "ak " + date.getDate() + " \u00b7 " + date.getFullYear()
+      : date.toLocaleDateString(I18n.locale(), { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+    : t("Data zehaztu gabe");
+  var clock = String(item.data_ordua || "").match(/[T ]([0-2]\d:[0-5]\d)/);
+  var rows = [[t("Ordua"), clock ? clock[1] : t("Ordua zehaztu gabe")],
+    [t("Tokia"), item.lekua ? (isSession ? item.lekua : t(item.lekua)) : t("Tokia zehaztu gabe")]];
+  var metrics = "";
+  if (isSession) {
+    var details = records("saio_xehetasuna").filter(function (row) { return Number(row.id_saio) === context.id && row.id_ariketa != null; });
+    var minutes = details.reduce(function (total, row) { return total + (Number(row.iraupena_minutuak) || 0); }, 0);
+    metrics = '<div class="plan-activity-metrics"><div><strong>' + details.length + '</strong><span>' + esc(t("Ariketak")) + '</span></div><div><strong>' + minutes + ' <small>min</small></strong><span>' + esc(t("Iraupena")) + '</span></div></div>';
+    var micro = records("mikrozikloak").find(function (row) { return Number(row.id_mikroziklo) === Number(item.id_mikroziklo); });
+    if (micro) rows.push([t("Mikrozikloa"), t(micro.mota || "Mikrozikloa")]);
+  } else {
+    var recorded = Number(item.emaitza_geurea) || Number(item.emaitza_aurkaria) || matchEventRecords(item).length ||
+      records("partida_jokalariak").some(function (row) { return Number(row.id_partida) === context.id; });
+    if (recorded) metrics = '<div class="plan-activity-result"><span>' + esc(t("Emaitza")) + '</span><strong>' + Number(item.emaitza_geurea || 0) + ' \u2013 ' + Number(item.emaitza_aurkaria || 0) + '</strong><p>' + esc(team && team.izena || t("Gure taldea")) + ' \u00b7 ' + esc(item.aurkaria || t("Aurkaria")) + '</p></div>';
+  }
+  $("plan-activity-info").innerHTML = rows.map(function (row) {
+    return '<div><dt>' + esc(row[0]) + '</dt><dd>' + esc(row[1]) + '</dd></div>';
+  }).join("");
+  $("plan-activity-summary").innerHTML = metrics;
+  $("plan-activity-go").textContent = t(isSession ? "Entrenamendura joan" : "Partidara joan");
+  return true;
+}
+
+$("plan-activity-close").addEventListener("click", function () { $("plan-activity-dialog").close(); });
+$("plan-activity-dialog").addEventListener("click", function (event) { if (event.target === this) this.close(); });
+$("plan-activity-dialog").addEventListener("close", function () { planActivityContext = null; });
+$("plan-activity-go").addEventListener("click", async function () {
+  if (!renderPlanningActivity()) return;
+  var context = planActivityContext;
+  $("plan-activity-dialog").close();
+  if (context.kind === "session") {
+    if (renderSavedSession(context.id)) selectSection("v-session-detail");
+  } else await openMatchStats(context.id);
+});
+
 function planEventHtml(kind, item, title, action, id, result) {
   var label = t(kind === "match" ? "Partida" : kind === "session" ? "Entrenamendua" : "Txapelketa");
   var clock = String(item.data_ordua || "").match(/[T ]([0-2]\d:[0-5]\d)/);
@@ -2332,8 +2400,8 @@ function planEventHtml(kind, item, title, action, id, result) {
     : kind === "match"
     ? '<path d="M5 3h14v5a7 7 0 0 1-14 0V3Zm0 2H2v3a4 4 0 0 0 4 4m13-7h3v3a4 4 0 0 1-4 4M12 15v6m-4 0h8"/>'
     : '<path d="M8 3v4m8-4v4M4 10h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Zm3 9h3m2 0h3m-8 3h3"/>';
-  return '<button type="button" class="plan-event ' + kind + '" ' + action + '="' + Number(id) +
-    '" title="' + esc(description) + '" aria-label="' + esc(description) + '">' +
+  return '<button type="button" class="plan-event ' + kind + '" ' + (kind === "cup" ? action : 'data-plan-event="' + kind + '" data-plan-event-id') + '="' + Number(id) +
+    '"' + (kind === "cup" ? "" : ' aria-haspopup="dialog"') + ' title="' + esc(description) + '" aria-label="' + esc(description) + '">' +
     '<span class="plan-event-top"><span class="plan-event-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg></span>' +
     (time ? '<time class="plan-event-time">' + esc(time) + '</time>' : '') + '</span>' +
     '<span class="plan-event-title">' + esc(title) + '</span>' +
@@ -2441,6 +2509,7 @@ function renderPlanning() {
     var itemAction = item.actionAttr ? ' data-agenda-action="' + item.actionAttr + '" data-agenda-id="' + Number(item.actionId) + '" role="button" tabindex="0"' : "";
     return '<li class="item"' + itemAction + '><span class="agenda-date">' + dateLabel + '<br>' + item.date.getDate() + '</span><div class="agenda-detail"><span class="agenda-kind">' + esc(item.kind) + '</span><strong>' + esc(item.title) + '</strong><small class="muted">' + esc(item.detail) + '</small></div>' + (item.actionAttr ? '<span class="agenda-open" aria-hidden="true">›</span>' : '') + '</li>';
   }).join("") : ("<li class=\"empty\">" + esc(t("Hilabete honetan ez dago jarduerarik.")) + "</li>");
+  if ($("plan-activity-dialog").open) renderPlanningActivity();
 }
 
 function planTypeOptions(current) {
@@ -2616,7 +2685,10 @@ function selectSection(id) {
   var entering = !$(id).classList.contains("on");
   if (id !== "v-board") closeBoardFullscreen();
   if (id !== "v-friends" && typeof friendSearchSequence === "number") clearFriendSearch();
-  if (id !== "v-planning") closePlanningOptions();
+  if (id !== "v-planning") {
+    closePlanningOptions();
+    if ($("plan-activity-dialog").open) $("plan-activity-dialog").close();
+  }
   if (id !== "v-scoreboard" && scoreMatchMode) scoreExitMatchMode();
   if (id !== "v-board") stopBoardAnimation();
   setMobileMenu(false);
@@ -3744,6 +3816,10 @@ $("plan-agenda").addEventListener("click", function (event) {
   var action = item.dataset.agendaAction, id = Number(item.dataset.agendaId);
   if (action === "data-plan-micro" || action === "data-plan-macro") {
     openPlanForm(action === "data-plan-micro" ? "micro" : "macro", id);
+    return;
+  }
+  if (action === "data-view-session" || action === "data-match-stats") {
+    openPlanningActivity(action === "data-view-session" ? "session" : "match", id);
     return;
   }
   var destination = document.querySelector("[" + action + '="' + id + '"]');
@@ -4923,6 +4999,10 @@ $("save-attendance").addEventListener("click", async function () {
 document.addEventListener("click", async function (event) {
   var target = event.target.closest("button");
   if (!target) return;
+  if (target.hasAttribute("data-plan-event")) {
+    openPlanningActivity(target.dataset.planEvent, target.dataset.planEventId);
+    return;
+  }
   if (target.hasAttribute("data-delete-session")) {
     if (sessionEditorBusy) return;
     var deleteSessionId = Number(target.dataset.deleteSession);
