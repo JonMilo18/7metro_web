@@ -224,3 +224,7 @@ body.player-mode #nav>[role="tablist"]{display:none}
  .portal-personal-match h3{overflow-wrap:anywhere}
  .portal-personal-match-numbers{flex:1}
 }
+
+.portal-attendance-import{margin:14px 0 18px}.portal-attendance-import>.btn{min-height:44px;margin:0}.portal-attendance-import>p{font-size:.8rem;line-height:1.5;margin:9px 0 0}
+
+.portal-import-help>summary{min-height:44px;padding:12px 0 6px;color:var(--muted);font-size:.8rem;cursor:pointer}.portal-import-help>p{font-size:.8rem;line-height:1.5;margin:6px 0 0}

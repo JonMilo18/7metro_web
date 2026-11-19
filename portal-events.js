@@ -17,7 +17,8 @@ function portalEventResponses(kind, id, data) {
     return '<div><strong class="portal-response ' + entry[0] + '">' + counts[entry[0]] + '</strong><span>' + esc(t(entry[1])) + '</span></div>';
   }).join("") + '</div>';
   var roster = '<div class="portal-response-roster">' + markup + '</div>';
-  return summary + (kind === "session" ? '<details class="portal-response-details"><summary>' + esc(t("Jokalarien erantzunak ikusi")) + '</summary>' + roster + '</details>' : roster);
+  var importButton = kind === "session" ? '<div class="portal-attendance-import"><button type="button" class="btn secondary" data-apply-session-attendance="' + Number(id) + '"' + (!(counts.yes + counts.no) ? ' disabled' : '') + '>' + esc(t("Erantzunak asistentzia gisa gorde")) + '</button><details class="portal-import-help"><summary>' + esc(t("Zer gordetzen da?")) + '</summary><p class="muted">' + esc(t("Banoa: bertaratua. Ezin dut: ez bertaratua. Zalantzak eta erantzun gabeak eskuz berrikusi. Lehendik gordetako asistentzia mantenduko da.")) + '</p></details></div>' : '';
+  return summary + importButton + (kind === "session" ? '<details class="portal-response-details"><summary>' + esc(t("Jokalarien erantzunak ikusi")) + '</summary>' + roster + '</details>' : roster);
 }
 function portalMatchCallupForm(matchId, data, formId) {
   var callups = data.callups.filter(function (c) { return Number(c.match_id) === matchId; }), first = callups[0] || {};
@@ -91,6 +92,22 @@ window.PlayerPortal.loadSession = portalLoadSessionResponses;
 window.PlayerPortal.loadAttendance = portalLoadAttendanceResponses;
 window.PlayerPortal.openMatch = portalOpenMatch;
 window.addEventListener("DOMContentLoaded", function () {
+  document.addEventListener("click", async function (event) {
+    var button = event.target.closest("[data-apply-session-attendance]");
+    if (!button || button.disabled) return;
+    var id = Number(button.dataset.applySessionAttendance), currentTeam = teamId, sessionToken = token;
+    button.disabled = true; button.setAttribute("aria-busy", "true");
+    try {
+      var result = await request({ action: "portal_apply_attendance", team_id: currentTeam, session_id: id });
+      if (currentTeam !== teamId || sessionToken !== token) return;
+      var rows = result.rows || [];
+      tables.saio_bertaratzea = records("saio_bertaratzea").filter(function (saved) { return !rows.some(function (row) { return Number(saved.id_saio) === Number(row.id_saio) && Number(saved.id_jokalaria) === Number(row.id_jokalaria); }); }).concat(rows);
+      notify(Number(result.copied) ? t("{count} jokalariren asistentzia gorde da", { count: result.copied }) : t("Ez dago kopiatzeko erantzun berririk. Lehendik gordetako asistentzia mantendu da."), "success");
+      if (Number($("v-session-detail").dataset.sessionId) === id) portalLoadSessionResponses(id);
+      if (window.InsightsUI) window.InsightsUI.refresh();
+    } catch (error) { if (currentTeam === teamId && sessionToken === token) notify(error.message, "error"); }
+    finally { button.disabled = false; button.removeAttribute("aria-busy"); }
+  });
   document.addEventListener("click", function (event) {
     var button = event.target.closest("[data-match-callup]");
     if (button) portalOpenMatch(button.dataset.matchCallup);

@@ -224,3 +224,10 @@ Push zifratze/deszifratzea). Erabilera: [JAKINARAZPENAK.md](../JAKINARAZPENAK.md
 Entrenamenduak ezabatzeko, aplikatu `migrations/20261113160000_delete_training.sql`.
 `delete_team_session` funtzioak taldekidetasuna egiaztatzen du eta entrenamendua,
 bertaratze-datuak, ariketen loturak eta deialdiaren erantzunak transakzio berean ezabatzen ditu.
+
+
+Deialdiaren erantzunak benetako asistentziara kopiatzeko, aplikatu
+`migrations/20261119100000_callup_attendance.sql`.
+`portal_apply_attendance` ekintzak lotutako jokalarien `yes`/`no` erantzunak
+transakzio bakarrean kopiatzen ditu. Aurretik gordetako asistentzia eta
+berandutzeak mantentzen dira; `maybe` eta erantzun gabeak ez dira gordetzen.
