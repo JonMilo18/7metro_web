@@ -2366,8 +2366,7 @@ function renderPlanningActivity() {
     var micro = records("mikrozikloak").find(function (row) { return Number(row.id_mikroziklo) === Number(item.id_mikroziklo); });
     if (micro) rows.push([t("Mikrozikloa"), t(micro.mota || "Mikrozikloa")]);
   } else {
-    var recorded = Number(item.emaitza_geurea) || Number(item.emaitza_aurkaria) || matchEventRecords(item).length ||
-      records("partida_jokalariak").some(function (row) { return Number(row.id_partida) === context.id; });
+    var recorded = Number(item.emaitza_geurea) || Number(item.emaitza_aurkaria) || matchEventRecords(item).length;
     if (recorded) metrics = '<div class="plan-activity-result"><span>' + esc(t("Emaitza")) + '</span><strong>' + Number(item.emaitza_geurea || 0) + ' \u2013 ' + Number(item.emaitza_aurkaria || 0) + '</strong><p>' + esc(team && team.izena || t("Gure taldea")) + ' \u00b7 ' + esc(item.aurkaria || t("Aurkaria")) + '</p></div>';
   }
   $("plan-activity-info").innerHTML = rows.map(function (row) {
