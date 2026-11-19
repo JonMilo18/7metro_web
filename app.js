@@ -2322,6 +2322,24 @@ function planWeeks(base) {
   return weeks;
 }
 
+function planEventHtml(kind, item, title, action, id, result) {
+  var label = t(kind === "match" ? "Partida" : kind === "session" ? "Entrenamendua" : "Txapelketa");
+  var clock = String(item.data_ordua || "").match(/[T ]([0-2]\d:[0-5]\d)/);
+  var time = clock ? clock[1] : "";
+  var description = [label, time, title, result].filter(Boolean).join(" \u00b7 ");
+  var paths = kind === "session"
+    ? '<path d="M5 6h14M5 18h14M7 3v6m10-6v6M7 15v6m10-6v6M4 9v6m16-6v6"/>'
+    : kind === "match"
+    ? '<path d="M5 3h14v5a7 7 0 0 1-14 0V3Zm0 2H2v3a4 4 0 0 0 4 4m13-7h3v3a4 4 0 0 1-4 4M12 15v6m-4 0h8"/>'
+    : '<path d="M8 3v4m8-4v4M4 10h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Zm3 9h3m2 0h3m-8 3h3"/>';
+  return '<button type="button" class="plan-event ' + kind + '" ' + action + '="' + Number(id) +
+    '" title="' + esc(description) + '" aria-label="' + esc(description) + '">' +
+    '<span class="plan-event-top"><span class="plan-event-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + paths + '</svg></span>' +
+    (time ? '<time class="plan-event-time">' + esc(time) + '</time>' : '') + '</span>' +
+    '<span class="plan-event-title">' + esc(title) + '</span>' +
+    (result ? '<span class="plan-event-score">' + esc(String(result).replace(/\s/g, "")) + '</span>' : '') + '</button>';
+}
+
 function planDayHtml(day, base, todayKey, spans, microList) {
   var key = planKey(day);
   var classes = "plan-day" + (day.getMonth() === base.getMonth() ? "" : " out") +
@@ -2351,22 +2369,20 @@ function planDayHtml(day, base, todayKey, spans, microList) {
   });
   dayMatches.slice(0, 2).forEach(function (match) {
     var played = key <= todayKey && (Number(match.emaitza_geurea || 0) || Number(match.emaitza_aurkaria || 0));
-    var text = played
-      ? match.aurkaria + " (" + Number(match.emaitza_geurea || 0) + "-" + Number(match.emaitza_aurkaria || 0) + ")"
-      : match.aurkaria + t(" (jolasteko)");
-    html += '<button type="button" class="plan-event match" data-match-stats="' + Number(match.id_partida) + ("\" title=\"" + esc(t("Partidako estatistikak ikusi: "))) + esc(text) + '">' + esc(text) + "</button>";
+    var result = played ? Number(match.emaitza_geurea || 0) + " \u2013 " + Number(match.emaitza_aurkaria || 0) : "";
+    html += planEventHtml("match", match, match.aurkaria || t("Aurkaria"), "data-match-stats", match.id_partida, result);
   });
   records("saioak").filter(function (session) {
     return String(session.data_ordua || "").slice(0, 10) === key;
   }).slice(0, 2).forEach(function (session) {
     var text = session.helburu_taktikoa || t("Entrenamendua");
-    html += '<button type="button" class="plan-event session" data-view-session="' + Number(session.id_saio) + ("\" title=\"" + esc(t("Entrenamendua ikusi: "))) + esc(text) + '">' + esc(text) + "</button>";
+    html += planEventHtml("session", session, text, "data-view-session", session.id_saio, "");
   });
   records("txapelketak").filter(function (cup) {
     return String(cup.data_ordua || "").slice(0, 10) === key;
   }).slice(0, 2).forEach(function (cup) {
     var text = (cup.izena || t("Txapelketa")) + (cup.kategoria ? " [" + cup.kategoria + "]" : "");
-    html += '<button type="button" class="plan-event cup" data-view-cup="' + Number(cup.id_txapelketa) + ("\" title=\"" + esc(t("Txapelketaren xehetasunak ikusi: "))) + esc(text) + '">' + esc(text) + "</button>";
+    html += planEventHtml("cup", cup, text, "data-view-cup", cup.id_txapelketa, "");
   });
   return html + "</div>";
 }

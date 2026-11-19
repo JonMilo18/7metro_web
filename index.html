@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#060E1A">
 <script>try{var savedTheme=localStorage.getItem("7metro-theme");if(savedTheme==="light"||savedTheme==="dark")document.documentElement.setAttribute("data-theme",savedTheme)}catch(e){}</script>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" sizes="501x501" href="icons/favicon_logo.png?v=208">
+<link rel="icon" type="image/png" sizes="501x501" href="icons/favicon_logo.png?v=209">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -545,9 +545,11 @@ textarea{min-height:84px;resize:vertical}
 .plan-macro{display:block;width:100%;min-width:0;max-width:100%;height:18px;border:1px solid rgba(255,255,255,.16);border-left:3px solid rgba(255,255,255,.72);border-radius:6px;color:#fff;font-family:inherit;font-size:.62rem;font-weight:750;line-height:16px;padding:0 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;cursor:pointer;box-sizing:border-box;box-shadow:0 2px 6px rgba(0,0,0,.12)}
 .plan-macro.empty{opacity:.85}
 .plan-micro{display:-webkit-box;min-width:0;max-width:100%;height:auto;min-height:19px;max-height:2.35em;border-radius:6px;border:1px solid rgba(255,255,255,.16);border-left:3px solid rgba(255,255,255,.72);color:#fff;font-family:inherit;font-size:.64rem;font-weight:700;line-height:1.15;padding:3px 5px;box-sizing:border-box;overflow:hidden;white-space:normal;overflow-wrap:anywhere;-webkit-box-orient:vertical;-webkit-line-clamp:2;cursor:pointer;text-align:left;box-shadow:0 2px 6px rgba(0,0,0,.1)}
-.plan-event{display:-webkit-box;width:100%;min-width:0;max-width:100%;height:auto;min-height:17px;max-height:2.35em;border:0;border-radius:5px;color:#fff;font-family:inherit;font-size:.64rem;line-height:1.15;padding:3px 5px;box-sizing:border-box;overflow:hidden;white-space:normal;overflow-wrap:anywhere;-webkit-box-orient:vertical;-webkit-line-clamp:2;text-align:left;cursor:pointer;transition:filter .15s ease,transform .15s ease}
-.plan-event:hover{filter:brightness(1.14);transform:translateY(-1px)}
-.plan-event.match{background:#c0392b}.plan-event.session{background:#16a085}.plan-event.cup{background:#d35400}
+.plan-event{--event-rgb:37,185,145;--event-ink:#7de1c2;display:flex;flex-direction:column;align-items:stretch;gap:4px;width:100%;min-width:0;max-width:100%;height:auto;min-height:48px;max-height:none;border:1px solid rgba(var(--event-rgb),.24);border-left:3px solid var(--event-ink);border-radius:8px;background:rgba(var(--event-rgb),.12);color:var(--ink);font-family:inherit;padding:6px;box-sizing:border-box;overflow:hidden;text-align:left;cursor:pointer;transition:background .15s ease,border-color .15s ease,box-shadow .15s ease}
+.plan-event.match{--event-rgb:156,125,245;--event-ink:#c4b0ff}.plan-event.cup{--event-rgb:235,165,65;--event-ink:#ffd28b}
+.plan-event:hover{background:rgba(var(--event-rgb),.22);border-color:rgba(var(--event-rgb),.6);box-shadow:0 2px 8px rgba(0,0,0,.1)}.plan-event:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.plan-event-top{display:flex;align-items:center;gap:4px;min-height:12px;color:var(--event-ink)}.plan-event-icon{display:flex;flex:none;width:12px;height:12px}.plan-event-icon svg{width:100%;height:100%}.plan-event-time{font-size:.64rem;font-weight:650;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap}.plan-event-title{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;font-size:.69rem;font-weight:700;line-height:1.3}.plan-event-score{font-size:.68rem;font-weight:800;line-height:1.15;letter-spacing:-.02em;color:var(--event-ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+:root[data-theme="light"] .plan-event.session{--event-ink:#0b7160}:root[data-theme="light"] .plan-event.match{--event-ink:#6950b7}:root[data-theme="light"] .plan-event.cup{--event-ink:#925800}
 .plan-more{font-size:.62rem;color:var(--muted);padding-left:4px}
 .settings-card{margin-top:14px}
 .theme-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -607,7 +609,7 @@ body:has(#session-preview-dialog[open]){overflow:hidden}
  .plan-weekdays span{font-size:.68rem;letter-spacing:0}
  .plan-macro{font-size:.54rem;height:13px;line-height:13px;padding:0 2px}
  .plan-micro{font-size:.56rem;min-height:16px;padding:2px}
- .plan-event{font-size:.56rem;min-height:16px;padding:2px}
+
  .plan-view-toggle{display:flex}
  #plan-card:not(.plan-view-month) .plan-weekdays,#plan-card:not(.plan-view-month) #plan-grid{display:none}
  #plan-card:not(.plan-view-month) #plan-agenda{display:block}
@@ -714,7 +716,7 @@ body:has(#session-preview-dialog[open]){overflow:hidden}
  .plan-day{min-height:74px;padding:2px;gap:3px;border-radius:7px}
  .plan-day-num{font-size:.76rem;padding:0 1px}
  .plan-macro{height:auto;min-height:19px;padding:2px 1px;font-size:.58rem;line-height:1.2;white-space:normal;overflow-wrap:anywhere;border-left-width:2px}
- .plan-micro,.plan-event{min-height:19px;max-height:2.6em;padding:2px 1px;font-size:.58rem;line-height:1.2;border-left-width:2px}
+ .plan-micro{min-height:19px;max-height:2.6em;padding:2px 1px;font-size:.58rem;line-height:1.2;border-left-width:2px}
  .plan-more{font-size:.58rem;padding-left:1px}
  .agenda-date{min-width:58px;font-size:.9rem}
  .agenda-kind{font-size:.86rem}
@@ -908,8 +910,10 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .score-time-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}.score-time-heading h2{margin:0;font-size:1.1rem}.score-time-heading .btn{width:auto;min-height:44px;margin:0;padding:7px 12px}.score-time-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px}.score-time-inputs label{min-width:0}.score-time-inputs input{min-height:56px;text-align:center;font-size:1.35rem;font-weight:750;font-variant-numeric:tabular-nums}
 .score-time-shifts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.score-time-shifts button{min-height:44px;padding:5px 2px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font-size:.85rem;font-weight:700;cursor:pointer}.score-time-dialog p{margin:0}.score-time-dialog .btn[type="submit"]{margin:0}
 @media(max-height:500px){.score-time-dialog{padding:12px}.score-time-heading{margin-bottom:8px}.score-time-dialog .stack{gap:8px}}
+@media(max-width:1100px){.plan-event{padding:4px 2px;gap:3px;min-height:43px;border-left-width:2px;border-radius:5px}.plan-event-top{gap:2px;min-height:10px}.plan-event-icon{width:4px;height:4px;border-radius:50%;background:currentColor}.plan-event-icon svg{display:none}.plan-event-time{font-size:.53rem;letter-spacing:-.035em}.plan-event-title{font-size:.58rem;line-height:1.25}.plan-event-score{font-size:.52rem;letter-spacing:-.055em}}
+@media(max-width:380px){.plan-event-icon{display:none}.plan-event-time{font-size:.5rem;letter-spacing:-.06em}}
 </style>
-<link rel="stylesheet" href="insights.css?v=208"><link rel="stylesheet" href="portal.css?v=208"><link rel="stylesheet" href="motion.css?v=208">
+<link rel="stylesheet" href="insights.css?v=209"><link rel="stylesheet" href="portal.css?v=209"><link rel="stylesheet" href="motion.css?v=209">
 </head>
 <body>
 <div id="app">
@@ -1438,20 +1442,20 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <dialog id="offline-pending-dialog" class="attendance-dialog" aria-labelledby="offline-pending-title"><div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="offline-pending-title">Gordetzeko zain</h2><button class="btn secondary" id="offline-pending-close" type="button">Itxi</button></div><ul id="offline-pending-list" class="list"></ul><button class="btn secondary" id="offline-sync-retry" type="button">Berriro saiatu</button></div></dialog>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=208" defer></script>
-<script src="i18n.js?v=208" defer></script>
-<script src="insights-data.js?v=208" defer></script>
-<script src="portal.js?v=208" defer></script>
-<script src="portal-events.js?v=208" defer></script>
-<script src="portal-calendar.js?v=208" defer></script>
-<script src="push.js?v=208" defer></script>
-<script src="motion.js?v=208" defer></script>
-<script src="offline.js?v=208" defer></script>
-<script src="app.js?v=208" defer></script>
-<script src="player-statistics.js?v=208" defer></script>
-<script src="weekly-training.js?v=208" defer></script>
-<script src="inbox.js?v=208" defer></script>
-<script src="report-pdf.js?v=208" defer></script>
-<script src="insights.js?v=208" defer></script>
+<script src="locales/es.js?v=209" defer></script>
+<script src="i18n.js?v=209" defer></script>
+<script src="insights-data.js?v=209" defer></script>
+<script src="portal.js?v=209" defer></script>
+<script src="portal-events.js?v=209" defer></script>
+<script src="portal-calendar.js?v=209" defer></script>
+<script src="push.js?v=209" defer></script>
+<script src="motion.js?v=209" defer></script>
+<script src="offline.js?v=209" defer></script>
+<script src="app.js?v=209" defer></script>
+<script src="player-statistics.js?v=209" defer></script>
+<script src="weekly-training.js?v=209" defer></script>
+<script src="inbox.js?v=209" defer></script>
+<script src="report-pdf.js?v=209" defer></script>
+<script src="insights.js?v=209" defer></script>
 </body>
 </html>
