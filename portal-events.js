@@ -9,16 +9,49 @@ function portalEventResponses(kind, id, data) {
   var markup = rows.map(function (player) {
     var response = data.responses.find(function (row) { return row.kind === kind && Number(row.event_id) === id && Number(row.player_id) === Number(player.id_jokalaria); });
     var linked = data.links.some(function (link) { return Number(link.player_id) === Number(player.id_jokalaria); });
-    counts[response ? response.response : "pending"]++;
-    return '<div class="portal-roster-row"><div><strong>' + esc((player.dortsala == null ? '' : '#' + player.dortsala + ' ') + playerName(player)) + '</strong>' + (!linked ? '<small class="muted">' + esc(t("Konturik lotu gabe")) + '</small>' : '') + (response && response.note ? '<small class="portal-authored">' + esc(response.note) + '</small>' : '') + '</div><span class="portal-response ' + (response ? response.response : '') + '">' + esc(portalResponseLabel(response && response.response)) + '</span></div>';
+    var status = response && ["yes", "no", "maybe"].includes(response.response) ? response.response : "pending";
+    counts[status]++;
+    return '<div class="portal-roster-row" data-response-status="' + status + '"><div><strong>' + esc((player.dortsala == null ? '' : '#' + player.dortsala + ' ') + playerName(player)) + '</strong>' + (!linked ? '<small class="muted">' + esc(t("Konturik lotu gabe")) + '</small>' : '') + (response && response.note ? '<small class="portal-authored">' + esc(response.note) + '</small>' : '') + '</div><span class="portal-response ' + (response ? response.response : '') + '">' + esc(portalResponseLabel(response && response.response)) + '</span></div>';
   }).join("");
   if (!rows.length) return portalEmpty(kind === "match" ? "Oraindik ez dago deialdirik." : "Ez dago jokalaririk.");
-  var summary = '<div class="portal-response-counts">' + [["yes", "Banoa"], ["no", "Ezin dut"], ["maybe", "Zalantzan"], ["pending", "Erantzun gabe"]].map(function (entry) {
-    return '<div><strong class="portal-response ' + entry[0] + '">' + counts[entry[0]] + '</strong><span>' + esc(t(entry[1])) + '</span></div>';
+  var summary = '<div class="portal-response-counts" role="group" aria-label="' + esc(t("Deialdiaren erantzunak")) + '">' + [["yes", "Banoa"], ["no", "Ezin dut"], ["maybe", "Zalantzan"], ["pending", "Erantzun gabe"]].map(function (entry) {
+    return '<button type="button" class="portal-response-filter" data-response-filter="' + entry[0] + '" aria-pressed="false"><strong class="portal-response ' + entry[0] + '">' + counts[entry[0]] + '</strong><span>' + esc(t(entry[1])) + '</span></button>';
   }).join("") + '</div>';
-  var roster = '<div class="portal-response-roster">' + markup + '</div>';
+  var roster = '<div class="portal-response-filter-bar" hidden><p data-response-filter-label role="status" aria-live="polite"></p><button class="btn secondary" type="button" data-response-filter="all">' + esc(t("Guztiak ikusi")) + '</button></div><div class="portal-response-roster">' + markup + '<p class="empty" data-response-filter-empty hidden>' + esc(t("Ez dago erantzun hau duen jokalaririk.")) + '</p></div>';
   var importButton = kind === "session" ? '<div class="portal-attendance-import"><button type="button" class="btn secondary" data-apply-session-attendance="' + Number(id) + '"' + (!(counts.yes + counts.no) ? ' disabled' : '') + '>' + esc(t("Erantzunak asistentzia gisa gorde")) + '</button><details class="portal-import-help"><summary>' + esc(t("Zer gordetzen da?")) + '</summary><p class="muted">' + esc(t("Banoa: bertaratua. Ezin dut: ez bertaratua. Zalantzak eta erantzun gabeak eskuz berrikusi. Lehendik gordetako asistentzia mantenduko da.")) + '</p></details></div>' : '';
-  return summary + importButton + (kind === "session" ? '<details class="portal-response-details"><summary>' + esc(t("Jokalarien erantzunak ikusi")) + '</summary>' + roster + '</details>' : roster);
+  return '<div class="portal-event-responses" data-response-kind="' + kind + '" data-response-event="' + Number(id) + '" data-response-team="' + Number(teamId) + '">' + summary + importButton + (kind === "session" ? '<details class="portal-response-details"><summary>' + esc(t("Jokalarien erantzunak ikusi")) + '</summary>' + roster + '</details>' : roster) + '</div>';
+}
+function portalFilterResponses(root, value) {
+  if (!root) return;
+  var active = ["yes", "no", "maybe", "pending"].includes(value) ? value : "";
+  root.dataset.responseSelection = active;
+  root.querySelectorAll(".portal-response-filter").forEach(function (button) {
+    button.setAttribute("aria-pressed", String(button.dataset.responseFilter === active));
+  });
+  var count = 0;
+  root.querySelectorAll("[data-response-status]").forEach(function (row) {
+    row.hidden = Boolean(active && row.dataset.responseStatus !== active);
+    if (!row.hidden) count++;
+  });
+  root.querySelector(".portal-response-filter-bar").hidden = !active;
+  root.querySelector("[data-response-filter-label]").textContent = active ? portalResponseLabel(active === "pending" ? null : active) + " \u00b7 " + count : "";
+  root.querySelector("[data-response-filter-empty]").hidden = count !== 0;
+  var details = root.querySelector(".portal-response-details");
+  if (active && details) details.open = true;
+}
+function portalCaptureResponseView(target, kind, id) {
+  var root = target.querySelector(".portal-event-responses");
+  if (!root || root.dataset.responseKind !== kind || Number(root.dataset.responseEvent) !== Number(id) || Number(root.dataset.responseTeam) !== Number(teamId)) return null;
+  var details = root.querySelector(".portal-response-details");
+  return { filter: root.dataset.responseSelection || "", open: details && details.open };
+}
+function portalRestoreResponseView(target, view) {
+  if (!view) return;
+  var root = target.querySelector(".portal-event-responses");
+  if (!root) return;
+  portalFilterResponses(root, view.filter);
+  var details = root.querySelector(".portal-response-details");
+  if (details) details.open = Boolean(view.open);
 }
 function portalMatchCallupForm(matchId, data, formId) {
   var callups = data.callups.filter(function (c) { return Number(c.match_id) === matchId; }), first = callups[0] || {};
@@ -36,11 +69,13 @@ function portalNormalizeEventData(data) {
 async function portalLoadSessionResponses(id, targetId) {
   id = Number(id);
   var target = $(targetId || "saved-session-responses"), requestId = ++portalEventState.requestId, currentTeam = teamId, sessionToken = token;
+  var view = portalCaptureResponseView(target, "session", id);
   target.dataset.requestId = String(requestId); target.innerHTML = portalEmpty("Kargatzen…");
   try {
     var data = await request({ action: "portal_coach_snapshot", team_id: currentTeam });
     if (!token || token !== sessionToken || teamId !== currentTeam || target.dataset.requestId !== String(requestId)) return;
     target.innerHTML = portalEventResponses("session", id, portalNormalizeEventData(data));
+    portalRestoreResponseView(target, view);
   } catch (error) {
     if (target.dataset.requestId === String(requestId) && token === sessionToken && teamId === currentTeam) target.innerHTML = '<p class="notice error" role="alert">' + esc(error.message) + '</p>';
   }
@@ -72,6 +107,7 @@ async function portalOpenMatch(id) {
 }
 async function portalLoadEventMatch() {
   var sequence = ++portalEventState.sequence, id = portalEventState.matchId, currentTeam = portalEventState.teamId, sessionToken = token;
+  var view = portalCaptureResponseView($("portal-event-content"), "match", id);
   portalError("portal-event-error", ""); $("portal-event-content").innerHTML = portalEmpty("Kargatzen…");
   try {
     var result = await request({ action: "portal_coach_snapshot", team_id: currentTeam });
@@ -81,6 +117,7 @@ async function portalLoadEventMatch() {
     var meeting = callup ? '<div class="portal-meeting">' + (callup.meeting_time ? '<p><strong>' + esc(t("Elkartzeko ordua")) + ':</strong> ' + esc(portalDate(callup.meeting_time)) + '</p>' : '') + (callup.meeting_place ? '<p><strong>' + esc(t("Elkartzeko tokia")) + ':</strong> ' + esc(callup.meeting_place) + '</p>' : '') + (callup.note ? '<p class="portal-authored">' + esc(callup.note) + '</p>' : '') + '</div>' : '';
     $("portal-event-content").innerHTML = meeting + '<h3>' + esc(t("Deialdiaren erantzunak")) + '</h3>' + portalEventResponses("match", id, data) +
       (match && String(match.data_ordua).slice(0, 10) >= planKey(new Date()) ? '<details class="portal-callup-editor"' + (callup ? '' : ' open') + '><summary>' + esc(t(callup ? "Deialdia editatu" : "Deialdia prestatu")) + '</summary>' + portalMatchCallupForm(id, data, "portal-event-callup-form") + '</details>' : '');
+    portalRestoreResponseView($("portal-event-content"), view);
     var form = $("portal-event-callup-form"); if (form) form.dataset.cleanDraft = JSON.stringify(Array.from(new FormData(form)));
   } catch (error) {
     if (sequence === portalEventState.sequence && currentTeam === teamId && token === sessionToken) {
@@ -92,6 +129,13 @@ window.PlayerPortal.loadSession = portalLoadSessionResponses;
 window.PlayerPortal.loadAttendance = portalLoadAttendanceResponses;
 window.PlayerPortal.openMatch = portalOpenMatch;
 window.addEventListener("DOMContentLoaded", function () {
+  document.addEventListener("click", function (event) {
+    var button = event.target.closest("[data-response-filter]");
+    if (!button || !button.matches("button")) return;
+    var root = button.closest(".portal-event-responses");
+    var value = button.dataset.responseFilter;
+    portalFilterResponses(root, root && root.dataset.responseSelection === value ? "all" : value);
+  });
   document.addEventListener("click", async function (event) {
     var button = event.target.closest("[data-apply-session-attendance]");
     if (!button || button.disabled) return;

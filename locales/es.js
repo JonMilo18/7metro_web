@@ -6,6 +6,8 @@ window.SevenMetroLocales.es = {
   "name": "Español",
   "locale": "es-ES",
   "messages": {
+    "Guztiak ikusi": "Ver todos",
+    "Ez dago erantzun hau duen jokalaririk.": "Ningún jugador tiene esta respuesta.",
     "Txantiloiak": "Plantillas",
     "Entrenamenduen txantiloiak": "Plantillas de entrenamiento",
     "Txantiloi gisa gorde": "Guardar como plantilla",
