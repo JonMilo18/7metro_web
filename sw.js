@@ -1,17 +1,16 @@
 // 7metro - service worker probisionala
 // Aldaketak argitaratzean, aldatu CACHE bertsioa.
-const CACHE = "7metro-v213";
-const SHELL = ["./offline.js?v=213", "./motion.js?v=213", "./motion.css?v=213", "./", "./index.html", "./manifest.json",
-  "./player-statistics.js?v=213", "./session-templates.js?v=213",
-  "./inbox.js?v=213",
-  "./weekly-training.js?v=213",
-  "./locales/es.js?v=213", "./i18n.js?v=213", "./app.js?v=213", "./insights-data.js?v=213", "./insights.js?v=213",
-  "./portal.js?v=213", "./portal-events.js?v=213", "./portal-calendar.js?v=213", "./push.js?v=213", "./portal.css?v=213", "./report-pdf.js?v=213", "./insights.css?v=213", "./vendor/jspdf.umd.min.js",
+const CACHE = "7metro-v214";
+const SHELL = ["./offline.js?v=214", "./motion.js?v=214", "./motion.css?v=214", "./", "./index.html", "./manifest.json",
+  "./player-statistics.js?v=214", "./session-templates.js?v=214",
+  "./inbox.js?v=214",
+  "./weekly-training.js?v=214",
+  "./locales/es.js?v=214", "./i18n.js?v=214", "./app.js?v=214", "./insights-data.js?v=214", "./insights.js?v=214",
+  "./portal.js?v=214", "./portal-events.js?v=214", "./portal-calendar.js?v=214", "./push.js?v=214", "./portal.css?v=214", "./report-pdf.js?v=214", "./insights.css?v=214", "./vendor/jspdf.umd.min.js",
   "./vendor/fonts/NotoSans-Regular.ttf", "./vendor/fonts/NotoSans-Bold.ttf",
   "./irudiak/Zelaia.svg", "./irudiak/Zelai-erdia.svg",
   "./irudiak/Zelaia.png", "./irudiak/Zelai-erdia.png",
   "./irudiak/logo_nagusia_argia.png", "./irudiak/logo_nagusia_illuna.png",
-  "./icons/favicon_logo.png", "./icons/favicon_logo.png?v=213",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png", "./icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
@@ -75,7 +74,7 @@ self.addEventListener("push", event => {
     if (!data || data.binding !== await pushBinding("get") || !Number.isSafeInteger(data.notification_id) || data.notification_id < 1) return;
     await self.registration.showNotification(String(data.title || "7metro").slice(0, 150), {
       body: String(data.body || "").slice(0, 300), icon: new URL("icons/icon-192.png", self.registration.scope).href,
-      badge: new URL("icons/favicon_logo.png", self.registration.scope).href, tag: String(data.tag || "7metro"), renotify: false,
+      badge: new URL("icons/icon-192.png", self.registration.scope).href, tag: String(data.tag || "7metro"), renotify: false,
       data: { id: data.notification_id }
     });
   })());

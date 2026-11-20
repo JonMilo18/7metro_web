@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#060E1A">
 <script>try{var savedTheme=localStorage.getItem("7metro-theme");if(savedTheme==="light"||savedTheme==="dark")document.documentElement.setAttribute("data-theme",savedTheme)}catch(e){}</script>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" sizes="501x501" href="icons/favicon_logo.png?v=213">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -31,7 +31,6 @@ body{background:radial-gradient(ellipse at 75% -10%,rgba(0,68,238,.16),transpare
 button,input,select,textarea{font:inherit}
 #app{min-height:100vh;display:flex;flex-direction:column}
 header{padding:calc(14px + env(safe-area-inset-top,0px)) 20px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);background:rgba(6,14,26,.94);backdrop-filter:blur(16px)}
-header img{height:40px;width:40px;object-fit:contain;border-radius:10px;background:#060E1A;padding:5px;flex:none}
 .login-brand{margin:0 0 18px;width:160px;max-width:100%;aspect-ratio:415/314}.login-brand img{display:block;width:100%;height:100%;object-fit:contain;border-radius:12px}.login-brand .brand-light{display:none}:root[data-theme="light"] .login-brand .brand-light{display:block}:root[data-theme="light"] .login-brand .brand-dark{display:none}
 header b{font-size:1.15rem;letter-spacing:-.01em}
 #account{display:flex;align-items:center;gap:9px;min-width:0;margin-left:auto;padding:7px 10px;border:1px solid var(--line);border-radius:13px;background:var(--bg2);line-height:1.3}
@@ -465,7 +464,6 @@ textarea{min-height:84px;resize:vertical}
 @media(min-width:768px){
  header{position:fixed;left:0;top:0;width:240px;border:0;padding:calc(22px + env(safe-area-inset-top,0px)) 24px 12px;z-index:4;backdrop-filter:none}
  .notification-bell{position:fixed;top:calc(22px + env(safe-area-inset-top,0px));right:calc(24px + env(safe-area-inset-right,0px))}
- header img{height:48px;width:48px}
  header #account{max-width:208px}
  nav{top:calc(96px + env(safe-area-inset-top,0px));bottom:0;left:0;right:auto;width:240px;border:0;border-right:1px solid var(--line);padding:8px 12px calc(16px + env(safe-area-inset-bottom,0px));background:rgba(6,14,26,.92)}
  nav div{max-width:none;grid-template-columns:1fr;gap:4px;align-content:start}
@@ -625,7 +623,6 @@ body:has(#session-preview-dialog[open]){overflow:hidden}
  html{font-size:16px}
  body{font-size:1rem;line-height:1.55}
  header{gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px}
- header img{height:36px;width:36px}
  header b{font-size:1.1rem}
  #account{flex:1;max-width:260px;padding:6px 8px;gap:7px}
  main{padding:18px max(14px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
@@ -915,11 +912,11 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .plan-activity-dialog{max-width:480px;width:calc(100vw - 28px);overscroll-behavior:contain}.plan-activity-body{padding:24px}.plan-activity-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.plan-activity-head .btn{flex:none;width:auto;margin:0;min-height:44px}.plan-activity-kind{font-size:.78rem;font-weight:750;padding:7px 11px;border-radius:999px;color:#7de1c2;background:rgba(37,185,145,.15)}[data-kind="match"] .plan-activity-kind{color:#c4b0ff;background:rgba(156,125,245,.15)}:root[data-theme="light"] .plan-activity-kind{color:#0b7160}:root[data-theme="light"] [data-kind="match"] .plan-activity-kind{color:#6950b7}.plan-activity-dialog h2{font-size:1.5rem;line-height:1.25;margin:0 0 8px;overflow-wrap:anywhere}.plan-activity-date{color:var(--muted);font-size:.95rem;line-height:1.5;margin:0 0 20px}.plan-activity-info{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin:0 0 20px}.plan-activity-info dt{font-size:.78rem;color:var(--muted);margin-bottom:5px}.plan-activity-info dd{font-size:1rem;font-weight:650;margin:0;overflow-wrap:anywhere}.plan-activity-metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px}.plan-activity-metrics>div,.plan-activity-result{padding:15px;border:1px solid var(--line);border-radius:12px;background:var(--bg2)}.plan-activity-metrics strong{display:block;font-size:1.6rem;line-height:1.2;margin-bottom:5px}.plan-activity-metrics small{font-size:.9rem}.plan-activity-metrics span,.plan-activity-result>span{font-size:.8rem;color:var(--muted)}.plan-activity-result{text-align:center;margin-bottom:22px}.plan-activity-result strong{display:block;font-size:2rem;line-height:1.2;margin:8px 0;font-variant-numeric:tabular-nums}.plan-activity-result p{margin:8px 0 0;font-size:.85rem;overflow-wrap:anywhere;color:var(--muted)}#plan-activity-go{display:block;width:100%;min-height:48px;margin:0}body:has(#plan-activity-dialog[open]){overflow:hidden}@media(max-width:380px){.plan-activity-body{padding:18px}.plan-activity-info{grid-template-columns:1fr}.plan-activity-dialog h2{font-size:1.3rem}}
 .session-templates-dialog{max-width:640px}.session-template-save-dialog{max-width:480px}.session-templates-dialog h2,.session-template-save-dialog h2{overflow-wrap:anywhere;min-width:0}.session-templates-dialog .attendance-dialog-head>.btn,.session-template-save-dialog .attendance-dialog-head>.btn{flex:none;width:auto;margin:0}.session-template-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:10px;margin-bottom:18px}.session-template-toolbar .btn{margin:0;min-height:44px}.session-template-toolbar label{min-width:0}.session-template-card{padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--bg2);margin-bottom:12px;overflow-wrap:anywhere}.session-template-card h3{margin:0 0 6px;font-size:1rem}.session-template-card p{margin:6px 0;font-size:.88rem}.session-template-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:14px}.session-template-actions .btn{margin:0;min-width:0;min-height:44px;white-space:normal}#sessions-list .session-actions>.btn:last-child:nth-child(odd){grid-column:1/-1}body:has(#session-templates-dialog[open]),body:has(#session-template-save-dialog[open]){overflow:hidden}
 </style>
-<link rel="stylesheet" href="insights.css?v=213"><link rel="stylesheet" href="portal.css?v=213"><link rel="stylesheet" href="motion.css?v=213">
+<link rel="stylesheet" href="insights.css?v=214"><link rel="stylesheet" href="portal.css?v=214"><link rel="stylesheet" href="motion.css?v=214">
 </head>
 <body>
 <div id="app">
-<header><button class="menu-toggle" id="mobile-menu-toggle" type="button" aria-label="Menua ireki" aria-controls="nav" aria-expanded="false" hidden>☰</button><img src="icons/favicon_logo.png" width="501" height="501" alt="" aria-hidden="true"><b>7metro</b><span id="account"></span><button class="notification-bell" id="notification-bell" type="button" aria-label="Jakinarazpenak" aria-haspopup="dialog" aria-controls="inbox-dialog" hidden><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg><span class="notification-badge" id="notification-badge" aria-hidden="true" hidden></span></button></header>
+<header><button class="menu-toggle" id="mobile-menu-toggle" type="button" aria-label="Menua ireki" aria-controls="nav" aria-expanded="false" hidden>☰</button><b>7metro</b><span id="account"></span><button class="notification-bell" id="notification-bell" type="button" aria-label="Jakinarazpenak" aria-haspopup="dialog" aria-controls="inbox-dialog" hidden><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg><span class="notification-badge" id="notification-badge" aria-hidden="true" hidden></span></button></header>
 <main>
 <aside id="offline-status" class="offline-status" role="status" hidden><span id="offline-status-text"></span><button id="offline-pending-open" class="btn secondary" type="button" hidden>Gordetzeko zain</button></aside>
 <section id="v-login" class="on">
@@ -1449,21 +1446,21 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <dialog id="offline-pending-dialog" class="attendance-dialog" aria-labelledby="offline-pending-title"><div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="offline-pending-title">Gordetzeko zain</h2><button class="btn secondary" id="offline-pending-close" type="button">Itxi</button></div><ul id="offline-pending-list" class="list"></ul><button class="btn secondary" id="offline-sync-retry" type="button">Berriro saiatu</button></div></dialog>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=213" defer></script>
-<script src="i18n.js?v=213" defer></script>
-<script src="insights-data.js?v=213" defer></script>
-<script src="portal.js?v=213" defer></script>
-<script src="portal-events.js?v=213" defer></script>
-<script src="portal-calendar.js?v=213" defer></script>
-<script src="push.js?v=213" defer></script>
-<script src="motion.js?v=213" defer></script>
-<script src="offline.js?v=213" defer></script>
-<script src="app.js?v=213" defer></script>
-<script src="session-templates.js?v=213" defer></script>
-<script src="player-statistics.js?v=213" defer></script>
-<script src="weekly-training.js?v=213" defer></script>
-<script src="inbox.js?v=213" defer></script>
-<script src="report-pdf.js?v=213" defer></script>
-<script src="insights.js?v=213" defer></script>
+<script src="locales/es.js?v=214" defer></script>
+<script src="i18n.js?v=214" defer></script>
+<script src="insights-data.js?v=214" defer></script>
+<script src="portal.js?v=214" defer></script>
+<script src="portal-events.js?v=214" defer></script>
+<script src="portal-calendar.js?v=214" defer></script>
+<script src="push.js?v=214" defer></script>
+<script src="motion.js?v=214" defer></script>
+<script src="offline.js?v=214" defer></script>
+<script src="app.js?v=214" defer></script>
+<script src="session-templates.js?v=214" defer></script>
+<script src="player-statistics.js?v=214" defer></script>
+<script src="weekly-training.js?v=214" defer></script>
+<script src="inbox.js?v=214" defer></script>
+<script src="report-pdf.js?v=214" defer></script>
+<script src="insights.js?v=214" defer></script>
 </body>
 </html>
