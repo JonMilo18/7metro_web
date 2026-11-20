@@ -4,7 +4,7 @@
   var database, syncing = false, activeWrites = 0, unavailable = false, storageError = false, renderSequence = 0;
   var draftLoadedFor = "", recoveredDraft = null, restoring = false, lastDraft = "";
   var writes = ["pwa_create_session", "pwa_update_session", "pwa_duplicate_session", "pwa_create_match"];
-  var reads = ["teams_list", "team_snapshot", "portal_bootstrap", "portal_player_snapshot", "pwa_get_session"];
+  var reads = ["teams_list", "team_snapshot", "portal_bootstrap", "portal_player_snapshot", "pwa_get_session", "session_template_list", "session_template_get"];
 
   function owner() { return Number(user && user.id_erabiltzailea) || 0; }
   function disconnected() { return !navigator.onLine || unavailable; }
@@ -136,7 +136,7 @@
 
   function draftKey(id, selectedTeam) { return "draft:" + id + ":" + selectedTeam; }
   function draftValue() {
-    return { editor: clone(sessionEditor), selection: clone(sessionSelection), fields: {
+    return { editor: clone(sessionEditor), selection: clone(sessionSelection), references: clone(sessionReferenceExercises.filter(function (exercise) { return sessionSelection.some(function (entry) { return !entry.is_separator && Number(entry.id_ariketa) === Number(exercise.id_ariketa); }); })), fields: {
       date: $("session-date").value, place: $("session-place").value, goal: $("session-goal").value,
       micro: $("session-micro").value, minutes: $("session-total-minutes").value
     } };
@@ -160,6 +160,7 @@
     restoring = true;
     resetSessionEditor();
     sessionEditor = clone(value.editor); sessionSelection = clone(value.selection);
+    (value.references || []).forEach(function (exercise) { sessionReferenceExercises = sessionReferenceExercises.filter(function (row) { return Number(row.id_ariketa) !== Number(exercise.id_ariketa); }).concat([exercise]); });
     $("session-date").value = value.fields.date; $("session-place").value = value.fields.place;
     $("session-goal").value = value.fields.goal; $("session-micro").value = value.fields.micro;
     $("session-total-minutes").value = value.fields.minutes;
@@ -293,7 +294,7 @@
         return Object.assign({}, entry, { entryKey: -(index + 1), group_id: group });
       });
       applyDraft({ editor: { mode: payload.action === "pwa_update_session" ? "edit" : payload.action === "pwa_duplicate_session" ? "duplicate" : "create",
-        source: payload.id ? { id_saio: payload.id } : null, snapshot: payload.snapshot || null }, selection: selection,
+        source: payload.id ? { id_saio: payload.id } : null, snapshot: payload.snapshot || null, templateId: payload.template_id || null }, selection: selection,
         fields: { date: payload.data_ordua, place: payload.lekua, goal: payload.helburu_taktikoa || "", micro: payload.id_mikroziklo || "", minutes: 90 } });
       $("offline-pending-dialog").close();
       await saveDraftNow();

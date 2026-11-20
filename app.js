@@ -255,6 +255,7 @@ async function requestImpl(payload, anonymous, signal) {
 }
 
 function showLogin() {
+  if (window.SessionTemplates) window.SessionTemplates.reset();
   if ($("plan-activity-dialog").open) $("plan-activity-dialog").close();
   scoreCloseRoster();
   matchPlayersTeam = 0;
@@ -396,6 +397,7 @@ async function openTeam(id) {
   var selected = teams.find(function (item) { return Number(item.id_taldea) === Number(id); });
   if (!selected) throw new Error(t("Aukeratutako taldea ez da aurkitu"));
   if (teamId !== Number(selected.id_taldea)) {
+    if (window.SessionTemplates) window.SessionTemplates.reset();
     if (window.WeeklyTraining) window.WeeklyTraining.reset();
     sessionLoadSequence++; sessionEditorBusy = false; sessionReferenceExercises = [];
     resetSessionEditor();
@@ -1272,7 +1274,7 @@ function renderSessionEditor() {
     editing ? t("Aldaketak gorde") : copying ? t("Kopia gorde") : t("Gorde entrenamendua");
   $("session-form").inert = Boolean(sessionEditorBusy);
   $("session-form").setAttribute("aria-busy", String(Boolean(sessionEditorBusy)));
-  document.querySelectorAll("[data-edit-session],[data-duplicate-session],[data-delete-session],#session-create,#session-submit,#session-cancel")
+  document.querySelectorAll("[data-edit-session],[data-duplicate-session],[data-delete-session],[data-save-session-template],#session-template-open,#session-create,#session-submit,#session-cancel")
     .forEach(function (button) { button.disabled = Boolean(sessionEditorBusy); });
 }
 
@@ -1730,6 +1732,7 @@ function renderSavedSession(sessionId) {
   $("saved-session-edit").dataset.editSession = String(sessionId);
   $("saved-session-duplicate").dataset.duplicateSession = String(sessionId);
   $("saved-session-share").dataset.shareSession = String(sessionId);
+  $("saved-session-template").dataset.saveSessionTemplate = String(sessionId);
   $("saved-session-delete").dataset.deleteSession = String(sessionId);
   var micro = records("mikrozikloak").find(function (item) {
     return Number(item.id_mikroziklo) === Number(session.id_mikroziklo);
@@ -1836,6 +1839,7 @@ function renderSessions() {
       Number(session.id_saio) + ("\">" + esc(t("Asistentzia")) + "</button>") +
       '<button class="btn secondary" type="button" data-edit-session="' + Number(session.id_saio) + '">' + esc(t("Editatu")) + '</button>' +
       '<button class="btn secondary" type="button" data-duplicate-session="' + Number(session.id_saio) + '">' + esc(t("Bikoiztu")) + '</button>' +
+      '<button class="btn secondary" type="button" data-save-session-template="' + Number(session.id_saio) + '">' + esc(t("Txantiloi gisa gorde")) + '</button>' +
       '<button class="btn secondary" type="button" data-share-session="' + Number(session.id_saio) + '">' + esc(t("Partekatu")) + '</button>' +
       '<button class="btn danger" type="button" data-delete-session="' + Number(session.id_saio) + '">' + esc(t("Ezabatu")) + '</button></div></details></li>';
   }).join("") : '<li class="empty sessions-empty"><p>' + esc(t(sessions.length ? "Ez dago bilaketarekin edo iragazkiarekin bat datorren entrenamendurik." : "Oraindik ez da entrenamendurik gorde.")) + '</p><button class="btn secondary" type="button" ' + (sessions.length ? 'data-sessions-reset' : 'data-sessions-new') + '>' + esc(t(sessions.length ? "Garbitu iragazkiak" : "Entrenamendu berria")) + '</button></li>';
@@ -4554,6 +4558,7 @@ $("session-form").addEventListener("submit", async function (event) {
     team_id: sourceTeam, data_ordua: $("session-date").value, lekua: $("session-place").value,
     helburu_taktikoa: $("session-goal").value, id_mikroziklo: numberOrNull($("session-micro").value), exercises: exerciseList
   };
+  if (sessionEditor.templateId && mode === "create") payload.template_id = sessionEditor.templateId;
   if (source) { payload.id = Number(source.id_saio); payload.source_id = Number(source.id_saio); payload.snapshot = sessionEditor.snapshot; }
   sessionEditorBusy = "save"; renderSessionEditor();
   try {

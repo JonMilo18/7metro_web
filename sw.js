@@ -1,17 +1,17 @@
 // 7metro - service worker probisionala
 // Aldaketak argitaratzean, aldatu CACHE bertsioa.
-const CACHE = "7metro-v211";
-const SHELL = ["./offline.js?v=211", "./motion.js?v=211", "./motion.css?v=211", "./", "./index.html", "./manifest.json",
-  "./player-statistics.js?v=211",
-  "./inbox.js?v=211",
-  "./weekly-training.js?v=211",
-  "./locales/es.js?v=211", "./i18n.js?v=211", "./app.js?v=211", "./insights-data.js?v=211", "./insights.js?v=211",
-  "./portal.js?v=211", "./portal-events.js?v=211", "./portal-calendar.js?v=211", "./push.js?v=211", "./portal.css?v=211", "./report-pdf.js?v=211", "./insights.css?v=211", "./vendor/jspdf.umd.min.js",
+const CACHE = "7metro-v212";
+const SHELL = ["./offline.js?v=212", "./motion.js?v=212", "./motion.css?v=212", "./", "./index.html", "./manifest.json",
+  "./player-statistics.js?v=212", "./session-templates.js?v=212",
+  "./inbox.js?v=212",
+  "./weekly-training.js?v=212",
+  "./locales/es.js?v=212", "./i18n.js?v=212", "./app.js?v=212", "./insights-data.js?v=212", "./insights.js?v=212",
+  "./portal.js?v=212", "./portal-events.js?v=212", "./portal-calendar.js?v=212", "./push.js?v=212", "./portal.css?v=212", "./report-pdf.js?v=212", "./insights.css?v=212", "./vendor/jspdf.umd.min.js",
   "./vendor/fonts/NotoSans-Regular.ttf", "./vendor/fonts/NotoSans-Bold.ttf",
   "./irudiak/Zelaia.svg", "./irudiak/Zelai-erdia.svg",
   "./irudiak/Zelaia.png", "./irudiak/Zelai-erdia.png",
   "./irudiak/logo_nagusia_argia.png", "./irudiak/logo_nagusia_illuna.png",
-  "./icons/favicon_logo.png", "./icons/favicon_logo.png?v=211",
+  "./icons/favicon_logo.png", "./icons/favicon_logo.png?v=212",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png", "./icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {

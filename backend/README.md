@@ -260,3 +260,24 @@ Aurretik kategoriak, loturak eta ariketen kategoria-eremuak kopiatu behar dira.
 
 Kategoria bateko kide izateak ez du ariketa pribaturik irakurtzeko baimenik ematen.
 RPCak `service_role` rolarentzat bakarrik daude; identitatea APIko saiotik dator.
+
+Entrenamenduen txantiloiak: aplikatu `migrations/20261119200000_session_templates.sql`
+eta hedatu `metro-api` frontendaren aurretik. Inportatu `sessionTemplateActions`
+eta `handleSessionTemplateAction` `session-template-actions.ts` modulutik. Gehitu
+ekintzen multzoa autentifikatutako ekintzen zerrendara. Saioa egiaztatu ondoren,
+`session_template_list/get/save/delete` eta `template_id` duten `pwa_create_session`
+eskaerak `handleSessionTemplateAction(payload,supabase,userId,jsonResponse)` bidez
+kudeatzen dira, `pwa_create_session` ohiko adarra baino lehen.
+
+Txantiloiak taldeko langileen artean partekatzen dira; ariketak jabetzaren,
+gordetako partekatze baten edo taldeko entrenamendu/txantiloi baten arabera
+baimentzen dira. Lotutako ariketak ezin dira ezabatu txantiloiak erabiltzen dituen
+bitartean; kontua ezabatzeak bizirik jarraitzen duten taldeen txantiloietako
+ariketak egilerik gabe mantentzen ditu. Migrazioak kontua ezabatzeko funtzioaren
+aurreko definizioa egiaztatzen du egokitzapena aplikatu aurretik.
+
+Txantiloiak datarik, mikroziklorik, deialdirik eta asistentziarik gabe gordetzen dira.
+Edukia ez da aldatzen hartatik sortutako entrenamendua editatzean. Sortze berriak
+`offline_operations` erregistroa erabiltzen du, `operation_id` bera duen saiakera
+errepikatuak entrenamendua bikoiztu ez dezan. UIko txantiloia gordetzeko UUIDak
+ere saiakera berdinak bateratzen ditu; txantiloia ezabatzeak entrenamenduak mantentzen ditu.
