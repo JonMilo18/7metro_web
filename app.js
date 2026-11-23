@@ -1370,6 +1370,7 @@ function exerciseCategoryNames(exercise, relations) {
       if (!byId) return;
       name = String(byId.izena || "").trim();
     }
+    if (!categories.some(function (category) { return normalizeCategoryName(category.izena) === normalizeCategoryName(name); })) return;
     if (name && !result.some(function (existing) {
       return normalizeCategoryName(existing) === normalizeCategoryName(name);
     })) result.push(name);
@@ -1691,13 +1692,6 @@ function renderExerciseCategories() {
     if (categoryName && !names.some(function (existing) {
       return existing.toLocaleLowerCase() === categoryName.toLocaleLowerCase();
     })) names.push(categoryName);
-  });
-  exercises.forEach(function (exercise) {
-    exerciseCategoryNames(exercise).forEach(function (name) {
-      if (name && !names.some(function (existing) {
-        return normalizeCategoryName(existing) === normalizeCategoryName(name);
-      })) names.push(name);
-    });
   });
   names.sort(function (a, b) { return a.localeCompare(b); });
   var checklist = $("exercise-category");

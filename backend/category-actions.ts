@@ -1,5 +1,5 @@
 // Local desktop IDs are not global IDs: resolve names before uploading references.
-export async function reconcileCategorySync(supabase: any, input: Record<string, any>): Promise<Record<string, any>> {
+export async function reconcileCategorySync(supabase: any, input: Record<string, any>, userId?: number): Promise<Record<string, any>> {
   const tables = structuredClone(input);
   const categories = tables.kategoriak || [];
   const ids = new Map<string, number>();
@@ -14,7 +14,7 @@ export async function reconcileCategorySync(supabase: any, input: Record<string,
   }
   for (let offset = 0; offset < categories.length; offset += 100) {
     const batch = categories.slice(offset, offset + 100);
-    const { data, error } = await supabase.rpc("resolve_category_names", { p_names: batch.map((row: any) => row.izena), p_create: true });
+    const { data, error } = await supabase.rpc(userId ? "resolve_user_category_names" : "resolve_category_names", { p_names: batch.map((row: any) => row.izena), ...(userId ? { p_user_id: userId, p_register: false } : { p_create: true }) });
     if (error || !Array.isArray(data)) throw new Error("Ezin izan da kategoria bateratu");
     const byName = new Map(data.map((row: any) => [nameKey(row.izena), Number(row.id_kategoria)]));
     for (const category of batch) {

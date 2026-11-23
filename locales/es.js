@@ -6,6 +6,9 @@ window.SevenMetroLocales.es = {
   "name": "Español",
   "locale": "es-ES",
   "messages": {
+    "Zure kategorien zerrenda pertsonala da. Kategoria kentzeak zure ariketen loturei bakarrik eragiten die.": "Tu lista de categorías es personal. Quitar una categoría solo afecta a los vínculos de tus ejercicios.",
+    "Ezin izan dira zure kategoriak kargatu": "No se han podido cargar tus categorías",
+    "Aukeratutako kategoria ez dago zure zerrendan": "La categoría seleccionada no está en tu lista",
     "Guztiak ikusi": "Ver todos",
     "Ez dago erantzun hau duen jokalaririk.": "Ningún jugador tiene esta respuesta.",
     "Txantiloiak": "Plantillas",

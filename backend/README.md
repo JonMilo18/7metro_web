@@ -261,6 +261,21 @@ Aurretik kategoriak, loturak eta ariketen kategoria-eremuak kopiatu behar dira.
 Kategoria bateko kide izateak ez du ariketa pribaturik irakurtzeko baimenik ematen.
 RPCak `service_role` rolarentzat bakarrik daude; identitatea APIko saiotik dator.
 
+Kategorien zerrenda pertsonalak: aplikatu
+`migrations/20261123120000_personal_categories.sql`. Kategoria bakoitzaren ID
+kanonikoa mantentzen da; `user_categories` taulak erabiltzailearen zerrenda
+bereizten du. Egile historikorik ez zegoenez, aurreko kategoriak norberaren
+ariketen loturetatik bakarrik berreskuratzen dira, `origin='legacy'` markarekin.
+Kategoria esplizituki sortzeak `origin='created'` ezartzen du.
+
+APIan, snapshotaren `kategoriak` taula `user_category_catalog({p_user_id:userId})`
+RPCtik dator; ez kargatu katalogo globala. `pwa_create_category` ekintzak
+`resolve_user_category_names({p_user_id:userId,p_names:[name],p_register:true})`
+erabiltzen du. `reconcileCategorySync(supabase,tables,userId)` deitu: mahaigaineko
+katalogo zahar osoa ez da erabiltzailearen zerrendara gehitzen. Ariketen loturek
+erabilitako kategoriak egilearen zerrendan erregistratzen dituzte.
+`detach_user_category`-k norberaren loturak eta zerrendako sarrera kentzen ditu.
+
 Entrenamenduen txantiloiak: aplikatu `migrations/20261119200000_session_templates.sql`
 eta hedatu `metro-api` frontendaren aurretik. Inportatu `sessionTemplateActions`
 eta `handleSessionTemplateAction` `session-template-actions.ts` modulutik. Gehitu
