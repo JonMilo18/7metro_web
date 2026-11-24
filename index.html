@@ -917,7 +917,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 .session-templates-dialog{max-width:640px}.session-template-save-dialog{max-width:480px}.session-templates-dialog h2,.session-template-save-dialog h2{overflow-wrap:anywhere;min-width:0}.session-templates-dialog .attendance-dialog-head>.btn,.session-template-save-dialog .attendance-dialog-head>.btn{flex:none;width:auto;margin:0}.session-template-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:10px;margin-bottom:18px}.session-template-toolbar .btn{margin:0;min-height:44px}.session-template-toolbar label{min-width:0}.session-template-card{padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--bg2);margin-bottom:12px;overflow-wrap:anywhere}.session-template-card h3{margin:0 0 6px;font-size:1rem}.session-template-card p{margin:6px 0;font-size:.88rem}.session-template-actions{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:14px}.session-template-actions .btn{margin:0;min-width:0;min-height:44px;white-space:normal}#sessions-list .session-actions>.btn:last-child:nth-child(odd){grid-column:1/-1}body:has(#session-templates-dialog[open]),body:has(#session-template-save-dialog[open]){overflow:hidden}
 #exercise-edit-cancel[hidden],#exercise-edit-reload[hidden],#exercise-editor-error[hidden]{display:none!important}
 </style>
-<link rel="stylesheet" href="insights.css?v=218"><link rel="stylesheet" href="portal.css?v=218"><link rel="stylesheet" href="motion.css?v=218">
+<link rel="stylesheet" href="insights.css?v=219"><link rel="stylesheet" href="portal.css?v=219"><link rel="stylesheet" href="motion.css?v=219">
 </head>
 <body>
 <div id="app">
@@ -1060,6 +1060,7 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
           <div class="board-animation-dock" role="group" aria-label="Animazioaren kontrol azkarrak">
             <div class="board-quick-actions">
               <button id="board-quick-frame-add" type="button" aria-label="Gehitu pausoa" title="Gehitu pausoa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14"/></svg></button>
+              <button id="board-quick-frame-update" type="button" aria-label="Eguneratu pausoa" title="Eguneratu pausoa" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12l4 4v12a2 2 0 0 1-2 2Z"/><path d="M7 3v6h10V3M7 21v-8h10v8"/></svg></button>
               <button id="board-quick-play" type="button" aria-label="Animazioa ikusi" title="Animazioa ikusi" aria-describedby="board-animation-status" aria-pressed="false" disabled><svg data-board-play-icon viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="m8 4 13 8-13 8Z"/></svg><svg data-board-stop-icon viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false" hidden><rect x="6" y="6" width="12" height="12" rx="2"/></svg></button>
               <button id="board-quick-frame-delete" type="button" aria-label="Ezabatu pausoa" title="Ezabatu pausoa" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></svg></button>
             </div>
@@ -1451,21 +1452,21 @@ body.score-match-active{overflow:hidden;overscroll-behavior:none}
 <dialog id="offline-pending-dialog" class="attendance-dialog" aria-labelledby="offline-pending-title"><div class="attendance-dialog-inner"><div class="attendance-dialog-head"><h2 id="offline-pending-title">Gordetzeko zain</h2><button class="btn secondary" id="offline-pending-close" type="button">Itxi</button></div><ul id="offline-pending-list" class="list"></ul><button class="btn secondary" id="offline-sync-retry" type="button">Berriro saiatu</button></div></dialog>
 <div id="loading-indicator" class="loading-indicator" role="status" aria-live="polite" aria-label="Kargatzen" hidden><div class="loading-indicator-content"><span class="passes" aria-hidden="true"><i></i><i></i><i></i></span><span>Kargatzen…</span></div></div>
 </div>
-<script src="locales/es.js?v=218" defer></script>
-<script src="i18n.js?v=218" defer></script>
-<script src="insights-data.js?v=218" defer></script>
-<script src="portal.js?v=218" defer></script>
-<script src="portal-events.js?v=218" defer></script>
-<script src="portal-calendar.js?v=218" defer></script>
-<script src="push.js?v=218" defer></script>
-<script src="motion.js?v=218" defer></script>
-<script src="offline.js?v=218" defer></script>
-<script src="app.js?v=218" defer></script>
-<script src="session-templates.js?v=218" defer></script>
-<script src="player-statistics.js?v=218" defer></script>
-<script src="weekly-training.js?v=218" defer></script>
-<script src="inbox.js?v=218" defer></script>
-<script src="report-pdf.js?v=218" defer></script>
-<script src="insights.js?v=218" defer></script>
+<script src="locales/es.js?v=219" defer></script>
+<script src="i18n.js?v=219" defer></script>
+<script src="insights-data.js?v=219" defer></script>
+<script src="portal.js?v=219" defer></script>
+<script src="portal-events.js?v=219" defer></script>
+<script src="portal-calendar.js?v=219" defer></script>
+<script src="push.js?v=219" defer></script>
+<script src="motion.js?v=219" defer></script>
+<script src="offline.js?v=219" defer></script>
+<script src="app.js?v=219" defer></script>
+<script src="session-templates.js?v=219" defer></script>
+<script src="player-statistics.js?v=219" defer></script>
+<script src="weekly-training.js?v=219" defer></script>
+<script src="inbox.js?v=219" defer></script>
+<script src="report-pdf.js?v=219" defer></script>
+<script src="insights.js?v=219" defer></script>
 </body>
 </html>

@@ -891,6 +891,7 @@ function updateBoardPlaybackControls() {
   button.querySelector("[data-board-play-icon]").hidden = playing;
   button.querySelector("[data-board-stop-icon]").hidden = !playing;
   $("board-quick-frame-add").disabled = playing;
+  $("board-quick-frame-update").disabled = playing || boardFrameIndex < 0;
   $("board-quick-frame-delete").disabled = playing || boardFrameIndex < 0;
   var highlighted = playing ? boardPlaybackFrame : boardFrameIndex;
   $("board-frame-thumbnails").querySelectorAll("[data-board-frame]").forEach(function (item) {
@@ -4453,6 +4454,7 @@ function selectBoardFrame(index) {
     boardState.posizioak = JSON.parse(JSON.stringify(state.posizioak));
     boardState.marrazkiak = JSON.parse(JSON.stringify(state.marrazkiak));
     boardSelection = null;
+    document.querySelector('[data-board-tool="move"]').click();
   }
   updateBoardAnimationControls();
   redrawBoard();
@@ -4466,12 +4468,18 @@ $("board-frame-thumbnails").addEventListener("click", function (event) {
   var selected = this.querySelector('[data-board-frame="' + index + '"]');
   if (selected) selected.focus({ preventScroll: true });
 });
-$("board-frame-update").addEventListener("click", function () {
+function updateBoardFrame() {
   stopBoardAnimation();
   if (boardFrameIndex < 0) return;
   boardState.animazioa[boardFrameIndex] = captureBoardFrame();
   updateBoardAnimationControls();
+  $("board-quick-status").textContent = (boardFrameIndex + 1) + t(". pausoa") + ": " + t("Pausoa eguneratu da");
   notify(t("Pausoa eguneratu da"), "success");
+}
+$("board-frame-update").addEventListener("click", updateBoardFrame);
+$("board-quick-frame-update").addEventListener("click", function () {
+  updateBoardFrame();
+  this.focus({ preventScroll: true });
 });
 function deleteBoardFrame() {
   stopBoardAnimation();
