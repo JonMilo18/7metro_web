@@ -296,3 +296,15 @@ Edukia ez da aldatzen hartatik sortutako entrenamendua editatzean. Sortze berria
 `offline_operations` erregistroa erabiltzen du, `operation_id` bera duen saiakera
 errepikatuak entrenamendua bikoiztu ez dezan. UIko txantiloia gordetzeko UUIDak
 ere saiakera berdinak bateratzen ditu; txantiloia ezabatzeak entrenamenduak mantentzen ditu.
+
+Ariketak editatzeko, aplikatu `migrations/20261124120000_edit_exercises.sql` eta
+hedatu `metro-api`. Inportatu `exerciseEditActions` eta `handleExerciseEdit`
+`exercise-actions.ts` modulutik; gehitu multzoa autentifikatutako ekintzen
+zerrendara. Saioa egiaztatu ondoren, `pwa_get_exercise` eta `pwa_update_exercise`
+eskaerak `handleExerciseEdit(payload,supabase,userId,jsonResponse)` bidez kudeatzen
+dira. SQLak taldekidetza eta ariketaren jabetza egiaztatzen ditu. `get` ekintzak
+ariketa, kategoriak eta snapshot osoa itzultzen ditu; `update` ekintzak snapshota
+berdina dela egiaztatu eta eremu editagarriak eta kategoriak transakzio berean
+eguneratzen ditu. Gatazkek `PT409` itzultzen dute. IDa, egilea, sortze-data eta
+bestelako metadatuak mantentzen dira, baita entrenamendu eta txantiloien loturak ere.
+Arbela ukitu gabeko aldaketek jatorrizko `arbela_datuak` testua zehatz gordetzen dute.

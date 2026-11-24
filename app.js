@@ -37,6 +37,7 @@ var teams = [], tables = {}, players = [], exercises = [], sessions = [], matche
 var matchPlayersTeam = 0;
 var macros = [], micros = [], playerStats = [], toastTimer, installPrompt = null;
 var loadingCount = 0, loadingDelay = 0;
+var exerciseEditContext = null, exerciseEditBusy = false, exerciseEditSequence = 0;
 var boardState = { fondo: "Zelaia", posizioak: {}, marrazkiak: [], animazioa: [] };
 var boardTool = "move", boardSelection = null, boardPointer = null, boardImages = {};
 var boardRenderings = new WeakMap();
@@ -154,6 +155,7 @@ function languageDraft() {
 
 window.addEventListener("languagechange", function () {
   renderAccountIdentity();
+  renderExerciseEditor();
   if ($("plan-activity-dialog").open) renderPlanningActivity();
   if ($("account-settings-dialog").open) {
     $("account-settings-title").textContent = t(!$("account-delete-form").hidden ? "Kontua ezabatu" : $("account-password-form").hidden ? "Erabiltzaile-izena aldatu" : "Pasahitza aldatu");
@@ -255,6 +257,7 @@ async function requestImpl(payload, anonymous, signal) {
 }
 
 function showLogin() {
+  resetExerciseEditor();
   if (window.SessionTemplates) window.SessionTemplates.reset();
   if ($("plan-activity-dialog").open) $("plan-activity-dialog").close();
   scoreCloseRoster();
@@ -397,6 +400,7 @@ async function openTeam(id) {
   var selected = teams.find(function (item) { return Number(item.id_taldea) === Number(id); });
   if (!selected) throw new Error(t("Aukeratutako taldea ez da aurkitu"));
   if (teamId !== Number(selected.id_taldea)) {
+    resetExerciseEditor();
     if (window.SessionTemplates) window.SessionTemplates.reset();
     if (window.WeeklyTraining) window.WeeklyTraining.reset();
     sessionLoadSequence++; sessionEditorBusy = false; sessionReferenceExercises = [];
@@ -1665,6 +1669,7 @@ function renderExercises() {
       '<div class="exercise-actions">' + exerciseLinkMarkup(exercise) + (hasAnimation
         ? '<button class="btn secondary" type="button" data-play-exercise="' + Number(exercise.id_ariketa) +
           ("\" aria-label=\"" + esc(t("Animazioa ikusi")) + "\">" + esc(t("Animazioa ikusi")) + "</button>") : "") +
+      (Number(exercise.id_erabiltzailea) === Number(user && user.id_erabiltzailea) && !exercise._is_shared ? '<button class="btn secondary" type="button" data-edit-exercise="' + Number(exercise.id_ariketa) + '">' + esc(t("Editatu")) + '</button>' : '') +
       '<button class="btn danger" type="button" data-delete-exercise="' +
       Number(exercise.id_ariketa) + ("\">" + esc(t("Ezabatu")) + "</button></div></li>");
   }).join("") : '<li class="empty">' + (categoryFilter ? t("Ez dago ariketarik kategoria honetan.") : t("Ariketa-liburutegia hutsik dago.")) + '</li>';
@@ -4232,25 +4237,91 @@ $("player-form").addEventListener("submit", async function (event) {
   finally { button.disabled = false; }
 });
 
+function exerciseEditorValue() {
+  return JSON.stringify([Array.from(new FormData($("exercise-form")).entries()), boardState]);
+}
+function exerciseEditorDirty() {
+  if (exerciseEditContext) return exerciseEditorValue() !== exerciseEditContext.clean;
+  var fields = new FormData($("exercise-form"));
+  return ["izena", "deskribapena", "bideo_url", "jokalari_kopurua"].some(function (name) { return Boolean(String(fields.get(name) || "").trim()); }) || fields.getAll("kategoriak").length > 0 || Object.keys(boardState.posizioak).length > 0 || boardState.marrazkiak.length > 0 || boardState.animazioa.length > 0;
+}
+function canReplaceExerciseDraft() {
+  return !exerciseEditorDirty() || confirm(t("Gorde gabeko ariketaren aldaketak baztertu nahi dituzu?"));
+}
+function renderExerciseEditor() {
+  var editing = Boolean(exerciseEditContext);
+  $("exercise-editor-title").textContent = t(editing ? "Ariketa editatu" : "Ariketa-arbela");
+  $("help-text-4").textContent = t(editing ? "Aldaketak ariketa hau erabiltzen duten entrenamenduetan eta txantiloietan ere ikusiko dira." : "Sortu ariketa bat kantxan marraztuz, programako arbelean bezala.");
+  $("exercise-submit").textContent = t(exerciseEditBusy === "save" ? "Gordetzen..." : editing ? "Aldaketak gorde" : "Gehitu ariketa");
+  $("exercise-edit-cancel").hidden = !editing;
+  $("exercise-form").inert = Boolean(exerciseEditBusy);
+  $("exercise-form").setAttribute("aria-busy", String(Boolean(exerciseEditBusy)));
+  document.querySelectorAll("[data-edit-exercise],[data-delete-exercise],#exercise-submit,#exercise-edit-cancel,#exercise-edit-reload").forEach(function (button) { button.disabled = Boolean(exerciseEditBusy); });
+}
+function resetExerciseEditor() {
+  exerciseEditSequence++; exerciseEditContext = null; exerciseEditBusy = false;
+  $("exercise-form").reset();
+  $("exercise-category").querySelectorAll("input").forEach(function (input) { input.checked = false; });
+  $("exercise-editor-error").hidden = true; $("exercise-edit-reload").hidden = true;
+  resetBoard(); renderExerciseEditor();
+}
+async function openExerciseEditor(id) {
+  if (exerciseEditBusy || !canReplaceExerciseDraft()) return;
+  var sequence = ++exerciseEditSequence, sourceTeam = teamId, sourceToken = token;
+  exerciseEditBusy = "load"; renderExerciseEditor();
+  try {
+    var result = await request({ action: "pwa_get_exercise", team_id: sourceTeam, id: Number(id) });
+    if (sequence !== exerciseEditSequence || sourceTeam !== teamId || sourceToken !== token) return;
+    closeBoardFullscreen(); stopBoardAnimation(); stopExerciseAnimation();
+    var exercise = result.exercise, form = $("exercise-form");
+    form.reset();
+    ["izena", "deskribapena", "jokalari_kopurua", "bideo_url"].forEach(function (name) { form.elements.namedItem(name).value = exercise[name] == null ? "" : exercise[name]; });
+    (result.categories || []).forEach(function (category) {
+      tables.kategoriak = records("kategoriak").filter(function (row) { return Number(row.id_kategoria) !== Number(category.id_kategoria); }).concat([category]);
+    });
+    renderExerciseCategories();
+    var selected = (result.categories || []).map(function (category) { return normalizeCategoryName(category.izena); });
+    $("exercise-category").querySelectorAll("input").forEach(function (input) { input.checked = selected.includes(normalizeCategoryName(input.value)); });
+    boardState = parseBoardData(exercise.arbela_datuak) || { fondo: "Zelaia", posizioak: {}, marrazkiak: [], animazioa: [] };
+    boardFrameIndex = -1; boardSelection = null; boardPointer = null; boardCurve = 0;
+    $("board-background").value = boardState.fondo;
+    exerciseEditContext = { id: Number(id), team: sourceTeam, snapshot: result.snapshot, rawBoard: exercise.arbela_datuak, boardBaseline: JSON.stringify(boardState) };
+    $("exercise-editor-error").hidden = true; $("exercise-edit-reload").hidden = true;
+    updateBoardAnimationControls(); redrawBoard();
+    exerciseEditContext.clean = exerciseEditorValue();
+    exerciseEditBusy = false; renderExerciseEditor();
+    selectSection("v-board");
+    form.scrollIntoView({ behavior: "instant", block: "start" }); form.elements.namedItem("izena").focus({ preventScroll: true });
+  } catch (error) { if (sequence === exerciseEditSequence && sourceToken === token) notify(error.message, "error"); }
+  finally { if (sequence === exerciseEditSequence) { exerciseEditBusy = false; renderExerciseEditor(); } }
+}
+$("exercise-edit-cancel").addEventListener("click", function () { if (!exerciseEditBusy && canReplaceExerciseDraft()) resetExerciseEditor(); });
+$("exercise-edit-reload").addEventListener("click", function () { if (exerciseEditContext) openExerciseEditor(exerciseEditContext.id); });
 $("exercise-form").addEventListener("submit", async function (event) {
-  event.preventDefault();
-  var form = this, button = form.querySelector('button[type="submit"]');
+  event.preventDefault(); if (exerciseEditBusy) return;
+  var form = this, context = exerciseEditContext, sourceTeam = teamId, sourceToken = token, sequence = exerciseEditSequence;
   var data = Object.fromEntries(new FormData(form).entries());
   data.kategoriak = new FormData(form).getAll("kategoriak");
   data.kategoria = data.kategoriak[0] || "";
   data.jokalari_kopurua = numberOrNull(data.jokalari_kopurua);
-  stopBoardAnimation();
-  boardState.fondo = $("board-background").value;
-  prepareBoardForSave();
-  data.arbela_datuak = JSON.stringify(boardState);
-  button.disabled = true;
+  stopBoardAnimation(); boardState.fondo = $("board-background").value;
+  var untouched = context && context.boardBaseline === JSON.stringify(boardState);
+  if (!untouched) prepareBoardForSave();
+  data.arbela_datuak = untouched ? context.rawBoard : JSON.stringify(boardState);
+  exerciseEditBusy = "save"; renderExerciseEditor();
+  $("exercise-editor-error").hidden = true; $("exercise-edit-reload").hidden = true;
   try {
-    await request(Object.assign({ action: "pwa_create_exercise", team_id: teamId }, data));
-    form.reset();
-    $("exercise-category").querySelectorAll("input").forEach(function (input) { input.checked = false; });
-    resetBoard(); await refreshAll(); notify(t("Ariketa gehitu da"), "success");
-  } catch (error) { notify(error.message, "error"); }
-  finally { button.disabled = false; }
+    await request(Object.assign({ action: context ? "pwa_update_exercise" : "pwa_create_exercise", team_id: sourceTeam }, data, context ? { id: context.id, snapshot: context.snapshot } : {}));
+    if (sequence !== exerciseEditSequence || sourceTeam !== teamId || sourceToken !== token) return;
+    resetExerciseEditor();
+    var refreshError = null; try { await refreshAll(); } catch (error) { refreshError = error; }
+    notify(refreshError ? t("Ariketa gordeta dago, baina zerrenda ezin izan da birkargatu") : t(context ? "Ariketa eguneratu da" : "Ariketa gehitu da"), refreshError ? "error" : "success");
+  } catch (error) {
+    if (sequence === exerciseEditSequence && sourceToken === token) {
+      $("exercise-editor-error").textContent = error.message; $("exercise-editor-error").hidden = false;
+      $("exercise-edit-reload").hidden = !context || error.status !== 409;
+    }
+  } finally { if (sequence === exerciseEditSequence) { exerciseEditBusy = false; renderExerciseEditor(); } }
 });
 
 $("exercise-category-form").addEventListener("submit", async function (event) {
@@ -4997,6 +5068,7 @@ $("save-attendance").addEventListener("click", async function () {
 document.addEventListener("click", async function (event) {
   var target = event.target.closest("button");
   if (!target) return;
+  if (target.hasAttribute("data-edit-exercise")) { openExerciseEditor(target.dataset.editExercise); return; }
   if (target.hasAttribute("data-plan-event")) {
     openPlanningActivity(target.dataset.planEvent, target.dataset.planEventId);
     return;
@@ -5095,6 +5167,7 @@ document.addEventListener("click", async function (event) {
   if (deletion && confirm(message)) {
     try {
       await request(Object.assign(deletion, { team_id: teamId }));
+      if (deletion.action === "pwa_delete_exercise" && exerciseEditContext && exerciseEditContext.id === deletion.id) resetExerciseEditor();
       $("match-detail").classList.add("hidden");
       await refreshAll(); notify(successMessage, "success");
     } catch (error) { notify(error.message, "error"); }
