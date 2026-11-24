@@ -454,7 +454,7 @@ function parseBoardData(value) {
     var data = typeof value === "string" ? JSON.parse(value) : value;
     if (!data || typeof data !== "object" || Array.isArray(data)) return null;
     return {
-      fondo: data.fondo === "Zelai-erdia" ? "Zelai-erdia" : "Zelaia",
+      fondo: ["Zelai-erdia", "Zuria"].includes(data.fondo) ? data.fondo : "Zelaia",
       posizioak: data.posizioak && typeof data.posizioak === "object"
         ? data.posizioak : (data.pos && typeof data.pos === "object" ? data.pos : {}),
       marrazkiak: Array.isArray(data.marrazkiak) ? data.marrazkiak : [],
@@ -487,7 +487,10 @@ function drawBoard(canvas, state, selection) {
   ctx.imageSmoothingQuality = "high";
   var width = 800, height = 500;
   var background = boardImages[state.fondo];
-  if (background && background.complete && background.naturalWidth) {
+  if (state.fondo === "Zuria") {
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, width, height);
+  } else if (background && background.complete && background.naturalWidth) {
     ctx.drawImage(background, 0, 0, width, height);
   } else {
     ctx.fillStyle = "#397b47";

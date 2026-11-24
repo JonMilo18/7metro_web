@@ -416,6 +416,7 @@ window.SevenMetroLocales.es = {
     "Ateko helmuga aukeratuta": "Destino en la portería seleccionado",
     "Atezaina": "Portero",
     "Atzeko planoa": "Fondo",
+    "Atzeko plano zuria": "Fondo blanco",
     "Atzerako kontaketa": "Cuenta atrás",
     "Atzerapen mota": "Tipo de retraso",
     "Aukera gailu honetan gordeko da.": "La selección se guardará en este dispositivo.",
