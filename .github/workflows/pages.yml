@@ -30,6 +30,7 @@ jobs:
           node --check motion.js
           node --check offline.js
           node --check session-templates.js
+          node --check training-time.js
           node --check app.js
           node --check i18n.js
           node --check locales/es.js
@@ -59,7 +60,7 @@ jobs:
       - name: Prepare public files
         run: |
           mkdir -p _site
-          cp index.html session-templates.js offline.js motion.js motion.css app.js i18n.js sw.js insights-data.js insights.js report-pdf.js insights.css portal.js portal-events.js portal-calendar.js push.js weekly-training.js inbox.js player-statistics.js portal.css manifest.json manifest.webmanifest _site/
+          cp index.html training-time.js session-templates.js offline.js motion.js motion.css app.js i18n.js sw.js insights-data.js insights.js report-pdf.js insights.css portal.js portal-events.js portal-calendar.js push.js weekly-training.js inbox.js player-statistics.js portal.css manifest.json manifest.webmanifest _site/
           cp -R icons irudiak locales vendor _site/
 
       - name: Configure Pages

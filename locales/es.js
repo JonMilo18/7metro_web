@@ -6,6 +6,10 @@ window.SevenMetroLocales.es = {
   "name": "Español",
   "locale": "es-ES",
   "messages": {
+    "Aldi berean": "Al mismo tiempo",
+    "Aurrekoarekin batera": "A la vez que el anterior",
+    "Aldi bereko ariketak: informazioa": "Ejercicios simultáneos: información",
+    "Bigarren ariketan markatu «Aurrekoarekin batera». Parte-hartzaileak oharretan adierazi ditzakezu, adibidez zelaiko jokalariak eta atezainak. Blokearen iraupena ariketarik luzeenarena da.": "En el segundo ejercicio, marca «A la vez que el anterior». Puedes indicar los participantes en las notas, por ejemplo jugadores de campo y porteros. El bloque dura lo mismo que el ejercicio más largo.",
     "Ariketa editatu": "Editar ejercicio",
     "Birkargatu ariketa": "Recargar ejercicio",
     "Ariketa eguneratu da": "Ejercicio actualizado",

@@ -55,7 +55,7 @@
         if (!current(key, version)) return;
         var details = result.details.map(function (entry) { return Object.assign({}, entry, { is_separator: entry.id_ariketa == null }); });
         data = { session: { lekua: result.session.lekua || "", helburu_taktikoa: result.session.helburu_taktikoa || "" }, exercises: details,
-          total_minutes: Math.min(999, details.reduce(function (sum, entry) { return sum + (entry.is_separator ? 0 : Number(entry.iraupena_minutuak) || 0); }, 0)) };
+          total_minutes: Math.min(999, TrainingTime.duration(details)) };
       } else data = { session: { lekua: $("session-place").value, helburu_taktikoa: $("session-goal").value }, exercises: editorDetails(), total_minutes: Number($("session-total-minutes").value) || 0 };
       saving = { key: key, version: version, id: crypto.randomUUID(), content: data };
       $("session-template-name").value = data.session.helburu_taktikoa.slice(0, 120);

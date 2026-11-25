@@ -308,3 +308,16 @@ berdina dela egiaztatu eta eremu editagarriak eta kategoriak transakzio berean
 eguneratzen ditu. Gatazkek `PT409` itzultzen dute. IDa, egilea, sortze-data eta
 bestelako metadatuak mantentzen dira, baita entrenamendu eta txantiloien loturak ere.
 Arbela ukitu gabeko aldaketek jatorrizko `arbela_datuak` testua zehatz gordetzen dute.
+
+Aldi bereko ariketak `saio_xehetasuna.paraleloa=1` bidez gordetzen dira: ariketa
+aurrekoaren aldi bereko blokera lotzen da. `training-time.js` moduluak blokeak
+osatu eta bakoitzaren iraupenik handiena zenbatzen du. Tarte-bereizleek eta
+`taldea` aldaketek bloke berria hasten dute. Editoreak lehen ariketaren eta
+tarte bakoitzeko lehen ariketaren lotura baliogabeak kentzen ditu. Ariketa bat
+mugitzean, ez da automatikoki beste bloke batera lotzen.
+
+Aplikatu `migrations/20261125120000_parallel_training_time.sql` frontendaren
+aurretik: `session_elapsed_minutes` funtzioak kalkulu bera egiten du SQLan, eta
+txantiloien zerrendako iraupena egokitzen da. Gordetako ariketak eta minutuen
+balioak ez dira migrazioan aldatzen. Sortu/editatu/bikoiztu/offline/txantiloi
+bideek lehendik gordetzen zuten `paraleloa` eremua mantentzen dute.

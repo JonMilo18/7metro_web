@@ -1343,9 +1343,7 @@ async function openSessionEditor(id, duplicate) {
     var micro = result.session.id_mikroziklo == null ? "" : String(result.session.id_mikroziklo);
     // A deleted cycle does not prevent recovering the rest of the training.
     $("session-micro").value = micro;
-    $("session-total-minutes").value = Math.min(999, sessionSelection.reduce(function (sum, entry) {
-      return sum + (entry.is_separator ? 0 : entry.iraupena_minutuak);
-    }, 0)) || 90;
+    $("session-total-minutes").value = Math.min(999, TrainingTime.duration(sessionSelection)) || 90;
     $("session-group-preset").value = "Beroketa"; $("session-group-custom").value = "";
     $("session-group-custom").classList.add("hidden");
     renderSessionPicker(); sessionCleanDraft = sessionDraftValue();
@@ -1404,11 +1402,11 @@ function updateSessionTimeBar() {
   var total = Math.round(Number(input && input.value));
   if (!Number.isFinite(total) || total < 0) total = 0;
   total = Math.min(999, total);
-  var segments = sessionSelection.filter(function (entry) { return !entry.is_separator; }).map(function (entry) {
-    var exercise = sessionExerciseById(entry.id_ariketa);
-    return { id: sessionEntryKey(entry), name: exercise ? exercise.izena : "", minutes: Number(entry.iraupena_minutuak) || 0 };
+  var segments = TrainingTime.blocks(sessionSelection).map(function (block) {
+    var entries = block.entries.map(function (entry) { var exercise = sessionExerciseById(entry.id_ariketa); return { name: exercise ? exercise.izena : "", minutes: Number(entry.iraupena_minutuak) || 0 }; });
+    return { id: sessionEntryKey(block.entries[0]), name: entries.map(function (entry) { return entry.name; }).join(" / "), minutes: block.minutes, entries: entries };
   }).filter(function (segment) { return segment.minutes > 0; });
-  var used = segments.reduce(function (sum, segment) { return sum + segment.minutes; }, 0);
+  var used = TrainingTime.duration(sessionSelection);
   var over = total > 0 && used > total;
   var scaleBase = over ? used : total;
   bar.classList.toggle("over", over);
@@ -1421,31 +1419,21 @@ function updateSessionTimeBar() {
 
   segments.forEach(function (segment, index) {
     var el = existingById[segment.id];
-    if (!el) {
-      el = document.createElement("div");
-      el.className = "session-time-seg";
-      el.dataset.segId = segment.id;
-      el.title = segment.name + ": " + segment.minutes + " min";
-      el.style.background = "";
-      el.style.width = "0";
-      bar.appendChild(el);
-      var percent = scaleBase > 0 ? (segment.minutes / scaleBase) * 100 : 0;
-      el.style.width = percent.toFixed(3) + "%";
-      setTimeout(function () { el.style.width = percent.toFixed(3) + "%"; }, 0);
-      requestAnimationFrame(function () {
-        el.style.width = percent.toFixed(3) + "%";
-      });
-      setTimeout(function () {
-        el.style.width = percent.toFixed(3) + "%";
-      }, 30);
-    } else {
-      delete existingById[segment.id];
-      el.title = segment.name + ": " + segment.minutes + " min";
-      el.style.background = "";
-      var percent = scaleBase > 0 ? (segment.minutes / scaleBase) * 100 : 0;
-      el.style.width = percent.toFixed(3) + "%";
-    }
+    if (!el) { el = document.createElement("div"); el.className = "session-time-seg"; el.dataset.segId = segment.id; }
+    delete existingById[segment.id];
+    bar.appendChild(el);
+    el.title = segment.name + ": " + segment.minutes + " min" + (segment.entries.length > 1 ? " \u00b7 " + t("Aldi berean") : "");
+    el.style.width = (scaleBase > 0 ? segment.minutes / scaleBase * 100 : 0).toFixed(3) + "%";
+    el.classList.toggle("parallel", segment.entries.length > 1);
+    el.replaceChildren();
+    segment.entries.forEach(function (entry, lane) {
+      var stripe = document.createElement("span"); stripe.className = "session-time-lane";
+      stripe.style.width = (segment.minutes ? entry.minutes / segment.minutes * 100 : 0) + "%";
+      stripe.style.background = sessionSegmentColors[(index + lane) % sessionSegmentColors.length];
+      el.appendChild(stripe);
+    });
   });
+  bar.setAttribute("aria-valuemin", "0"); bar.setAttribute("aria-valuemax", String(Math.max(1, scaleBase))); bar.setAttribute("aria-valuenow", String(used));
 
   Object.keys(existingById).forEach(function (key) {
     existingById[Number(key)].remove();
@@ -1469,6 +1457,7 @@ function renderSessionPicker() {
   sessionSelection = sessionSelection.filter(function (entry) {
     return entry.is_separator || sessionExerciseById(entry.id_ariketa);
   });
+  TrainingTime.normalize(sessionSelection);
   var selectedIds = sessionSelection.filter(function (entry) { return !entry.is_separator; })
     .map(function (entry) { return Number(entry.id_ariketa); });
   var available = exercises.filter(function (exercise) {
@@ -1516,17 +1505,24 @@ function renderSessionPicker() {
     ? t("Ez dago ariketarik kategoria honetan.") : t("Ez dago ariketarik liburutegian.")) + "</li>";
   var groupLabel = $("session-current-group");
   if (groupLabel) groupLabel.textContent = t("Hurrengo ariketak: ") + (activeSessionGroup ? sessionGroupLabel(activeSessionGroup.name) : t("Tarterik gabe"));
-  $("session-selected").innerHTML = sessionSelection.length ? sessionSelection.map(function (entry) {
+  var parallelBlocks = new Map();
+  TrainingTime.blocks(sessionSelection).forEach(function (block) { block.entries.forEach(function (entry) { parallelBlocks.set(entry, block); }); });
+  $("session-selected").innerHTML = sessionSelection.length ? sessionSelection.map(function (entry, entryIndex) {
     if (entry.is_separator) return '<li class="session-group-row" data-session-drop-group="' + esc(entry.group_id) +
       '"><button class="session-drag-handle" type="button" data-session-drag-handle aria-label="' + esc(t("Arrastatu ordena aldatzeko: ")) + esc(sessionGroupLabel(entry.taldea)) +
       '" title="' + esc(t("Arrastatu ordena aldatzeko")) + '">&#8942;&#8942;</button><strong>' + esc(sessionGroupLabel(entry.taldea)) +
       '</strong><button class="slot-remove" type="button" data-session-remove-group="' + esc(entry.group_id) + ("\" aria-label=\"" + esc(t("Kendu tartea")) + "\">" + esc(t("×")) + "</button></li>");
-    var exercise = sessionExerciseById(entry.id_ariketa), id = sessionEntryKey(entry);
+    var exercise = sessionExerciseById(entry.id_ariketa), id = sessionEntryKey(entry), block = parallelBlocks.get(entry);
     if (!exercise) return "";
-    return '<li class="session-slot" data-session-drop-exercise="' + id + ("\"><button class=\"session-drag-handle\" type=\"button\" data-session-drag-handle aria-label=\"" + esc(t("Arrastatu ordena aldatzeko: "))) + esc(exercise.izena) + ("\" title=\"" + esc(t("Arrastatu ordena aldatzeko")) + "\">&#8942;&#8942;</button><span class=\"slot-name\">") + esc(exercise.izena) +
+    var previous = sessionSelection[entryIndex - 1];
+    var canLink = previous && !previous.is_separator && String(previous.taldea || "") === String(entry.taldea || "");
+    var parallel = block.entries.length > 1;
+    var parallelControl = (parallel ? '<span class="session-parallel-badge">' + esc(t("Aldi berean")) + ' \u00b7 ' + block.start + '\u2013' + block.end + ' min</span>' : '') +
+      (canLink ? '<label class="session-parallel-toggle"><input type="checkbox" data-session-parallel="' + id + '"' + (entry.paraleloa ? ' checked' : '') + '><span>' + esc(t("Aurrekoarekin batera")) + '</span></label>' : '');
+    return '<li class="session-slot' + (parallel ? ' is-parallel' : '') + '" data-session-drop-exercise="' + id + ("\"><button class=\"session-drag-handle\" type=\"button\" data-session-drag-handle aria-label=\"" + esc(t("Arrastatu ordena aldatzeko: "))) + esc(exercise.izena) + ("\" title=\"" + esc(t("Arrastatu ordena aldatzeko")) + "\">&#8942;&#8942;</button><span class=\"slot-name\">") + esc(exercise.izena) +
       '</span>' + exerciseLinkMarkup(exercise) + '<input type="number" min="0" max="999" value="' + Number(entry.iraupena_minutuak) +
       '" data-session-minutes="' + id + ("\" aria-label=\"" + esc(t("Minutuak: "))) + esc(exercise.izena) + '">' +
-      ("<label class=\"session-exercise-notes-field\">" + esc(t("Oharrak")) + "<textarea class=\"session-exercise-notes\" rows=\"2\" maxlength=\"3000\" data-session-notes=\"") + id + ("\" aria-label=\"" + esc(t("Oharrak: "))) + esc(exercise.izena) + ("\" placeholder=\"" + esc(t("Idatzi ariketa honetarako oharrak")) + "\">") + esc(entry.aldaerak || "") + '</textarea></label>' +
+      parallelControl + ("<label class=\"session-exercise-notes-field\">" + esc(t("Oharrak")) + "<textarea class=\"session-exercise-notes\" rows=\"2\" maxlength=\"3000\" data-session-notes=\"") + id + ("\" aria-label=\"" + esc(t("Oharrak: "))) + esc(exercise.izena) + ("\" placeholder=\"" + esc(t("Idatzi ariketa honetarako oharrak")) + "\">") + esc(entry.aldaerak || "") + '</textarea></label>' +
       '<button class="slot-remove" type="button" data-session-remove="' + id +
       ("\" aria-label=\"" + esc(t("Kendu ariketa")) + "\">✕</button></li>");
   }).join("") : ("<li class=\"empty\">" + esc(t("Gehitu ariketak ezkerraldetik.")) + "</li>");
@@ -1538,7 +1534,7 @@ function addSessionExercise(id) {
   id = Number(id);
   if (!sessionExerciseById(id)) return;
   if (sessionSelection.some(function (entry) { return Number(entry.id_ariketa) === id; })) return;
-  sessionSelection.push({ id_ariketa: id, iraupena_minutuak: 10,
+  sessionSelection.push({ id_ariketa: id, iraupena_minutuak: 10, paraleloa: 0,
     aldaerak: "",
     taldea: activeSessionGroup ? activeSessionGroup.name : null,
     group_id: activeSessionGroup ? activeSessionGroup.id : null });
@@ -1569,6 +1565,8 @@ function removeSessionGroup(id) {
 
 function removeSessionExercise(id) {
   id = Number(id);
+  var removedIndex = sessionSelection.findIndex(function (entry) { return !entry.is_separator && sessionEntryKey(entry) === id; });
+  if (removedIndex >= 0 && !sessionSelection[removedIndex].paraleloa && sessionSelection[removedIndex + 1]) sessionSelection[removedIndex + 1].paraleloa = 0;
   sessionSelection = sessionSelection.filter(function (entry) {
     return entry.is_separator || sessionEntryKey(entry) !== id;
   });
@@ -1582,7 +1580,8 @@ function dropSessionExercise(draggedId, target) {
   if (sourceIndex < 0) return;
   var entry = sessionSelection[sourceIndex];
   if (target.type === "exercise" && Number(target.id) === Number(draggedId)) return;
-  sessionSelection.splice(sourceIndex, 1);
+  if (!entry.paraleloa && sessionSelection[sourceIndex + 1]) sessionSelection[sourceIndex + 1].paraleloa = 0;
+  sessionSelection.splice(sourceIndex, 1); entry.paraleloa = 0;
   var insertAt = -1;
   if (target.type === "group") {
     var separatorIndex = sessionSelection.findIndex(function (item) {
@@ -1603,6 +1602,7 @@ function dropSessionExercise(draggedId, target) {
     entry.taldea = targetEntry.taldea || null;
     insertAt = targetIndex + (target.after ? 1 : 0);
   }
+  if (sessionSelection[insertAt]) sessionSelection[insertAt].paraleloa = 0;
   sessionSelection.splice(insertAt, 0, entry);
   renderSessionPicker();
 }
@@ -1743,11 +1743,11 @@ function renderSavedSession(sessionId) {
   var details = records("saio_xehetasuna").filter(function (item) {
     return Number(item.id_saio) === Number(sessionId);
   }).sort(function (a, b) {
-    return Number(a.ordena || 0) - Number(b.ordena || 0) || Number(a.id_saio_xehetasuna || 0) - Number(b.id_saio_xehetasuna || 0);
+    return Number(a.ordena || 0) - Number(b.ordena || 0) || Number(a.id_xehetasuna || 0) - Number(b.id_xehetasuna || 0);
   });
-  var totalMinutes = details.reduce(function (total, item) {
-    return total + (item.id_ariketa == null ? 0 : Number(item.iraupena_minutuak || 0));
-  }, 0);
+  var totalMinutes = TrainingTime.duration(details);
+  var scheduleByDetail = new Map();
+  TrainingTime.blocks(details).forEach(function (block) { block.entries.forEach(function (entry) { scheduleByDetail.set(entry, block); }); });
   var exerciseCount = details.filter(function (item) { return item.id_ariketa != null; }).length;
   var meta = [formatDay(session), session.lekua || "", exerciseCount + t(" ariketa")].filter(Boolean);
   $("saved-session-title").textContent = session.helburu_taktikoa || t("Entrenamendua");
@@ -1768,6 +1768,9 @@ function renderSavedSession(sessionId) {
       heading = '<div class="training-session-group"><span>' + esc(sessionGroupLabel(detailGroup)) + '</span></div>';
     }
     lastGroup = detailGroup || null;
+    var block = scheduleByDetail.get(detail), together = block && block.entries.length > 1;
+    var startBlock = together && block.entries[0] === detail, endBlock = together && block.entries[block.entries.length - 1] === detail;
+    if (startBlock) heading += '<div class="training-parallel-group"><div class="training-parallel-heading"><strong>' + esc(t("Aldi berean")) + '</strong><span>' + block.start + '\u2013' + block.end + ' min</span></div><div class="training-parallel-cards">';
     var step = ++renderedExerciseIndex;
     var exercise = sessionExerciseById(detail.id_ariketa);
     var board = exercise && parseBoardData(exercise.arbela_datuak);
@@ -1784,7 +1787,7 @@ function renderSavedSession(sessionId) {
       (board || exerciseLinkMarkup(exercise) ? '<div class="training-exercise-actions">' + exerciseLinkMarkup(exercise) +
         (hasAnimation ? '<button class="btn secondary" type="button" data-play-training-animation="' + Number(detail.id_ariketa) + ("\" aria-label=\"" + esc(t("Ariketa txartelean animazioa ikusi")) + "\">" + esc(t("Animazioa ikusi")) + "</button>") : "") +
         (board ? '<button class="btn secondary" type="button" data-training-board="' + Number(detail.id_ariketa) + '" data-training-session="' + Number(sessionId) + ("\">" + esc(t("Arbela handitu")) + "</button>") : "") + '</div>' : "") +
-      '</article>';
+      '</article>' + (endBlock ? '</div></div>' : '');
   }).join("");
   $("saved-session-exercises").innerHTML = savedMarkup || ("<div class=\"card empty\">" + esc(t("Saio honek ez dauka lotutako ariketarik.")) + "</div>");
   previewBoards.forEach(function (preview) {
@@ -1810,6 +1813,7 @@ function renderSessions() {
     }).filter(Boolean);
     var date = new Date(session.data_ordua), valid = Number.isFinite(date.getTime());
     var group = valid ? date >= today ? "upcoming" : "past" : "undated";
+    entries.sort(function (a,b) { return Number(a.ordena || 0) - Number(b.ordena || 0) || Number(a.id_xehetasuna || 0) - Number(b.id_xehetasuna || 0); });
     return { session: session, names: names, entries: entries, date: date, valid: valid, group: group };
   });
   ["upcoming", "past", "all"].forEach(function (view) {
@@ -1834,7 +1838,7 @@ function renderSessions() {
     var month = item.valid ? I18n.language() === "eu" ? PLAN_MONTHS[date.getMonth()].slice(0, 3) : date.toLocaleDateString(I18n.locale(), { month: "short" }) : "";
     var dateLabel = item.valid ? (I18n.language() === "eu" ? date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() : date.toLocaleDateString(I18n.locale(), { day: "numeric", month: "short", year: "numeric" })) + ' · ' + String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0') : t("Data zehaztu gabe");
     var exercises = item.entries.filter(function (entry) { return entry.id_ariketa != null; });
-    var minutes = exercises.reduce(function (total, entry) { return total + (Number(entry.iraupena_minutuak) || 0); }, 0);
+    var minutes = TrainingTime.duration(item.entries);
     return heading + '<li class="item session-list-card" data-session-card="' + Number(session.id_saio) + '"><div class="session-card-main"><span class="session-card-day" aria-hidden="true"><strong>' + (item.valid ? date.getDate() : '&mdash;') + '</strong><small>' + esc(month) + '</small></span><div class="item-main"><button class="session-card-title" type="button" data-view-session="' + Number(session.id_saio) + '">' + esc(session.helburu_taktikoa || t("Entrenamendua")) + '</button><small class="session-card-date">' + esc(dateLabel) + '</small>' + (session.lekua ? '<small class="session-card-place">' + esc(session.lekua) + '</small>' : '') + '</div></div><div class="session-card-meta"><span>' + exercises.length + esc(t(" ariketa")) + '</span>' + (minutes ? '<span>' + minutes + ' min</span>' : '') + '</div>' +
       (names.length ? '<p class="session-card-exercises" title="' + esc(names.join(", ")) + '">' + esc(names.join(", ")) + '</p>' : '') +
       '<details class="session-options"><summary>' + esc(t("Aukerak")) + '</summary><div class="session-actions"><button class="btn secondary" type="button" data-view-session="' +
@@ -2368,7 +2372,7 @@ function renderPlanningActivity() {
   var metrics = "";
   if (isSession) {
     var details = records("saio_xehetasuna").filter(function (row) { return Number(row.id_saio) === context.id && row.id_ariketa != null; });
-    var minutes = details.reduce(function (total, row) { return total + (Number(row.iraupena_minutuak) || 0); }, 0);
+    var minutes = TrainingTime.duration(records("saio_xehetasuna").filter(function (row) { return Number(row.id_saio) === context.id; }).sort(function (a,b) { return Number(a.ordena || 0) - Number(b.ordena || 0); }));
     metrics = '<div class="plan-activity-metrics"><div><strong>' + details.length + '</strong><span>' + esc(t("Ariketak")) + '</span></div><div><strong>' + minutes + ' <small>min</small></strong><span>' + esc(t("Iraupena")) + '</span></div></div>';
     var micro = records("mikrozikloak").find(function (row) { return Number(row.id_mikroziklo) === Number(item.id_mikroziklo); });
     if (micro) rows.push([t("Mikrozikloa"), t(micro.mota || "Mikrozikloa")]);
@@ -3256,7 +3260,7 @@ function renderFriends() {
       return '<li class="item"><div class="item-main"><strong>' + esc(item.izena) + '</strong><small>' + esc(item.shared_by_username || t("Lagun batek partekatua")) + (item.is_saved ? t(" · Nire ariketetan gordeta") : '') + '</small></div>' + (item.is_saved ? '' : '<button class="btn secondary" data-save-shared-exercise="' + Number(item.id_ariketa) + ("\">" + esc(t("Nire ariketetara gehitu")) + "</button>")) + '<button class="btn secondary" data-show-shared-exercise="' + Number(item.id_ariketa) + ("\">" + esc(t("Xehetasunak")) + "</button></li>");
     }).join("") : ("<li class=\"empty\">" + esc(t("Oraindik ez dizute ariketarik partekatu.")) + "</li>");
     $("friend-shared-trainings").innerHTML = sharedTrainings.length ? sharedTrainings.map(function (item) {
-      var details = (item.details || []).map(function (detail) { return detail.exercise ? (detail.ordena || "") + ". " + detail.exercise.izena + " · " + (detail.iraupena_minutuak || 0) + " min" : detail.taldea || ""; }).filter(Boolean).join("\n");
+      var details = (item.details || []).map(function (detail) { return detail.exercise ? (detail.ordena || "") + ". " + detail.exercise.izena + " · " + (detail.iraupena_minutuak || 0) + " min" + (Number(detail.paraleloa) ? " \u00b7 " + t("Aurrekoarekin batera") : "") : detail.taldea || ""; }).filter(Boolean).join("\n");
       return '<li class="item"><div class="item-main"><strong>' + esc(item.helburu_taktikoa || t("Entrenamendua")) + '</strong><small>' + esc(formatDay(item) + " · " + (item.shared_by_username || t("Lagun batek partekatua"))) + '</small><small>' + esc(details || t("Ez dago ariketa xehetasunik")) + '</small></div></li>';
     }).join("") : ("<li class=\"empty\">" + esc(t("Oraindik ez dizute entrenamendurik partekatu.")) + "</li>");
     setFriendOptions("share-exercise-friend", friendsCache.friends, t("Aukeratu laguna"));
@@ -4784,11 +4788,20 @@ $("session-clear-group").addEventListener("click", function () {
 });
 
 $("session-selected").addEventListener("change", function (event) {
+  if (event.target.matches("[data-session-parallel]")) {
+    var key = Number(event.target.dataset.sessionParallel);
+    var entry = sessionSelection.find(function (row) { return !row.is_separator && sessionEntryKey(row) === key; });
+    if (entry) entry.paraleloa = event.target.checked ? 1 : 0;
+    renderSessionPicker();
+    var checkbox = $("session-selected").querySelector('[data-session-parallel="' + key + '"]');
+    if (checkbox) checkbox.focus({ preventScroll: true });
+  }
   if (event.target.matches("[data-session-minutes]")) {
     setSessionMinutes(event.target.dataset.sessionMinutes, event.target.value);
     event.target.value = sessionSelection.find(function (entry) {
       return !entry.is_separator && sessionEntryKey(entry) === Number(event.target.dataset.sessionMinutes);
     }).iraupena_minutuak;
+    renderSessionPicker();
   }
 });
 
